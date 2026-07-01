@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using backend.Data.Entities;
+
+namespace backend.Data.Entities;
 
 [Table("t_employee")]
 public class Employee
