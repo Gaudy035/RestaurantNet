@@ -19,4 +19,6 @@ public class Location
     public string Address { get; set; } = string.Empty;
 
     public ICollection<LocationEmployee> LocationEmployees { get; set; } = new List<LocationEmployee>();
+
+    public ICollection<Table> Tables { get; set; } = new List<Table>();
 }
