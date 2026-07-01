@@ -1,3 +1,4 @@
+using System.Text.Json;
 using backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -8,7 +9,12 @@ builder.Services.AddDbContext<AppDbContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("DbConnection"))    
 );
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;        
+    }
+);
 
 builder.Services.AddOpenApi();
 
