@@ -17,4 +17,6 @@ public class Location
     [MaxLength(255)]
     [Column("address")]
     public string Address { get; set; } = string.Empty;
+
+    public ICollection<LocationEmployee> locationEmployees { get; set; } = new List<LocationEmployee>();
 }
