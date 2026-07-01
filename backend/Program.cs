@@ -20,12 +20,14 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+app.UseStaticFiles();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 
-    app.MapScalarApiReference(options =>
+    app.MapScalarApiReference("docs", options =>
     {
         options.WithTitle("Restaurant API")
             .WithTheme(ScalarTheme.DeepSpace)
