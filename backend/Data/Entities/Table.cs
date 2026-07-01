@@ -16,7 +16,8 @@ public class Table
 
     [Required]
     [Column("seats")]
-    public int seats { get; set; }
+    public int Seats { get; set; }
 
     public Location Location { get; set; } = null!;
+    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }

@@ -16,4 +16,5 @@ public class Client
     public string PhoneNumber { get; set; } = string.Empty;
 
     public User User { get; set; } = null!;
+    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }
