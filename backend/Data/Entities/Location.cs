@@ -18,5 +18,5 @@ public class Location
     [Column("address")]
     public string Address { get; set; } = string.Empty;
 
-    public ICollection<LocationEmployee> locationEmployees { get; set; } = new List<LocationEmployee>();
+    public ICollection<LocationEmployee> LocationEmployees { get; set; } = new List<LocationEmployee>();
 }

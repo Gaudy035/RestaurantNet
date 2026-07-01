@@ -19,5 +19,5 @@ public class Employee
 
     public User User { get; set; } = null!;
 
-    public ICollection<LocationEmployee> locationEmployees { get; set; } = new List<LocationEmployee>();
+    public ICollection<LocationEmployee> LocationEmployees { get; set; } = new List<LocationEmployee>();
 }
