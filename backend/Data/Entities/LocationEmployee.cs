@@ -15,9 +15,7 @@ public class LocationEmployee
     [Column("is_manager")]
     public bool IsManager { get; set; }
 
-    [ForeignKey("LocationId")]
     public Location Location { get; set; } = null!;
     
-    [ForeignKey("UserId")]
     public Employee Employee { get; set; } = null!;
 }

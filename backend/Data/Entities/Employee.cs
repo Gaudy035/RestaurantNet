@@ -17,6 +17,5 @@ public class Employee
     [Column("position")]
     public string Position { get; set; } = string.Empty;
 
-    [ForeignKey("UserId")]
     public User User { get; set; } = null!;
 }

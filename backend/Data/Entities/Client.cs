@@ -15,6 +15,5 @@ public class Client
     [Column("phone_number")]
     public string PhoneNumber { get; set; } = string.Empty;
 
-    [ForeignKey("UserId")]
     public User User { get; set; } = null!;
 }
