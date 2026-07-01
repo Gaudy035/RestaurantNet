@@ -30,4 +30,8 @@ public class User
     [MaxLength(255)]
     [Column("password")]
     public string Password { get; set; } = string.Empty;
+
+    public Client? Client { get; set; }
+
+    public Employee? Employee { get; set; }
 }
