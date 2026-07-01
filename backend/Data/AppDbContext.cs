@@ -12,4 +12,5 @@ public class AppDbContext: DbContext
     public DbSet<Client> Clients => Set<Client>();
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<Location> Locations => Set<Location>();
+    public DbSet<LocationEmployee> LocationEmployees => Set<LocationEmployee>();
 }
