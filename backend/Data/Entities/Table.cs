@@ -18,5 +18,5 @@ public class Table
     [Column("seats")]
     public int seats { get; set; }
 
-    public Location Location { get; set; } = null;
+    public Location Location { get; set; } = null!;
 }
