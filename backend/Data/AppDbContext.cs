@@ -11,4 +11,5 @@ public class AppDbContext: DbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Client> Clients => Set<Client>();
     public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<Location> Locations => Set<Location>();
 }
