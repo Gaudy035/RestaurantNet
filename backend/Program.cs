@@ -1,6 +1,9 @@
+using System.Text;
 using System.Text.Json;
 using backend.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +37,37 @@ builder.Services.AddCors(options =>
     });
 });
 
+// JWT
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options => {
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateAudience = false,
+        ValidateIssuer = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+        )
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            if (context.Request.Cookies.ContainsKey("access_token"))
+            {
+                context.Token = context.Request.Cookies["access_token"];
+            }
+            return Task.CompletedTask;
+        }
+    };
+});
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 app.UseStaticFiles();
@@ -55,6 +89,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("FrontendPolicy");
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
