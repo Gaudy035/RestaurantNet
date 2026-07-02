@@ -12,12 +12,17 @@ public class LocationEmployeeConfiguration : IEntityTypeConfiguration<LocationEm
 
         builder.HasOne(le => le.Employee)
             .WithMany(e => e.LocationEmployees)
-            .HasForeignKey(le => le.LocationId)
+            .HasForeignKey(le => le.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(le => le.Location)
             .WithMany(l => l.LocationEmployees)
             .HasForeignKey(le => le.LocationId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Property(le => le.Position)
+            .HasConversion<string>()
+            .HasMaxLength(10)
+            .IsRequired();
     }
 }

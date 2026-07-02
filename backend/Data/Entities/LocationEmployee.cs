@@ -3,6 +3,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace backend.Data.Entities;
 
+public enum Position
+{
+    Admin,
+    Manager,
+    Server,
+    Cashier,
+    Driver,
+    Chef
+}
+
 [Table("t_location_employee")]
 public class LocationEmployee
 {
@@ -12,8 +22,8 @@ public class LocationEmployee
     [Column("user_id")]
     public int UserId { get; set; }
 
-    [Column("is_manager")]
-    public bool IsManager { get; set; }
+    [Column("position")]
+    public Position Position { get; set; }
 
     public Location Location { get; set; } = null!;
     

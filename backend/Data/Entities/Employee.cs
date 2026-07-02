@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace backend.Data.Entities;
 
+
 [Table("t_employee")]
 public class Employee
 {
@@ -12,10 +13,6 @@ public class Employee
 
     [Column("is_admin")]
     public bool IsAdmin { get; set; }
-
-    [MaxLength(30)]
-    [Column("position")]
-    public string Position { get; set; } = string.Empty;
 
     public User User { get; set; } = null!;
 
