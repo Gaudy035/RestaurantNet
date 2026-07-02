@@ -17,4 +17,6 @@ public class Ingredient
 
     [Column("allergen")]
     public bool Allergen { get; set; }
+
+    public ICollection<ItemIngredient> ItemIngredients { get; set; } = new List<ItemIngredient>();
 }

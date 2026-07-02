@@ -13,8 +13,10 @@ public class MenuItem
     [Required]
     [MaxLength(128)]
     [Column("name")]
-    public string name { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     [Column("is_available")]
     public bool IsAvailable { get; set; }
+
+    public ICollection<ItemIngredient> ItemIngredients { get; set; } = new List<ItemIngredient>();
 }
