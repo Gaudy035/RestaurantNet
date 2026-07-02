@@ -21,4 +21,6 @@ public class Location
     public ICollection<LocationEmployee> LocationEmployees { get; set; } = new List<LocationEmployee>();
 
     public ICollection<Table> Tables { get; set; } = new List<Table>();
+    
+    public ICollection<Order> Orders { get; set; } = new List<Order>();
 }
