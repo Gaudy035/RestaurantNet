@@ -45,4 +45,6 @@ public class Order
     public Location Location { get; set; } = null!;
 
     public Client? Client { get; set; }
+
+    public Delivery? Delivery { get; set; }
 }
