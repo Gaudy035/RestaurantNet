@@ -47,4 +47,6 @@ public class Order
     public Client? Client { get; set; }
 
     public Delivery? Delivery { get; set; }
+
+    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 }

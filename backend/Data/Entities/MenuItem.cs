@@ -19,4 +19,6 @@ public class MenuItem
     public bool IsAvailable { get; set; }
 
     public ICollection<ItemIngredient> ItemIngredients { get; set; } = new List<ItemIngredient>();
+
+    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 }
