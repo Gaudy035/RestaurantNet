@@ -15,8 +15,9 @@ public class Ingredient
     [Column("name")]
     public string Name { get; set; } = string.Empty;
 
+    [MaxLength(50)]
     [Column("allergen")]
-    public bool Allergen { get; set; }
+    public string? Allergen { get; set; }
 
     public ICollection<ItemIngredient> ItemIngredients { get; set; } = new List<ItemIngredient>();
 }
