@@ -70,4 +70,20 @@ public class AuthService: IAuthService
 
         return newToken;
     }
+
+    public async Task RevokeToken(string tokenValue)
+    {
+        var refreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenValue == tokenValue);
+        
+        if (refreshToken == null)
+        {
+            return;
+        }
+
+        refreshToken.IsActive = false;
+        refreshToken.RevokedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+    }
 }
