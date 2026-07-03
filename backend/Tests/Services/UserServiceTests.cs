@@ -1,1 +1,49 @@
+using backend.Data;
+using backend.DTOs.Users;
+using backend.Services;
+using backend.Tests.Helpers;
+using Microsoft.Data.Sqlite;
+
 namespace backend.Tests.Services;
+
+public class UserServiceTests: IDisposable
+{
+    private readonly AppDbContext _context;
+    private readonly SqliteConnection _connection;
+    private readonly UserService _userService;
+
+    public UserServiceTests()
+    {
+        (_context, _connection) = TestDbContextFactory.Create();
+        _userService = new UserService(_context);
+    }
+
+    public void Dispose()
+    {
+        _context.Dispose();
+        _connection.Dispose();
+    }
+
+    [Fact]
+    public async Task CreateClient_WithValidData_ReturnsClientWithUserId()
+    {
+        var dto = new CreateClientDto
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Email = "john@example.com",
+            Password = "password1234",
+            PhoneNumber = "123 456 789"
+        };
+
+        var clientResult = await _userService.CreateClient(dto);
+
+        Assert.NotNull(clientResult);
+        Assert.True(clientResult.UserId > 0);
+        Assert.Equal(clientResult.UserId, clientResult.User.UserId);
+        Assert.NotEqual(clientResult.User.Password, dto.Password);
+        Assert.Equal(clientResult.User.Email, dto.Email);
+        Assert.Equal(clientResult.PhoneNumber, dto.PhoneNumber);
+    }
+    
+}

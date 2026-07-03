@@ -12,7 +12,7 @@ public static class TestDbContextFactory
         connection.Open();
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite()
+            .UseSqlite(connection)
             .Options;
         
         var context = new AppDbContext(options);
