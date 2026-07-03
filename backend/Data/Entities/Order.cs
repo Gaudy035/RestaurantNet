@@ -35,6 +35,11 @@ public class Order
     public DateTime OrderTime { get; set; }
 
     [Required]
+    [Range(0, double.MaxValue)]
+    [Column("price")]
+    public double Price { get; set; }
+
+    [Required]
     [Column("payment_method")]
     public PaymentMethod PaymentMethod { get; set; }
 
