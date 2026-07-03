@@ -20,12 +20,17 @@ public class OrderConfiguration: IEntityTypeConfiguration<Order>
 
         builder.Property(o => o.PaymentMethod)
             .HasConversion<string>()
-            .HasMaxLength(10)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        builder.Property(o => o.Status)
+            .HasConversion<string>()
+            .HasMaxLength(20)
             .IsRequired();
         
         builder.Property(o => o.OrderType)
             .HasConversion<string>()
-            .HasMaxLength(10)
+            .HasMaxLength(20)
             .IsRequired();
     }
 }

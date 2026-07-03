@@ -16,6 +16,16 @@ public enum OrderType
     Delivery
 }
 
+public enum OrderStatus
+{
+    Pending,
+    Preparing,
+    Ready,
+    Shipped,
+    Completed,
+    Cancelled
+}
+
 [Table("t_order")]
 public class Order
 {
@@ -42,6 +52,13 @@ public class Order
     [Required]
     [Column("payment_method")]
     public PaymentMethod PaymentMethod { get; set; }
+
+    [Column("is_paid")]
+    public bool IsPaid { get; set; }
+
+    [Required]
+    [Column("status")]
+    public OrderStatus Status { get; set; }
 
     [Required]
     [Column("order_type")]
