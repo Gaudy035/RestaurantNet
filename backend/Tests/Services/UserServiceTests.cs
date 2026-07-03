@@ -46,4 +46,22 @@ public class UserServiceTests: IDisposable
         Assert.Equal(clientResult.PhoneNumber, dto.PhoneNumber);
     }
     
+    [Fact]
+    public async Task CreateClient_WithDuplicateEmail_ReturnsNull()
+    {
+        var dto = new CreateClientDto
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Email = "john@example.com",
+            Password = "password1234",
+            PhoneNumber = "123 456 789"
+        };
+
+        // First client with said email
+        await _userService.CreateClient(dto);
+        var secondClient = await _userService.CreateClient(dto);
+
+        Assert.Null(secondClient);
+    }
 }
