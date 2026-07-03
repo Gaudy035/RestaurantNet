@@ -64,4 +64,45 @@ public class UserServiceTests: IDisposable
 
         Assert.Null(secondClient);
     }
+
+    [Fact]
+    public async Task CreateEmployee_WithValidData_ReturnsEmployeeWithUserId()
+    {
+        var dto = new CreateEmployeeDto
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Email = "john@example.com",
+            Password = "password1234",
+            IsAdmin = false
+        };
+
+        var resultEmployee = await _userService.CreateEmployee(dto);
+
+        Assert.NotNull(resultEmployee);
+        Assert.True(resultEmployee.UserId > 0);
+        Assert.Equal(resultEmployee.UserId, resultEmployee.User.UserId);
+        Assert.NotEqual(resultEmployee.User.Password, dto.Password);
+        Assert.Equal(resultEmployee.User.Email, dto.Email);
+        Assert.Equal(resultEmployee.IsAdmin, dto.IsAdmin);
+    }
+
+    [Fact]
+    public async Task CreateEmployee_WithDuplicateEmail_ReturnsNull()
+    {
+        var dto = new CreateEmployeeDto
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Email = "john@example.com",
+            Password = "password1234",
+            IsAdmin = false
+        };
+
+        // First Employee with said email
+        await _userService.CreateEmployee(dto);
+        var secondEmployee = await _userService.CreateEmployee(dto);
+
+        Assert.Null(secondEmployee);
+    }
 }
