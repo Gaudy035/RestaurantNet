@@ -1,7 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using backend.Data;
+using backend.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace backend.Services;
@@ -46,5 +49,25 @@ public class AuthService: IAuthService
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
+    }
+
+    private async Task<RefreshToken> GenerateRefreshToken(int userId)
+    {
+        var randomBytes = new byte[64];
+        RandomNumberGenerator.Fill(randomBytes);
+        var tokenValue = Convert.ToBase64String(randomBytes);
+
+        var newToken = new RefreshToken
+        {
+            TokenValue = tokenValue,
+            IsActive = true,
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            UserId = userId
+        };
+
+        _context.RefreshTokens.Add(newToken);
+        await _context.SaveChangesAsync();
+
+        return newToken;
     }
 }
