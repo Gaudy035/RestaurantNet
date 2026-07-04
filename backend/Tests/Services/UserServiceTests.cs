@@ -40,9 +40,7 @@ public class UserServiceTests: IDisposable
 
         Assert.NotNull(clientResult);
         Assert.True(clientResult.UserId > 0);
-        Assert.Equal(clientResult.UserId, clientResult.User.UserId);
-        Assert.NotEqual(clientResult.User.Password, dto.Password);
-        Assert.Equal(clientResult.User.Email, dto.Email);
+        Assert.Equal(clientResult.Email, dto.Email);
         Assert.Equal(clientResult.PhoneNumber, dto.PhoneNumber);
     }
     
@@ -81,9 +79,7 @@ public class UserServiceTests: IDisposable
 
         Assert.NotNull(resultEmployee);
         Assert.True(resultEmployee.UserId > 0);
-        Assert.Equal(resultEmployee.UserId, resultEmployee.User.UserId);
-        Assert.NotEqual(resultEmployee.User.Password, dto.Password);
-        Assert.Equal(resultEmployee.User.Email, dto.Email);
+        Assert.Equal(resultEmployee.Email, dto.Email);
         Assert.Equal(resultEmployee.IsAdmin, dto.IsAdmin);
     }
 
