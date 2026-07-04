@@ -14,7 +14,7 @@ public class UserService: IUserService
         _context = context;
     }
 
-    public async Task<Client?> CreateClient(CreateClientDto dto)
+    public async Task<CreateClientResponseDto?> CreateClient(CreateClientDto dto)
     {
         var emailTaken = await _context.Users
             .AnyAsync(u => u.Email == dto.Email);
@@ -47,10 +47,17 @@ public class UserService: IUserService
             return null;
         }
 
-        return newClient.Entity;
+        return new CreateClientResponseDto
+        {
+            UserId = newClient.Entity.UserId,
+            FirstName = newClient.Entity.User.FirstName,
+            LastName = newClient.Entity.User.LastName,
+            Email = newClient.Entity.User.Email,
+            PhoneNumber = newClient.Entity.PhoneNumber
+        };
     }
 
-    public async Task<Employee?> CreateEmployee (CreateEmployeeDto dto)
+    public async Task<CreateEmployeeResponseDto?> CreateEmployee (CreateEmployeeDto dto)
     {
         var emailTaken = await _context.Users
             .AnyAsync(u => u.Email == dto.Email);
@@ -83,6 +90,13 @@ public class UserService: IUserService
             return null;
         }
 
-        return newEmployee.Entity;
+        return new CreateEmployeeResponseDto
+        {
+            UserId = newEmployee.Entity.UserId,
+            FirstName = newEmployee.Entity.User.FirstName,
+            LastName = newEmployee.Entity.User.LastName,
+            Email = newEmployee.Entity.User.Email,
+            IsAdmin = newEmployee.Entity.IsAdmin
+        };
     }
 }

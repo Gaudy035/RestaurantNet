@@ -5,7 +5,7 @@ namespace backend.Services;
 
 public interface IUserService
 {
-    Task<Client?> CreateClient(CreateClientDto dto);
+    Task<CreateClientResponseDto?> CreateClient(CreateClientDto dto);
 
-    Task<Employee?> CreateEmployee(CreateEmployeeDto dto);
+    Task<CreateEmployeeResponseDto?> CreateEmployee(CreateEmployeeDto dto);
 }
