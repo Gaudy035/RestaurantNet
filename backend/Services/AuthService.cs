@@ -51,8 +51,19 @@ public class AuthService: IAuthService
         return tokenHandler.WriteToken(token);
     }
 
-    private async Task<RefreshToken> GenerateRefreshToken(int userId)
+    private async Task<RefreshToken?> GenerateRefreshToken(int userId, string role)
     {
+        string[] roles = ["Admin", "Employee", "Client"];
+        
+        if (!roles.Contains(role))
+        {
+            return null;
+        }
+
+        var expiration = role == "Client" 
+            ? DateTime.UtcNow.AddDays(7) 
+            : DateTime.UtcNow.AddHours(12);
+
         var randomBytes = new byte[64];
         RandomNumberGenerator.Fill(randomBytes);
         var tokenValue = Convert.ToBase64String(randomBytes);
@@ -61,7 +72,7 @@ public class AuthService: IAuthService
         {
             TokenValue = tokenValue,
             IsActive = true,
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            ExpiresAt = expiration,
             UserId = userId
         };
 
