@@ -97,7 +97,7 @@ public class AuthService: IAuthService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<LoginResponseDto?> Login(LoginDto dto)
+    public async Task<LoginResponseDto?> Login(LoginDto dto, string destination)
     {
         var foundUser = await _context.Users
             .Include(u => u.Client)
@@ -111,11 +111,11 @@ public class AuthService: IAuthService
         
         string role;
 
-        if (foundUser.Client != null)
+        if (foundUser.Client != null && destination == "Client")
         {
             role = "Client";
         } 
-        else if (foundUser.Employee != null)
+        else if (foundUser.Employee != null && destination == "Admin")
         {
             role = foundUser.Employee.IsAdmin 
                 ? "Admin" 

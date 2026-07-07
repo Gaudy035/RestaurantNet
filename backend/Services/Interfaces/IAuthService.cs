@@ -6,5 +6,5 @@ public interface IAuthService
 {
     Task RevokeToken(string tokenValue);
 
-    Task<LoginResponseDto?> Login(LoginDto dto);
+    Task<LoginResponseDto?> Login(LoginDto dto, string destination);
 }
