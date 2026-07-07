@@ -101,7 +101,7 @@ public class AuthServiceTests: IDisposable
     }
 
     [Fact]
-    public async Task Login_AdminEmployeeWithCorrectCredentialsAnd_ReturnsTokensAndAdminRole()
+    public async Task Login_AdminEmployeeWithCorrectCredentials_ReturnsTokensAndAdminRole()
     {
         await SeedEmployeeUser(true);
 
@@ -126,7 +126,7 @@ public class AuthServiceTests: IDisposable
     }
 
     [Fact]
-    public async Task Login_NotAdminEmployeeWithCorrectCredentialsAnd_ReturnsTokensAndEmployeeRole()
+    public async Task Login_NotAdminEmployeeWithCorrectCredentials_ReturnsTokensAndEmployeeRole()
     {
         await SeedEmployeeUser(false);
 
