@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using backend.Data;
 using backend.Data.Entities;
 using backend.DTOs.Auth;
@@ -149,5 +148,37 @@ public class AuthServiceTests: IDisposable
 
         Assert.NotNull(roleClaim);
         Assert.Equal("Employee", roleClaim.Value);
+    }
+
+    [Fact]
+    public async Task Login_WithIncorrectEmail_ReturnsNull()
+    {
+        await SeedClientUser();
+
+        var loginDto = new LoginDto
+        {
+            Email = "wrongemail@example.com",
+            Password = "TestPass1234"
+        };
+
+        var result = await _authService.Login(loginDto, "Client");
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task Login_WithIncorrectPassword_ReturnsNull()
+    {
+        await SeedClientUser();
+
+        var loginDto = new LoginDto
+        {
+            Email = "john@example.com",
+            Password = "IncorrectPassword"
+        };
+
+        var result = await _authService.Login(loginDto, "Client");
+
+        Assert.Null(result);
     }
 }
