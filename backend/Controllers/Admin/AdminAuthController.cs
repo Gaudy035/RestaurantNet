@@ -30,4 +30,15 @@ public class AdminAuthController: ControllerBase
             SameSite = SameSiteMode.Lax
         });
     }
+
+    private async Task RemoveTokenCookies()
+    {
+        var refreshTokenValue = Request.Cookies["refresh_token"];
+        if (!string.IsNullOrEmpty(refreshTokenValue))
+        {
+            await _authService.RevokeToken(refreshTokenValue);
+        }
+        Response.Cookies.Delete("access_token");
+        Response.Cookies.Delete("refresh_token");
+    }
 }
