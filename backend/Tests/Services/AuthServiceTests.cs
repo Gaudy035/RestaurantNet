@@ -5,6 +5,7 @@ using backend.DTOs.Auth;
 using backend.Services;
 using backend.Tests.Helpers;
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace backend.Tests.Services;
@@ -228,5 +229,30 @@ public class AuthServiceTests: IDisposable
         var result = await _authService.Login(loginDto, "Admin");
 
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task RevokeToken_WithCorrectTokenValue_MarksTokenInactiveAndSetsRevokedAt()
+    {
+        await SeedClientUser();
+
+        var loginDto = new LoginDto
+        {
+            Email = "john@example.com",
+            Password = "TestPass1234"
+        };
+
+        var result = await _authService.Login(loginDto, "Client");
+
+        var token = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenValue == result!.RefreshToken);
+        
+        Assert.True(token!.IsActive);
+        Assert.Null(token!.RevokedAt);
+        
+        await _authService.RevokeToken(result!.RefreshToken);
+
+        Assert.False(token.IsActive);
+        Assert.NotNull(token.RevokedAt);
     }
 }
