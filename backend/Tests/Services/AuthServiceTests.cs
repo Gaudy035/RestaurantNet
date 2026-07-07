@@ -100,4 +100,54 @@ public class AuthServiceTests: IDisposable
         Assert.NotNull(roleClaim);
         Assert.Equal("Client", roleClaim.Value);
     }
+
+    [Fact]
+    public async Task Login_AdminEmployeeWithCorrectCredentialsAnd_ReturnsTokensAndAdminRole()
+    {
+        await SeedEmployeeUser(true);
+
+        var loginDto = new LoginDto
+        {
+            Email = "john@example.com",
+            Password = "TestPass1234"
+        };
+
+        var result = await _authService.Login(loginDto, "Admin");
+
+        Assert.NotNull(result);
+        Assert.Equal("Admin", result.Role);
+        Assert.False(string.IsNullOrEmpty(result.AccessToken));
+        Assert.False(string.IsNullOrEmpty(result.RefreshToken));
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(result.AccessToken);
+        var roleClaim = jwt.Claims.FirstOrDefault(c => c.Type == "role");
+
+        Assert.NotNull(roleClaim);
+        Assert.Equal("Admin", roleClaim.Value);
+    }
+
+    [Fact]
+    public async Task Login_NotAdminEmployeeWithCorrectCredentialsAnd_ReturnsTokensAndEmployeeRole()
+    {
+        await SeedEmployeeUser(false);
+
+        var loginDto = new LoginDto
+        {
+            Email = "john@example.com",
+            Password = "TestPass1234"
+        };
+
+        var result = await _authService.Login(loginDto, "Admin");
+
+        Assert.NotNull(result);
+        Assert.Equal("Employee", result.Role);
+        Assert.False(string.IsNullOrEmpty(result.AccessToken));
+        Assert.False(string.IsNullOrEmpty(result.RefreshToken));
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(result.AccessToken);
+        var roleClaim = jwt.Claims.FirstOrDefault(c => c.Type == "role");
+
+        Assert.NotNull(roleClaim);
+        Assert.Equal("Employee", roleClaim.Value);
+    }
 }
