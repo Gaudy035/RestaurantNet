@@ -21,10 +21,10 @@ public class AuthService: IAuthService
         _configuration = configuration;
     }
 
+    private static readonly string[] roles = ["Admin", "Employee", "Client"];
+
     private string? GenerateAccessToken(int userId, string userRole)
     {
-        string[] roles = ["Admin", "Employee", "Client"];
-
         if (!roles.Contains(userRole))
         {
             return null;
@@ -54,8 +54,6 @@ public class AuthService: IAuthService
 
     private async Task<string?> GenerateRefreshToken(int userId, string role)
     {
-        string[] roles = ["Admin", "Employee", "Client"];
-        
         if (!roles.Contains(role))
         {
             return null;
