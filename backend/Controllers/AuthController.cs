@@ -60,4 +60,11 @@ public class AuthController: ControllerBase
         CreateTokenCookies(loginResponse.AccessToken, loginResponse.RefreshToken);
         return Ok(new { message = "Logged in successfully" });
     }
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await RemoveTokenCookies();
+        return Ok(new { message = "Logged out successfully" });
+    }
 }
