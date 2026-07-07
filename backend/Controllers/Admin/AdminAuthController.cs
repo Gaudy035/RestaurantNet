@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers.Admin;
 
+[ApiController]
+[Route("admin/auth")]
 public class AdminAuthController: ControllerBase
 {
     private readonly IAuthService _authService;
