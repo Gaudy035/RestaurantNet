@@ -62,10 +62,10 @@ public class AuthServiceTests: IDisposable
             IsAdmin = isAdmin,
             User = new User
             {
-                FirstName = "John",
+                FirstName = "Jane",
                 LastName = "Doe",
-                Email = "john@example.com",
-                Password = BCrypt.Net.BCrypt.HashPassword("TestPass1234"),
+                Email = "jane@example.com",
+                Password = BCrypt.Net.BCrypt.HashPassword("TestPass5678"),
             }
         };
 
@@ -107,8 +107,8 @@ public class AuthServiceTests: IDisposable
 
         var loginDto = new LoginDto
         {
-            Email = "john@example.com",
-            Password = "TestPass1234"
+            Email = "jane@example.com",
+            Password = "TestPass5678"
         };
 
         var result = await _authService.Login(loginDto, "Admin");
@@ -132,8 +132,8 @@ public class AuthServiceTests: IDisposable
 
         var loginDto = new LoginDto
         {
-            Email = "john@example.com",
-            Password = "TestPass1234"
+            Email = "jane@example.com",
+            Password = "TestPass5678"
         };
 
         var result = await _authService.Login(loginDto, "Admin");
