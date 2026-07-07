@@ -1,5 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using backend.Data;
 using backend.Data.Entities;
+using backend.DTOs.Auth;
 using backend.Services;
 using backend.Tests.Helpers;
 using Microsoft.Data.Sqlite;
@@ -73,5 +76,28 @@ public class AuthServiceTests: IDisposable
         return newEmployee;
     }
 
+    [Fact]
+    public async Task Login_ClientWithCorrectCredentials_ReturnsTokensAndClientRole()
+    {
+        await SeedClientUser();
 
+        var loginDto = new LoginDto
+        {
+            Email = "john@example.com",
+            Password = "TestPass1234"
+        };
+
+        var result = await _authService.Login(loginDto, "Client");
+
+        Assert.NotNull(result);
+        Assert.Equal("Client", result.Role);
+        Assert.False(string.IsNullOrEmpty(result.AccessToken));
+        Assert.False(string.IsNullOrEmpty(result.RefreshToken));
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(result.AccessToken);
+        var roleClaim = jwt.Claims.FirstOrDefault(c => c.Type == "role");
+
+        Assert.NotNull(roleClaim);
+        Assert.Equal("Client", roleClaim.Value);
+    }
 }
