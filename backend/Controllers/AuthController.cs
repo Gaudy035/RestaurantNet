@@ -1,3 +1,4 @@
+using backend.DTOs.Auth;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -44,5 +45,19 @@ public class AuthController: ControllerBase
         }
         Response.Cookies.Delete("access_token");
         Response.Cookies.Delete("refresh_token");
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    {
+        var loginResponse = await _authService.Login(dto, "Client");
+
+        if (loginResponse == null)
+        {
+            return Unauthorized();
+        }
+
+        CreateTokenCookies(loginResponse.AccessToken, loginResponse.RefreshToken);
+        return Ok(new { message = "Logged in successfully" });
     }
 }
