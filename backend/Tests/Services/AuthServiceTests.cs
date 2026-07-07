@@ -181,4 +181,52 @@ public class AuthServiceTests: IDisposable
 
         Assert.Null(result);
     }
+
+    [Fact]
+    public async Task Login_EmployeeTryingToLoginFromClientForm_ReturnsNull()
+    {
+        await SeedEmployeeUser(false);
+
+        var loginDto = new LoginDto
+        {
+            Email = "jane@example.com",
+            Password = "TestPass5678"
+        };
+
+        var result = await _authService.Login(loginDto, "Client");
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task Login_AdminTryingToLoginFromClientForm_ReturnsNull()
+    {
+        await SeedEmployeeUser(true);
+
+        var loginDto = new LoginDto
+        {
+            Email = "jane@example.com",
+            Password = "TestPass5678"
+        };
+
+        var result = await _authService.Login(loginDto, "Client");
+
+        Assert.Null(result);
+    }
+    
+    [Fact]
+    public async Task Login_ClientTryingToLoginFromAdminForm_ReturnsNull()
+    {
+        await SeedClientUser();
+
+        var loginDto = new LoginDto
+        {
+            Email = "john@example.com",
+            Password = "TestPass1234"
+        };
+
+        var result = await _authService.Login(loginDto, "Admin");
+
+        Assert.Null(result);
+    }
 }
