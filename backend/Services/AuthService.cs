@@ -92,8 +92,11 @@ public class AuthService: IAuthService
             return;
         }
 
-        refreshToken.IsActive = false;
-        refreshToken.RevokedAt = DateTime.UtcNow;
+        if (refreshToken.IsActive)
+        {
+            refreshToken.IsActive = false;
+            refreshToken.RevokedAt = DateTime.UtcNow;            
+        }
 
         await _context.SaveChangesAsync();
     }
