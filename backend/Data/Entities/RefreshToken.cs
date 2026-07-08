@@ -15,6 +15,10 @@ public class RefreshToken
     public int UserId { get; set; }
 
     [Required]
+    [Column("role")]
+    public string Role { get; set; } = string.Empty;
+
+    [Required]
     [MaxLength(128)]
     [Column("token_value")]
     public string TokenValue { get; set; } = string.Empty;
