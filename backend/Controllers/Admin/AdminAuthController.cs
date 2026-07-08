@@ -65,4 +65,27 @@ public class AdminAuthController: ControllerBase
         await RemoveTokenCookies();
         return Ok(new { message = "Logged out successfully" });
     }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh()
+    {
+        var refreshTokenValue = Request.Cookies["refresh_token"];
+        
+        if (string.IsNullOrEmpty(refreshTokenValue))
+        {
+            return Unauthorized();
+        }
+
+        var newTokens = await _authService.Refresh(refreshTokenValue);
+
+        if (newTokens == null)
+        {
+            await RemoveTokenCookies();
+            return Unauthorized();
+        }
+
+        CreateTokenCookies(newTokens.AccessToken, newTokens.RefreshToken);
+
+        return Ok(new { message = "Tokens refreshed" });
+    }
 }
