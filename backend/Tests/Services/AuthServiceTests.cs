@@ -99,6 +99,12 @@ public class AuthServiceTests: IDisposable
 
         Assert.NotNull(roleClaim);
         Assert.Equal("Client", roleClaim.Value);
+
+        var refreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenValue == result.RefreshToken);
+        
+        Assert.NotNull(refreshToken);
+        Assert.Equal("Client", refreshToken.Role);
     }
 
     [Fact]
@@ -124,6 +130,12 @@ public class AuthServiceTests: IDisposable
 
         Assert.NotNull(roleClaim);
         Assert.Equal("Admin", roleClaim.Value);
+
+        var refreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenValue == result.RefreshToken);
+        
+        Assert.NotNull(refreshToken);
+        Assert.Equal("Admin", refreshToken.Role);
     }
 
     [Fact]
@@ -149,6 +161,12 @@ public class AuthServiceTests: IDisposable
 
         Assert.NotNull(roleClaim);
         Assert.Equal("Employee", roleClaim.Value);
+
+        var refreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenValue == result.RefreshToken);
+
+        Assert.NotNull(refreshToken);
+        Assert.Equal("Employee", refreshToken.Role);
     }
 
     [Fact]
