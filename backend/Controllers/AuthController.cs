@@ -102,7 +102,7 @@ public class AuthController: ControllerBase
             return BadRequest();
         }
 
-        var loginDto = new LoginDtod
+        var loginDto = new LoginDto
         {
             Email = dto.Email,
             Password = dto.Password
