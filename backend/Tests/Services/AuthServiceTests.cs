@@ -273,4 +273,40 @@ public class AuthServiceTests: IDisposable
         Assert.False(token.IsActive);
         Assert.NotNull(token.RevokedAt);
     }
+
+    [Fact]
+    public async Task Refresh_WithCorrectTokenValue_GeneratesNewCorrectTokens()
+    {
+        await SeedClientUser();
+
+        var loginDto = new LoginDto
+        {
+            Email = "john@example.com",
+            Password = "TestPass1234"
+        };
+
+        var loginResponse = await _authService.Login(loginDto, "Client");
+
+        var refreshResponse = await _authService.Refresh(loginResponse!.RefreshToken);
+
+        Assert.NotEqual(loginResponse.AccessToken, refreshResponse!.AccessToken);
+        Assert.NotEqual(loginResponse.RefreshToken, refreshResponse!.RefreshToken);
+        Assert.Equal(loginResponse.Role, refreshResponse.Role);
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(refreshResponse.AccessToken);
+        var roleClaim = jwt.Claims.FirstOrDefault(c => c.Type == "role");
+
+        Assert.NotNull(roleClaim);
+        Assert.Equal("Client", roleClaim.Value);
+
+        var oldRefreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenValue == loginResponse.RefreshToken);
+        
+        var newRefreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenValue == refreshResponse.RefreshToken);
+
+        Assert.Equal(oldRefreshToken!.UserId, newRefreshToken!.UserId);
+        Assert.Equal("Client", newRefreshToken.Role);
+        Assert.False(oldRefreshToken.IsActive);
+    }
 }
