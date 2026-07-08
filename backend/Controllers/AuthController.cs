@@ -1,4 +1,5 @@
 using backend.DTOs.Auth;
+using backend.DTOs.Users;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -89,5 +90,28 @@ public class AuthController: ControllerBase
         CreateTokenCookies(newTokens.AccessToken, newTokens.RefreshToken);
 
         return Ok(new { message = "Tokens refreshed" });
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] CreateClientDto dto)
+    {
+        var createClientResponse = await _userService.CreateClient(dto);
+
+        if (createClientResponse == null)
+        {
+            return BadRequest();
+        }
+
+        var loginDto = new LoginDtod
+        {
+            Email = dto.Email,
+            Password = dto.Password
+        };
+
+        var loginResponse = await _authService.Login(loginDto, "Client");
+
+        CreateTokenCookies(loginResponse!.AccessToken, loginResponse!.RefreshToken);
+
+        return Ok(new { message = "Registered successfully" });
     }
 }
