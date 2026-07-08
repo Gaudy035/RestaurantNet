@@ -76,6 +76,25 @@ public class AuthServiceTests: IDisposable
         return newEmployee;
     }
 
+    private async Task<RefreshToken> SeedRefreshToken(DateTime expiration, bool isActive = true)
+    {
+        var user = await SeedClientUser();
+
+        var newRefreshToken = new RefreshToken
+        {
+            TokenValue = "testRefreshTokenValue",
+            ExpiresAt = expiration,
+            IsActive = isActive,
+            Role = "Client",
+            UserId = user.UserId
+        };
+
+        _context.RefreshTokens.Add(newRefreshToken);
+        await _context.SaveChangesAsync();
+
+        return newRefreshToken;
+    }
+
     [Fact]
     public async Task Login_ClientWithCorrectCredentials_ReturnsTokensAndClientRole()
     {
@@ -308,5 +327,40 @@ public class AuthServiceTests: IDisposable
         Assert.Equal(oldRefreshToken!.UserId, newRefreshToken!.UserId);
         Assert.Equal("Client", newRefreshToken.Role);
         Assert.False(oldRefreshToken.IsActive);
+    }
+
+    [Fact]
+    public async Task Refresh_WithInactiveRefreshToken_ReturnsNull()
+    {
+        var testRefreshToken = await SeedRefreshToken(DateTime.UtcNow.AddDays(1), false);
+
+        var refreshResult = await _authService.Refresh(testRefreshToken.TokenValue);
+
+        Assert.Null(refreshResult);
+    }
+
+    [Fact]
+    public async Task Refresh_WithExpiredToken_ReturnsNullAndSetsRevoked()
+    {
+        var testRefreshToken = await SeedRefreshToken(DateTime.UtcNow.AddDays(-1), true);
+
+        var refreshResult = await _authService.Refresh(testRefreshToken.TokenValue);
+
+        var testRefreshTokenRefetch = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenValue == testRefreshToken.TokenValue);
+
+        Assert.Null(refreshResult);
+        Assert.False(testRefreshTokenRefetch!.IsActive);
+        Assert.NotNull(testRefreshTokenRefetch!.RevokedAt);
+    }
+
+    [Fact]
+    public async Task Refresh_WithIncorrectRefreshTokenValue_ReturnsNull()
+    {
+        await SeedRefreshToken(DateTime.UtcNow.AddDays(7), true);
+
+        var refreshResult = await _authService.Refresh("IncorrectTokenValue");
+
+        Assert.Null(refreshResult);
     }
 }
