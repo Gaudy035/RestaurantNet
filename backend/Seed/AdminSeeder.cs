@@ -10,6 +10,10 @@ public static class AdminSeeder
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
+        await SeedInitialAdminAccountCore(context, configuration);
+    }
+    internal static async Task SeedInitialAdminAccountCore(AppDbContext context, IConfiguration configuration)
+    {
         bool adminExists = await context.Employees.AnyAsync(e => e.IsAdmin);
         if (adminExists)
         {
