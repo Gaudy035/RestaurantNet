@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using backend.Data;
+using backend.Data.Seed;
 using backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -73,6 +74,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
+
+await AdminSeeder.SeedInitialAdminAccount(app.Services.GetRequiredService<IServiceScopeFactory>());
 
 app.UseStaticFiles();
 
