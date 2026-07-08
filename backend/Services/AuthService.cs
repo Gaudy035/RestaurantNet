@@ -72,7 +72,8 @@ public class AuthService: IAuthService
             TokenValue = tokenValue,
             IsActive = true,
             ExpiresAt = expiration,
-            UserId = userId
+            UserId = userId,
+            Role = role
         };
 
         _context.RefreshTokens.Add(newToken);
@@ -144,6 +145,40 @@ public class AuthService: IAuthService
             AccessToken = accessToken,
             RefreshToken = refreshToken,
             Role = role
+        };
+    }
+
+    public async Task<LoginResponseDto?> Refresh(string refreshTokenValue)
+    {
+        var oldToken = await _context.RefreshTokens
+            .Include(rt => rt.User)
+            .FirstOrDefaultAsync(rt => rt.TokenValue == refreshTokenValue);
+
+        if (oldToken == null || !oldToken.IsActive)
+        {
+            return null;
+        }
+
+        await RevokeToken(oldToken.TokenValue);
+
+        if (oldToken.ExpiresAt <= DateTime.UtcNow)
+        {
+            return null;
+        }
+
+        var newAccessToken = GenerateAccessToken(oldToken.UserId, oldToken.Role);
+        var newRefreshToken = await GenerateRefreshToken(oldToken.UserId, oldToken.Role);
+
+        if (newAccessToken == null || newRefreshToken == null)
+        {
+            return null;
+        }
+
+        return new LoginResponseDto
+        {
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken,
+            Role = oldToken.Role
         };
     }
 }
