@@ -2,6 +2,8 @@ using backend.Data;
 using backend.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
+namespace backend.Data.Seed;
+
 public static class AdminSeeder
 {
     public static async Task SeedInitialAdminAccount(IServiceScopeFactory scopeFactory)
