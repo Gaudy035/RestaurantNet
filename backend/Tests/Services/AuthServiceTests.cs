@@ -76,7 +76,7 @@ public class AuthServiceTests: IDisposable
         return newEmployee;
     }
 
-    private async Task<RefreshToken> SeedRefreshToken(DateTime expiration, bool isActive = true)
+    private async Task<RefreshToken> SeedRefreshToken(DateTimeOffset expiration, bool isActive = true)
     {
         var user = await SeedClientUser();
 
@@ -332,7 +332,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Refresh_WithInactiveRefreshToken_ReturnsNull()
     {
-        var testRefreshToken = await SeedRefreshToken(DateTime.UtcNow.AddDays(1), false);
+        var testRefreshToken = await SeedRefreshToken(DateTimeOffset.UtcNow.AddDays(1), false);
 
         var refreshResult = await _authService.Refresh(testRefreshToken.TokenValue);
 
@@ -342,7 +342,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Refresh_WithExpiredToken_ReturnsNullAndSetsRevoked()
     {
-        var testRefreshToken = await SeedRefreshToken(DateTime.UtcNow.AddDays(-1), true);
+        var testRefreshToken = await SeedRefreshToken(DateTimeOffset.UtcNow.AddDays(-1), true);
 
         var refreshResult = await _authService.Refresh(testRefreshToken.TokenValue);
 
@@ -357,7 +357,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Refresh_WithIncorrectRefreshTokenValue_ReturnsNull()
     {
-        await SeedRefreshToken(DateTime.UtcNow.AddDays(7), true);
+        await SeedRefreshToken(DateTimeOffset.UtcNow.AddDays(7), true);
 
         var refreshResult = await _authService.Refresh("IncorrectTokenValue");
 

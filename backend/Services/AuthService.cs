@@ -61,8 +61,8 @@ public class AuthService: IAuthService
         }
 
         var expiration = role == "Client" 
-            ? DateTime.UtcNow.AddDays(7) 
-            : DateTime.UtcNow.AddHours(12);
+            ? DateTimeOffset.UtcNow.AddDays(7) 
+            : DateTimeOffset.UtcNow.AddHours(12);
 
         var randomBytes = new byte[64];
         RandomNumberGenerator.Fill(randomBytes);
@@ -96,7 +96,7 @@ public class AuthService: IAuthService
         if (refreshToken.IsActive)
         {
             refreshToken.IsActive = false;
-            refreshToken.RevokedAt = DateTime.UtcNow;            
+            refreshToken.RevokedAt = DateTimeOffset.UtcNow;            
         }
 
         await _context.SaveChangesAsync();
@@ -165,7 +165,7 @@ public class AuthService: IAuthService
 
         await RevokeToken(oldToken.TokenValue);
 
-        if (oldToken.ExpiresAt <= DateTime.UtcNow)
+        if (oldToken.ExpiresAt <= DateTimeOffset.UtcNow)
         {
             return null;
         }
