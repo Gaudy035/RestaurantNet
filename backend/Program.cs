@@ -2,10 +2,12 @@ using System.Text;
 using System.Text.Json;
 using backend.Data;
 using backend.Data.Seed;
+using backend.Jobs;
 using backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Quartz;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,6 +72,23 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Quartz
+builder.Services.AddQuartz(q =>
+{
+    var tokenCleanupJobKey = new JobKey("TokenCleanupKey");
+
+    q.AddJob<TokenCleanupJob>(options => options.WithIdentity(tokenCleanupJobKey));
+
+    q.AddTrigger(options => options
+        .ForJob(tokenCleanupJobKey)
+        .WithIdentity("TokenCleanupCronTrigger")
+        .WithCronSchedule("0 0 3 * * ?")    
+    );
+});
+
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
+// Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
