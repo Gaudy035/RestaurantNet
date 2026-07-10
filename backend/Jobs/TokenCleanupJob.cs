@@ -17,12 +17,17 @@ public class TokenCleanupJob: IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        _logger.LogInformation("[{Time}]: Token cleanup start.", DateTime.Now);
-
-        var dateToRemove = DateTimeOffset.UtcNow.AddDays(-1);
-
         using var scope = _scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await TokenCleanupJobCore(dbContext, _logger);
+    }
+
+    internal async Task TokenCleanupJobCore(AppDbContext dbContext, ILogger logger)
+    {
+        logger.LogInformation("[{Time}]: Token cleanup start.", DateTime.Now);
+
+        var dateToRemove = DateTimeOffset.UtcNow.AddDays(-1);
 
         var tokensToRemove = await dbContext.RefreshTokens
             .Where(rt => rt.ExpiresAt <= dateToRemove || rt.RevokedAt <= dateToRemove)
@@ -32,13 +37,13 @@ public class TokenCleanupJob: IJob
 
         if (tokensFound == 0)
         {
-            _logger.LogInformation("No tokens to delete.");
+            logger.LogInformation("No tokens to delete.");
             return;
         }
 
         dbContext.RefreshTokens.RemoveRange(tokensToRemove);
         await dbContext.SaveChangesAsync();
 
-        _logger.LogInformation("Removed {Count} tokens", tokensFound);
+        logger.LogInformation("Removed {Count} tokens", tokensFound);
     }
 }
