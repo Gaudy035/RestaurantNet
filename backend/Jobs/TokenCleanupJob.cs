@@ -23,7 +23,7 @@ public class TokenCleanupJob: IJob
         await TokenCleanupJobCore(dbContext, _logger);
     }
 
-    internal async Task TokenCleanupJobCore(AppDbContext dbContext, ILogger logger)
+    internal static async Task TokenCleanupJobCore(AppDbContext dbContext, ILogger logger)
     {
         logger.LogInformation("[{Time}]: Token cleanup start.", DateTime.Now);
 
