@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using backend.DTOs.Auth;
 using backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers.Admin;
@@ -87,5 +89,25 @@ public class AdminAuthController: ControllerBase
         CreateTokenCookies(newTokens.AccessToken, newTokens.RefreshToken);
 
         return Ok(new { message = "Tokens refreshed" });
+    }
+
+    [Authorize(Roles = "Admin,Employee")]
+    [HttpGet("me")]
+    public async Task<IActionResult> MeAdmin()
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdString == null || !int.TryParse(userIdString, out int userId))
+        {
+            return Unauthorized();
+        }
+
+        var employeeData = await _authService.MeAdmin(userId);
+
+        if (employeeData == null)
+        {
+            return NotFound(new { message = "Employee not found" });
+        }
+
+        return Ok(employeeData);
     }
 }

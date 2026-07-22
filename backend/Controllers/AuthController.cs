@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using backend.DTOs.Auth;
 using backend.DTOs.Users;
 using backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers;
@@ -113,5 +115,25 @@ public class AuthController: ControllerBase
         CreateTokenCookies(loginResponse!.AccessToken, loginResponse!.RefreshToken);
 
         return Ok(new { message = "Registered successfully" });
+    }
+
+    [Authorize(Roles = "Client")]
+    [HttpGet("me")]
+    public async Task<IActionResult> MeClient()
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdString == null || !int.TryParse(userIdString, out int userId))
+        {
+            return Unauthorized();
+        }
+
+        var clientData = await _authService.MeClient(userId);
+
+        if (clientData == null)
+        {
+            return NotFound(new { message = "Client not found" });
+        }
+
+        return Ok(clientData);
     }
 }
