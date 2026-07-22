@@ -5,6 +5,7 @@ using System.Text;
 using backend.Data;
 using backend.Data.Entities;
 using backend.DTOs.Auth;
+using backend.DTOs.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -183,6 +184,48 @@ public class AuthService: IAuthService
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,
             Role = oldToken.Role
+        };
+    }
+
+    public async Task<CreateClientResponseDto?> MeClient(int userId)
+    {
+        var client = await _context.Clients
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.UserId == userId);
+        
+        if (client == null)
+        {
+            return null;
+        }
+
+        return new CreateClientResponseDto
+        {
+            UserId = client.UserId,
+            FirstName = client.User.FirstName,
+            LastName = client.User.LastName,
+            Email = client.User.Email,
+            PhoneNumber = client.PhoneNumber
+        };
+    }
+
+    public async Task<CreateEmployeeResponseDto?> MeAdmin(int userId)
+    {
+        var employee = await _context.Employees
+            .Include(e => e.User)
+            .FirstOrDefaultAsync(e => e.UserId == userId);
+
+        if (employee == null)
+        {
+            return null;
+        }
+
+        return new CreateEmployeeResponseDto
+        {
+            UserId = employee.UserId,
+            FirstName = employee.User.FirstName,
+            LastName = employee.User.LastName,
+            Email = employee.User.Email,
+            IsAdmin = employee.IsAdmin
         };
     }
 }
