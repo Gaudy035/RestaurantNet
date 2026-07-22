@@ -12,6 +12,7 @@ public class Client
 
     [Required]
     [MaxLength(20)]
+    [MinLength(9)]
     [Column("phone_number")]
     public string PhoneNumber { get; set; } = string.Empty;
 
