@@ -49,6 +49,10 @@ public class Order
     [Column("price")]
     public double Price { get; set; }
 
+    [MaxLength(20)]
+    [Column("phone_number")]
+    public string PhoneNumber { get; set; } = string.Empty;
+
     [Required]
     [Column("payment_method")]
     public PaymentMethod PaymentMethod { get; set; }

@@ -20,10 +20,5 @@ public class Delivery
     [Column("address")]
     public string Address { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(20)]
-    [Column("phone_number")]
-    public string PhoneNumber { get; set; } = string.Empty;
-
     public Order Order { get; set; } = null!;
 }
