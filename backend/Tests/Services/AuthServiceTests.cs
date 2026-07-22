@@ -363,4 +363,87 @@ public class AuthServiceTests: IDisposable
 
         Assert.Null(refreshResult);
     }
+
+    [Fact]
+    public async Task MeClient_WithProperUserId_ReturnsCorrectData()
+    {
+        var client = await SeedClientUser();
+
+        var result = await _authService.MeClient(client.UserId);
+
+        Assert.NotNull(result);
+        Assert.Equal(client.UserId, result.UserId);
+        Assert.Equal("John", result.FirstName);
+        Assert.Equal("Doe", result.LastName);
+        Assert.Equal("john@example.com", result.Email);
+        Assert.Equal("123 123 123", result.PhoneNumber);
+    }
+
+    [Fact]
+    public async Task MeClient_WithEmployeeUser_ReturnsNull()
+    {
+        var employee = await SeedEmployeeUser(false);
+
+        var result = await _authService.MeClient(employee.UserId);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task MeClient_WithIncorrectId_ReturnsNull()
+    {
+        // Random number not corresponding to any user in db
+        var result = await _authService.MeClient(9);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task MeAdmin_WithCorrectIdOfAdmin_ReturnsCorrectData()
+    {
+        var admin = await SeedEmployeeUser(true);
+
+        var result = await _authService.MeAdmin(admin.UserId);
+
+        Assert.NotNull(result);
+        Assert.Equal(admin.UserId, result.UserId);
+        Assert.Equal("Jane", result.FirstName);
+        Assert.Equal("Doe", result.LastName);
+        Assert.Equal("jane@example.com", result.Email);
+        Assert.True(result.IsAdmin);
+    }
+    
+    [Fact]
+    public async Task MeAdmin_WithCorrectIdOfNonAdmin_ReturnsCorrectData()
+    {
+        var admin = await SeedEmployeeUser(false);
+
+        var result = await _authService.MeAdmin(admin.UserId);
+
+        Assert.NotNull(result);
+        Assert.Equal(admin.UserId, result.UserId);
+        Assert.Equal("Jane", result.FirstName);
+        Assert.Equal("Doe", result.LastName);
+        Assert.Equal("jane@example.com", result.Email);
+        Assert.False(result.IsAdmin);
+    }
+
+    [Fact]
+    public async Task MeAdmin_WithClientId_ReturnsNull()
+    {
+        var client = await SeedClientUser();
+
+        var result = await _authService.MeAdmin(client.UserId);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task MeAdmin_WithIncorrectId_ReturnsNull()
+    {
+        // Random number not corresponding to any user in db
+        var result = await _authService.MeAdmin(9);
+
+        Assert.Null(result);
+    }
 }
