@@ -11,6 +11,10 @@ public class MenuItem
     public int ItemId { get; set; }
 
     [Required]
+    [Column("category_id")]
+    public int CategoryId { get; set; }
+
+    [Required]
     [MaxLength(128)]
     [Column("name")]
     public string Name { get; set; } = string.Empty;
@@ -22,6 +26,8 @@ public class MenuItem
 
     [Column("is_available")]
     public bool IsAvailable { get; set; }
+
+    public Category Category { get; set; } = null!;
 
     public ICollection<ItemIngredient> ItemIngredients { get; set; } = new List<ItemIngredient>();
 
