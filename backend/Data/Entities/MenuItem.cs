@@ -24,8 +24,15 @@ public class MenuItem
     [Column("price")]
     public double Price { get; set; }
 
+    [MaxLength(2048)]
+    [Column("image_url")]
+    public string? ImageUrl { get; set; }
+
     [Column("is_available")]
     public bool IsAvailable { get; set; }
+
+    [Column("is_pinned")]
+    public bool IsPinned { get; set; }
 
     public Category Category { get; set; } = null!;
 
