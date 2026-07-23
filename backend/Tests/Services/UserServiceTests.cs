@@ -162,6 +162,51 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindClient("ack");
 
-        Assert.NotEmpty(result);
+        Assert.Single(result);
+
+        var client = result.Single();
+
+        Assert.Equal("Jack", client.FirstName);
+        Assert.Equal("Jackson", client.LastName);
+        Assert.Equal("jack@example.com", client.Email);
+    }
+
+    [Fact]
+    public async Task FindClient_WithMultipleMatches_ReturnsMultipleClients()
+    {
+        var client1 = await SeedClientUser();
+        var client2 = await SeedClientUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        var client3 = await SeedClientUser(firstName: "John", lastName: "Jackson", email: "john2@example.com");
+
+        var result = await _userService.FindClient("john");
+
+        Assert.Equal(2, result.Count());
+        Assert.Contains(result, c => c.UserId == client1.UserId);
+        Assert.DoesNotContain(result, c => c.UserId == client2.UserId);
+        Assert.Contains(result, c => c.UserId == client3.UserId);
+    }
+
+    [Fact]
+    public async Task FindClient_WithMatchingCombinedNameString_ReturnsRightClient()
+    {
+        var client1 = await SeedClientUser();
+        var client2 = await SeedClientUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+
+        var result = await _userService.FindClient("john doe");
+
+        Assert.Single(result);
+        Assert.Contains(result, c => c.UserId == client1.UserId);
+        Assert.DoesNotContain(result, c => c.UserId == client2.UserId);
+    }
+
+    [Fact]
+    public async Task FindClient_WithoutMatches_ReturnsEmpty()
+    {
+        await SeedClientUser();
+        await SeedClientUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+
+        var result = await _userService.FindClient("someRandomParameter");
+
+        Assert.Empty(result);
     }
 }
