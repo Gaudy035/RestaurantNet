@@ -107,11 +107,11 @@ public class UserService: IUserService
 
         if (!string.IsNullOrWhiteSpace(parameter))
         {
-            var par = $"%{parameter}%";
+            var par = $"%{parameter.ToLower()}%";
             query = query.Where(c => 
-                EF.Functions.ILike(c.User.FirstName + " " + c.User.LastName, par) ||
-                EF.Functions.ILike(c.User.LastName + " " + c.User.FirstName, par) ||
-                EF.Functions.ILike(c.User.Email, par)
+                EF.Functions.Like(c.User.FirstName.ToLower() + " " + c.User.LastName.ToLower(), par) ||
+                EF.Functions.Like(c.User.LastName.ToLower() + " " + c.User.FirstName.ToLower(), par) ||
+                EF.Functions.Like(c.User.Email.ToLower(), par)
             );
         }
 
@@ -131,11 +131,11 @@ public class UserService: IUserService
         
         if (!string.IsNullOrWhiteSpace(parameter))
         {
-            var par = $"%{parameter}%";
+            var par = $"%{parameter.ToLower()}%";
             query = query.Where(e =>
-                EF.Functions.ILike(e.User.FirstName + " " + e.User.LastName, par) ||
-                EF.Functions.ILike(e.User.LastName + " " + e.User.FirstName, par) ||
-                EF.Functions.ILike(e.User.Email, par)
+                EF.Functions.Like(e.User.FirstName.ToLower() + " " + e.User.LastName.ToLower(), par) ||
+                EF.Functions.Like(e.User.LastName.ToLower() + " " + e.User.FirstName.ToLower(), par) ||
+                EF.Functions.Like(e.User.Email.ToLower(), par)
             );
         }
 
