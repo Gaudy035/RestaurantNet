@@ -14,7 +14,7 @@ public class UserService: IUserService
         _context = context;
     }
 
-    public async Task<CreateClientResponseDto?> CreateClient(CreateClientDto dto)
+    public async Task<ClientResponseDto?> CreateClient(CreateClientDto dto)
     {
         var emailTaken = await _context.Users
             .AnyAsync(u => u.Email == dto.Email);
@@ -47,7 +47,7 @@ public class UserService: IUserService
             return null;
         }
 
-        return new CreateClientResponseDto
+        return new ClientResponseDto
         {
             UserId = newClient.Entity.UserId,
             FirstName = newClient.Entity.User.FirstName,
@@ -57,7 +57,7 @@ public class UserService: IUserService
         };
     }
 
-    public async Task<CreateEmployeeResponseDto?> CreateEmployee (CreateEmployeeDto dto)
+    public async Task<EmployeeResponseDto?> CreateEmployee (CreateEmployeeDto dto)
     {
         var emailTaken = await _context.Users
             .AnyAsync(u => u.Email == dto.Email);
@@ -90,7 +90,7 @@ public class UserService: IUserService
             return null;
         }
 
-        return new CreateEmployeeResponseDto
+        return new EmployeeResponseDto
         {
             UserId = newEmployee.Entity.UserId,
             FirstName = newEmployee.Entity.User.FirstName,

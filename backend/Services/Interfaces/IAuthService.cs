@@ -11,7 +11,7 @@ public interface IAuthService
 
     Task<LoginResponseDto?> Refresh(string refreshTokenValue);
 
-    Task<CreateClientResponseDto?> MeClient(int userId);
+    Task<ClientResponseDto?> MeClient(int userId);
 
-    Task<CreateEmployeeResponseDto?> MeAdmin(int userId);
+    Task<EmployeeResponseDto?> MeAdmin(int userId);
 }

@@ -1,6 +1,6 @@
 namespace backend.DTOs.Users;
 
-public class CreateEmployeeResponseDto
+public class ClientResponseDto
 {
     public int UserId { get; set; }
     
@@ -10,5 +10,5 @@ public class CreateEmployeeResponseDto
 
     public string Email { get; set; } = string.Empty;
 
-    public bool IsAdmin { get; set; }
+    public string PhoneNumber { get; set; } = string.Empty;
 }

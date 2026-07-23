@@ -187,7 +187,7 @@ public class AuthService: IAuthService
         };
     }
 
-    public async Task<CreateClientResponseDto?> MeClient(int userId)
+    public async Task<ClientResponseDto?> MeClient(int userId)
     {
         var client = await _context.Clients
             .Include(c => c.User)
@@ -198,7 +198,7 @@ public class AuthService: IAuthService
             return null;
         }
 
-        return new CreateClientResponseDto
+        return new ClientResponseDto
         {
             UserId = client.UserId,
             FirstName = client.User.FirstName,
@@ -208,7 +208,7 @@ public class AuthService: IAuthService
         };
     }
 
-    public async Task<CreateEmployeeResponseDto?> MeAdmin(int userId)
+    public async Task<EmployeeResponseDto?> MeAdmin(int userId)
     {
         var employee = await _context.Employees
             .Include(e => e.User)
@@ -219,7 +219,7 @@ public class AuthService: IAuthService
             return null;
         }
 
-        return new CreateEmployeeResponseDto
+        return new EmployeeResponseDto
         {
             UserId = employee.UserId,
             FirstName = employee.User.FirstName,
