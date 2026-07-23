@@ -209,4 +209,91 @@ public class UserServiceTests: IDisposable
 
         Assert.Empty(result);
     }
+
+    [Fact]
+    public async Task FindClient_WithMatchInEmployees_ReturnsEmpty()
+    {
+        var employee = await SeedEmployeeUser();
+
+        var result = await _userService.FindClient(employee.User.FirstName);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task FindEmployee_WithNoParameter_ReturnsAllEmployees()
+    {
+        await SeedEmployeeUser();
+        await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        
+        var result = await _userService.FindEmployee(null);
+
+        Assert.Equal(2, result.Count());
+    }
+
+    [Fact]
+    public async Task FindEmployee_WithProperName_ReturnsRightEmployee()
+    {
+        await SeedEmployeeUser();
+        await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+
+        var result = await _userService.FindEmployee("ack");
+
+        Assert.Single(result);
+        
+        var employee = result.Single();
+
+        Assert.Equal("Jack", employee.FirstName);
+        Assert.Equal("Jackson", employee.LastName);
+        Assert.Equal("jack@example.com", employee.Email);
+    }
+
+    [Fact]
+    public async Task FindEmployee_WithMultipleMatches_ReturnsAllMatchingEmployees()
+    {
+        var employee1 = await SeedEmployeeUser();
+        var employee2 = await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        var employee3 = await SeedEmployeeUser(firstName: "John", lastName: "Doe", email: "john@example.com");
+
+        var result = await _userService.FindEmployee("doe");
+
+        Assert.Equal(2, result.Count());
+        Assert.Contains(result, e => e.UserId == employee1.UserId);
+        Assert.DoesNotContain(result, e => e.UserId == employee2.UserId);
+        Assert.Contains(result, e => e.UserId == employee3.UserId);
+    }
+
+    [Fact]
+    public async Task FindEmployee_WithMatchingCombinedNameString_ReturnsRightEmployee()
+    {
+        var employee1 = await SeedEmployeeUser();
+        var employee2 = await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+
+        var result = await _userService.FindEmployee("jane doe");
+
+        Assert.Single(result);
+        Assert.Contains(result, e => e.UserId == employee1.UserId);
+        Assert.DoesNotContain(result, e => e.UserId == employee2.UserId);
+    }
+
+    [Fact]
+    public async Task FindEmployee_WithoutMatches_ReturnsEmpty()
+    {
+        await SeedEmployeeUser();
+        await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+
+        var result = await _userService.FindEmployee("someRandomParameter");
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task FindEmployee_WithMatchInClients_ReturnsEmpty()
+    {
+        var client = await SeedClientUser();
+
+        var result = await _userService.FindEmployee(client.User.FirstName);
+
+        Assert.Empty(result);
+    }
 }
