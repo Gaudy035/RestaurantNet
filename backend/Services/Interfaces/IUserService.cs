@@ -1,4 +1,3 @@
-using backend.Data.Entities;
 using backend.DTOs.Users;
 
 namespace backend.Services;

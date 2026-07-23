@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using backend.Data;
 using backend.Data.Entities;
 using backend.DTOs.Users;
