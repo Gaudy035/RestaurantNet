@@ -1,4 +1,5 @@
 using backend.Data;
+using backend.Data.Entities;
 using backend.DTOs.Users;
 using backend.Services;
 using backend.Tests.Helpers;
@@ -22,6 +23,46 @@ public class UserServiceTests: IDisposable
     {
         _context.Dispose();
         _connection.Dispose();
+    }
+
+    private async Task<Client> SeedClientUser(string firstName = "John", string lastName = "Doe", string email = "john@example.com", string password = "password1234", string phoneNumber = "123 456 789")
+    {
+        var newClient = new Client
+        {
+            PhoneNumber = phoneNumber,
+            User = new User
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                Password = BCrypt.Net.BCrypt.HashPassword(password)
+            }
+        };
+
+        _context.Clients.Add(newClient);
+        await _context.SaveChangesAsync();
+
+        return newClient;
+    }
+
+    private async Task<Employee> SeedEmployeeUser(string firstName = "Jane", string lastName = "Doe", string email = "jane@example.com", string password = "password1234", bool isAdmin = false)
+    {
+        var newEmployee = new Employee
+        {
+            IsAdmin = isAdmin,
+            User = new User
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                Password = BCrypt.Net.BCrypt.HashPassword(password)
+            }
+        };
+
+        _context.Employees.Add(newEmployee);
+        await _context.SaveChangesAsync();
+
+        return newEmployee;
     }
 
     [Fact]
@@ -100,5 +141,27 @@ public class UserServiceTests: IDisposable
         var secondEmployee = await _userService.CreateEmployee(dto);
 
         Assert.Null(secondEmployee);
+    }
+
+    [Fact]
+    public async Task FindClient_WithNoParameter_ReturnsAllClients()
+    {
+        await SeedClientUser();
+        await SeedClientUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+
+        var result = await _userService.FindClient(null);
+
+        Assert.Equal(2, result.Count());
+    }
+
+    [Fact]
+    public async Task FindClient_WithProperName_ReturnsRightClient()
+    {
+        await SeedClientUser();
+        await SeedClientUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+
+        var result = await _userService.FindClient("ack");
+
+        Assert.NotEmpty(result);
     }
 }
