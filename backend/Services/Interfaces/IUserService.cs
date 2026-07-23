@@ -8,4 +8,8 @@ public interface IUserService
     Task<ClientResponseDto?> CreateClient(CreateClientDto dto);
 
     Task<EmployeeResponseDto?> CreateEmployee(CreateEmployeeDto dto);
+
+    Task<IEnumerable<ClientResponseDto>> FindClient(string? parameter);
+
+    Task<IEnumerable<EmployeeResponseDto>> FindEmployee(string? parameter);
 }

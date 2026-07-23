@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using backend.Data;
 using backend.Data.Entities;
 using backend.DTOs.Users;
@@ -98,5 +99,53 @@ public class UserService: IUserService
             Email = newEmployee.Entity.User.Email,
             IsAdmin = newEmployee.Entity.IsAdmin
         };
+    }
+
+    public async Task<IEnumerable<ClientResponseDto>> FindClient(string? parameter)
+    {
+        var query = _context.Clients.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(parameter))
+        {
+            var par = $"%{parameter}%";
+            query = query.Where(c => 
+                EF.Functions.ILike($"{c.User.FirstName} {c.User.LastName}", par) ||
+                EF.Functions.ILike($"{c.User.LastName} {c.User.FirstName}", par) ||
+                EF.Functions.ILike(c.User.Email, par)
+            );
+        }
+
+        return await query.Select(c => new ClientResponseDto
+        {
+            UserId = c.UserId,
+            FirstName = c.User.FirstName,
+            LastName = c.User.LastName,
+            Email = c.User.Email,
+            PhoneNumber = c.PhoneNumber
+        }).ToListAsync();
+    }
+
+    public async Task<IEnumerable<EmployeeResponseDto>> FindEmployee(string? parameter)
+    {
+        var query = _context.Employees.AsQueryable();
+        
+        if (!string.IsNullOrWhiteSpace(parameter))
+        {
+            var par = $"%{parameter}%";
+            query = query.Where(e =>
+                EF.Functions.ILike($"{e.User.FirstName} {e.User.LastName}", par) ||
+                EF.Functions.ILike($"{e.User.LastName} {e.User.FirstName}", par) ||
+                EF.Functions.ILike(e.User.Email, par)
+            );
+        }
+
+        return await query.Select(e => new EmployeeResponseDto
+        {
+            UserId = e.UserId,
+            FirstName = e.User.FirstName,
+            LastName = e.User.LastName,
+            Email = e.User.Email,
+            IsAdmin = e.IsAdmin
+        }).ToListAsync();
     }
 }
