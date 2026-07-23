@@ -109,8 +109,8 @@ public class UserService: IUserService
         {
             var par = $"%{parameter}%";
             query = query.Where(c => 
-                EF.Functions.ILike($"{c.User.FirstName} {c.User.LastName}", par) ||
-                EF.Functions.ILike($"{c.User.LastName} {c.User.FirstName}", par) ||
+                EF.Functions.ILike(c.User.FirstName + " " + c.User.LastName, par) ||
+                EF.Functions.ILike(c.User.LastName + " " + c.User.FirstName, par) ||
                 EF.Functions.ILike(c.User.Email, par)
             );
         }
@@ -133,8 +133,8 @@ public class UserService: IUserService
         {
             var par = $"%{parameter}%";
             query = query.Where(e =>
-                EF.Functions.ILike($"{e.User.FirstName} {e.User.LastName}", par) ||
-                EF.Functions.ILike($"{e.User.LastName} {e.User.FirstName}", par) ||
+                EF.Functions.ILike(e.User.FirstName + " " + e.User.LastName, par) ||
+                EF.Functions.ILike(e.User.LastName + " " + e.User.FirstName, par) ||
                 EF.Functions.ILike(e.User.Email, par)
             );
         }
