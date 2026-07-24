@@ -43,4 +43,22 @@ public class AdminUserController: ControllerBase
 
         return Ok(newClient);
     }
+
+    [Authorize(Roles = "Admin,Employee")]
+    [HttpGet("clients")]
+    public async Task<IActionResult> GetClients([FromQuery] string? param)
+    {
+        var foundClients = await _userService.FindClient(param);
+
+        return Ok(foundClients);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("employees")]
+    public async Task<IActionResult> GetEmployees([FromQuery] string? param)
+    {
+        var foundEmployees = await _userService.FindEmployee(param);
+
+        return Ok(foundEmployees);
+    }
 }
