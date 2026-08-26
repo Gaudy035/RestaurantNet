@@ -19,18 +19,20 @@ public class AdminAuthController: ControllerBase
 
     private void CreateTokenCookies(string accessToken, string refreshToken)
     {
-        Response.Cookies.Append("access_token", accessToken, new CookieOptions
+        Response.Cookies.Append("admin_access_token", accessToken, new CookieOptions
         {
             HttpOnly = true,
             Secure = false,
+            Path = "/admin",
             Expires = DateTime.UtcNow.AddMinutes(15),
             SameSite = SameSiteMode.Lax
         });
         
-        Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
+        Response.Cookies.Append("admin_refresh_token", refreshToken, new CookieOptions
         {
             HttpOnly = true,
             Secure = false,
+            Path = "/admin/auth/refresh",
             Expires = DateTime.UtcNow.AddHours(12),
             SameSite = SameSiteMode.Lax
         });
@@ -38,13 +40,17 @@ public class AdminAuthController: ControllerBase
 
     private async Task RemoveTokenCookies()
     {
-        var refreshTokenValue = Request.Cookies["refresh_token"];
+        var refreshTokenValue = Request.Cookies["admin_refresh_token"];
         if (!string.IsNullOrEmpty(refreshTokenValue))
         {
             await _authService.RevokeToken(refreshTokenValue);
         }
-        Response.Cookies.Delete("access_token");
-        Response.Cookies.Delete("refresh_token");
+        Response.Cookies.Delete("admin_access_token", new CookieOptions{
+            Path = "/admin"
+        });
+        Response.Cookies.Delete("admin_refresh_token", new CookieOptions{
+            Path = "/admin/auth/refresh"
+        });
     }
 
     [HttpPost("login")]
@@ -71,7 +77,7 @@ public class AdminAuthController: ControllerBase
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh()
     {
-        var refreshTokenValue = Request.Cookies["refresh_token"];
+        var refreshTokenValue = Request.Cookies["admin_refresh_token"];
         
         if (string.IsNullOrEmpty(refreshTokenValue))
         {
