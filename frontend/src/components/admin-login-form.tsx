@@ -41,7 +41,7 @@ export function AdminLoginForm({
       router.refresh();
     } catch (err: any) {
       console.log('API error' + err?.message);
-      setError(err?.message || 'Incorrect credentials');
+      setError('Incorrect credentials');
     }
   };
 
@@ -54,7 +54,9 @@ export function AdminLoginForm({
             <ModeToggle></ModeToggle>
           </div>
           <CardDescription>
-            Enter your email below to login to your account
+            {error === null
+              ? 'Enter your email below to login to your account'
+              : error}
           </CardDescription>
         </CardHeader>
         <CardContent>
