@@ -1,5 +1,6 @@
 import React from 'react';
 import ModeToggle from '@/components/ui/mode-toggle';
+import AdminLogoutButton from '@/components/ui/admin-logout-button';
 
 export default function AdminLayout({
   children,
@@ -9,6 +10,7 @@ export default function AdminLayout({
   return (
     <div className='flex min-h-screen'>
       <ModeToggle></ModeToggle>
+      <AdminLogoutButton></AdminLogoutButton>
       <main className='flex flex-1 justify-center items-center'>
         {children}
       </main>
