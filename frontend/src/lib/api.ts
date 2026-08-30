@@ -9,6 +9,21 @@ const createApiFetch = (surface: 'admin' | 'store') => {
     surface === 'admin' ? '/admin/auth/refresh' : '/auth/refresh';
   const loginPath = surface === 'admin' ? '/admin/login' : '/login';
 
+  let refreshPromise: Promise<boolean> | null = null;
+
+  const refresh = (): Promise<boolean> => {
+    if (!refreshPromise) {
+      refreshPromise = fetch(`${BASE_URL}${refreshEndpoint}`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+        .then((res) => res.ok)
+        .catch(() => false)
+        .finally(() => (refreshPromise = null));
+    }
+    return refreshPromise;
+  };
+
   return async function apiFetch(endpoint: string, options: RequestInit = {}) {
     const defaultHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -26,12 +41,9 @@ const createApiFetch = (surface: 'admin' | 'store') => {
         throw new Error('Session expired');
       }
 
-      const refreshResponse = await fetch(`${BASE_URL}${refreshEndpoint}`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+      const refreshed = await refresh();
 
-      if (!refreshResponse.ok) {
+      if (!refreshed) {
         window.location.href = loginPath;
         throw new Error('Session expired');
       }
