@@ -7,6 +7,8 @@ const BASE_URL = isServer
 const createApiFetch = (surface: 'admin' | 'store') => {
   const refreshEndpoint =
     surface === 'admin' ? '/admin/auth/refresh' : '/auth/refresh';
+  const loginEndpoint =
+    surface === 'admin' ? '/admin/auth/login' : '/auth/login';
   const loginPath = surface === 'admin' ? '/admin/login' : '/login';
 
   let refreshPromise: Promise<boolean> | null = null;
@@ -35,7 +37,7 @@ const createApiFetch = (surface: 'admin' | 'store') => {
       headers: { ...defaultHeaders, ...options.headers },
     });
 
-    if (response.status === 401) {
+    if (response.status === 401 && endpoint !== loginEndpoint) {
       if (endpoint === refreshEndpoint) {
         window.location.href = loginPath;
         throw new Error('Session expired');
