@@ -4,6 +4,7 @@ using backend.DTOs.Users;
 using backend.Services;
 using backend.Tests.Helpers;
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Tests.Services;
 
@@ -295,5 +296,69 @@ public class UserServiceTests: IDisposable
         var result = await _userService.FindEmployee(client.User.FirstName);
 
         Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task DeleteClient_WithCorrectId_DeletesAndReturnsTrue()
+    {
+        var client = await SeedClientUser();
+
+        var countBefore = await _context.Clients.CountAsync();
+
+        Assert.Equal(1, countBefore);
+
+        var result = await _userService.DeleteClient(client.UserId);
+        var countAfter = await _context.Users.CountAsync();
+
+        Assert.True(result);
+        Assert.Equal(0, countAfter);
+    }
+
+    [Fact]
+    public async Task DeleteClient_WithNoMatch_DoesntDeleteAndReturnsFalse()
+    {
+        var client = await SeedClientUser();
+
+        var countBefore = await _context.Clients.CountAsync();
+
+        Assert.Equal(1, countBefore);
+
+        var result = await _userService.DeleteClient(99);
+        var countAfter = await _context.Users.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(countBefore, countAfter);
+    }
+
+    [Fact]
+    public async Task DeleteEmployee_WithCorrectId_DeletesAndReturnsTrue()
+    {
+        var employee = await SeedEmployeeUser();
+
+        var countBefore = await _context.Employees.CountAsync();
+
+        Assert.Equal(1, countBefore);
+
+        var result = await _userService.DeleteEmployee(employee.UserId);
+        var countAfter = await _context.Users.CountAsync();
+
+        Assert.True(result);
+        Assert.Equal(0, countAfter);
+    }
+
+    [Fact]
+    public async Task DeleteEmployee_WithNoMatch_DoesntDeleteAndReturnsFalse()
+    {
+        var employee = await SeedEmployeeUser();
+
+        var countBefore = await _context.Employees.CountAsync();
+
+        Assert.Equal(1, countBefore);
+
+        var result = await _userService.DeleteEmployee(99);
+        var countAfter = await _context.Users.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(countBefore, countAfter);
     }
 }
