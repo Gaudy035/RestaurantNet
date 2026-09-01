@@ -11,4 +11,8 @@ public interface IUserService
     Task<IEnumerable<ClientResponseDto>> FindClient(string? parameter);
 
     Task<IEnumerable<EmployeeResponseDto>> FindEmployee(string? parameter);
+
+    Task<bool> DeleteClient(int clientId);
+    
+    Task<bool> DeleteEmployee(int employeeId);
 }

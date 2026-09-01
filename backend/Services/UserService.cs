@@ -147,4 +147,48 @@ public class UserService: IUserService
             IsAdmin = e.IsAdmin
         }).ToListAsync();
     }
+
+    public async Task<bool> DeleteClient(int clientId)
+    {
+        var client = await _context.Clients.FindAsync(clientId);
+
+        if (client == null)
+        {
+            return false;
+        }
+
+        _context.Clients.Remove(client);
+
+        try
+        {
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (DbUpdateException)
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteEmployee(int employeeId)
+    {
+        var employee = await _context.Employees.FindAsync(employeeId);
+
+        if (employee == null)
+        {
+            return false;
+        }
+
+        _context.Employees.Remove(employee);
+
+        try
+        {
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (DbUpdateException)
+        {
+            return false;
+        }
+    }
 }
