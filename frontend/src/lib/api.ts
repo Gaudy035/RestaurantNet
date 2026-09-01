@@ -1,3 +1,5 @@
+import { redirect } from 'next/navigation';
+
 const isServer = typeof window === 'undefined';
 
 const BASE_URL = isServer
@@ -39,14 +41,22 @@ const createApiFetch = (surface: 'admin' | 'store') => {
 
     if (response.status === 401 && endpoint !== loginEndpoint) {
       if (endpoint === refreshEndpoint) {
-        window.location.href = loginPath;
+        if (isServer) {
+          redirect(loginPath);
+        } else {
+          window.location.href = loginPath;
+        }
         throw new Error('Session expired');
       }
 
       const refreshed = await refresh();
 
       if (!refreshed) {
-        window.location.href = loginPath;
+        if (isServer) {
+          redirect(loginPath);
+        } else {
+          window.location.href = loginPath;
+        }
         throw new Error('Session expired');
       }
 
