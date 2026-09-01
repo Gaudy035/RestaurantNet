@@ -61,4 +61,32 @@ public class AdminUserController: ControllerBase
 
         return Ok(foundEmployees);
     }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("clients/{clientId:int}")]
+    public async Task<IActionResult> DeleteClient([FromRoute] int clientId)
+    {
+        var success = await _userService.DeleteClient(clientId);
+
+        if (!success)
+        {
+            return NotFound(new { detail = $"Client with ID {clientId} doesn't exist." });
+        }
+
+        return NoContent();
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("employees/{employeeId:int}")]
+    public async Task<IActionResult> DeleteEmployee([FromRoute] int employeeId)
+    {
+        var success = await _userService.DeleteEmployee(employeeId);
+
+        if (!success)
+        {
+            return NotFound(new { detail = $"Employee with ID {employeeId} doesn't exist." });
+        }
+
+        return NoContent();
+    }
 }
