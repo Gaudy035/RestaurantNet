@@ -150,14 +150,16 @@ public class UserService: IUserService
 
     public async Task<bool> DeleteClient(int clientId)
     {
-        var client = await _context.Clients.FindAsync(clientId);
+        var client = await _context.Clients
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.UserId == clientId);
 
         if (client == null)
         {
             return false;
         }
 
-        _context.Clients.Remove(client);
+        _context.Users.Remove(client.User);
 
         try
         {
@@ -172,14 +174,16 @@ public class UserService: IUserService
 
     public async Task<bool> DeleteEmployee(int employeeId)
     {
-        var employee = await _context.Employees.FindAsync(employeeId);
+        var employee = await _context.Employees
+            .Include(e => e.User)
+            .FirstOrDefaultAsync(e => e.UserId == employeeId);
 
         if (employee == null)
         {
             return false;
         }
 
-        _context.Employees.Remove(employee);
+        _context.Users.Remove(employee.User);
 
         try
         {
