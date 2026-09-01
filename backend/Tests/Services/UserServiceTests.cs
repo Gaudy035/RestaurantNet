@@ -309,9 +309,11 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.DeleteClient(client.UserId);
         var countAfter = await _context.Users.CountAsync();
+        var countAfter2 = await _context.Clients.CountAsync();
 
         Assert.True(result);
         Assert.Equal(0, countAfter);
+        Assert.Equal(0, countAfter2);
     }
 
     [Fact]
@@ -324,6 +326,24 @@ public class UserServiceTests: IDisposable
         Assert.Equal(1, countBefore);
 
         var result = await _userService.DeleteClient(99);
+        var countAfter = await _context.Users.CountAsync();
+        var countAfter2 = await _context.Clients.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(countBefore, countAfter);
+        Assert.Equal(countBefore, countAfter2);
+    }
+
+    [Fact]
+    public async Task DeleteClient_WithMatchInEmployees_DoesntDeleteAndReturnsFalse()
+    {
+        var employee = await SeedEmployeeUser();
+
+        var countBefore = await _context.Users.CountAsync();
+
+        Assert.Equal(1, countBefore);
+
+        var result = await _userService.DeleteClient(employee.UserId);
         var countAfter = await _context.Users.CountAsync();
 
         Assert.False(result);
@@ -341,9 +361,11 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.DeleteEmployee(employee.UserId);
         var countAfter = await _context.Users.CountAsync();
-
+        var countAfter2 = await _context.Employees.CountAsync();
+        
         Assert.True(result);
         Assert.Equal(0, countAfter);
+        Assert.Equal(0, countAfter2);
     }
 
     [Fact]
@@ -356,6 +378,24 @@ public class UserServiceTests: IDisposable
         Assert.Equal(1, countBefore);
 
         var result = await _userService.DeleteEmployee(99);
+        var countAfter = await _context.Users.CountAsync();
+        var countAfter2 = await _context.Employees.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(countBefore, countAfter);
+        Assert.Equal(countBefore, countAfter2);
+    }
+
+     [Fact]
+    public async Task DeleteEmployee_WithMatchInClients_DoesntDeleteAndReturnsFalse()
+    {
+        var client = await SeedClientUser();
+
+        var countBefore = await _context.Users.CountAsync();
+
+        Assert.Equal(1, countBefore);
+
+        var result = await _userService.DeleteEmployee(client.UserId);
         var countAfter = await _context.Users.CountAsync();
 
         Assert.False(result);
