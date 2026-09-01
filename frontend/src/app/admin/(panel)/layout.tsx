@@ -29,9 +29,7 @@ export default function AdminLayout({
             <AdminLogoutButton />
           </div>
         </header>
-        <main className='flex flex-1 justify-center items-center'>
-          {children}
-        </main>
+        <main className='flex flex-1 flex-col'>{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

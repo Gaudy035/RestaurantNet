@@ -8,8 +8,10 @@ export default async function AdminClientsPage({
 }) {
   const { param } = await searchParams;
   return (
-    <div>
-      <AdminClientsSearchBar val={param} />
+    <div className='flex flex-1 flex-col'>
+      <div className='flex justify-end items-center'>
+        <AdminClientsSearchBar val={param} />
+      </div>
       That's the client page
       <AdminClientsMain clientData={param} />
     </div>
