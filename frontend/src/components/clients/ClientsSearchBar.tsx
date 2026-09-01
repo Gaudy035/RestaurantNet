@@ -24,7 +24,7 @@ export default function AdminClientsSearchBar({ val }: { val?: string }) {
   return (
     <form
       onSubmit={onSubmit}
-      className='flex items-center justify-center gap-2 m-4'
+      className='flex items-center justify-center gap-2'
     >
       <Input
         placeholder='Enter client data...'
