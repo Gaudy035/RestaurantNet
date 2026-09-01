@@ -30,10 +30,6 @@ const data = {
           title: 'WIP',
           url: '/admin/wip',
         },
-        {
-          title: 'WIP2',
-          url: '/admin/wip2',
-        },
       ],
     },
   ],
