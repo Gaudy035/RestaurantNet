@@ -61,9 +61,13 @@ builder.Services.AddAuthentication(options =>
     {
         OnMessageReceived = context =>
         {
-            if (context.Request.Cookies.ContainsKey("access_token"))
+            if (context.Request.Cookies.ContainsKey("admin_access_token"))
             {
-                context.Token = context.Request.Cookies["access_token"];
+                context.Token = context.Request.Cookies["admin_access_token"];
+            }
+            else if (context.Request.Cookies.ContainsKey("client_access_token"))
+            {
+                context.Token = context.Request.Cookies["client_access_token"];
             }
             return Task.CompletedTask;
         }
