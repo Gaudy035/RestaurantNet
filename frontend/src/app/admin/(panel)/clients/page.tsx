@@ -11,19 +11,21 @@ export default async function AdminClientsPage({
 }) {
   const { param } = await searchParams;
   return (
-    <div className='flex flex-1 flex-col'>
-      <div className='flex justify-end items-center gap-2 m-4'>
-        <AdminClientsSearchBar val={param} />
-        <Link
-          href='/admin/clients/add'
-          className={cn(
-            buttonVariants({ variant: 'default', size: 'default' }),
-          )}
-        >
-          Add new user
-        </Link>
+    <div className='flex flex-1 flex-col m-4'>
+      <div className='flex justify-between items-center'>
+        <h1 className='text-2xl'>Clients</h1>
+        <div className='flex justify-end items-center gap-2'>
+          <AdminClientsSearchBar val={param} />
+          <Link
+            href='/admin/clients/add'
+            className={cn(
+              buttonVariants({ variant: 'default', size: 'default' }),
+            )}
+          >
+            Add new user
+          </Link>
+        </div>
       </div>
-      That's the client page
       <AdminClientsMain clientData={param} />
     </div>
   );
