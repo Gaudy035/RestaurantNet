@@ -6,6 +6,20 @@ const BASE_URL = isServer
   ? process.env.API_URL_SERVER
   : process.env.NEXT_PUBLIC_API_URL_CLIENT;
 
+const parseResponseBody = async (response: Response) => {
+  if (response.status === 204) {
+    return null;
+  }
+
+  const text = await response.text();
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
 const createApiFetch = (surface: 'admin' | 'store') => {
   const refreshEndpoint =
     surface === 'admin' ? '/admin/auth/refresh' : '/auth/refresh';
@@ -66,7 +80,7 @@ const createApiFetch = (surface: 'admin' | 'store') => {
         headers: { ...defaultHeaders, ...options.headers },
       });
 
-      const retryData = await retryResponse.json();
+      const retryData = await parseResponseBody(retryResponse);
 
       if (!retryResponse.ok) {
         throw new Error(retryData?.message || 'API request failed');
@@ -75,7 +89,7 @@ const createApiFetch = (surface: 'admin' | 'store') => {
       return retryData;
     }
 
-    const data = await response.json();
+    const data = await parseResponseBody(response);
 
     if (!response.ok) {
       throw new Error(data?.message || 'API request failed');
