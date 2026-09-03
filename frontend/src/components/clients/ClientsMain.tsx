@@ -3,6 +3,7 @@
 import ClientData from '@/interfaces/ClientData';
 import { adminApiFetch } from '@/lib/api';
 import { useState, useEffect } from 'react';
+import { useEmployee } from '@/lib/employee-context/employee-context';
 
 export default function AdminClientsMain({
   clientData,
@@ -13,6 +14,8 @@ export default function AdminClientsMain({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  const EmployeeContext = useEmployee();
+
   useEffect(() => {
     setLoading(true);
 
@@ -22,9 +25,8 @@ export default function AdminClientsMain({
 
     adminApiFetch(endpoint, { method: 'GET', cache: 'no-store' })
       .then((data) => setClients(data))
-      .catch((e) => setError(e));
-
-    setLoading(false);
+      .catch((e) => setError(e))
+      .finally(() => setLoading(false));
   }, [clientData]);
 
   return (
