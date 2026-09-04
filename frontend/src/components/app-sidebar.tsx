@@ -15,17 +15,14 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
+import { useEmployee } from '@/lib/employee-context';
 
 const data = {
   navMain: [
     {
-      title: 'Test',
+      title: 'Pages',
       url: '#',
       items: [
-        {
-          title: 'Login',
-          url: '/admin/login',
-        },
         {
           title: 'WIP',
           url: '/admin/wip',
@@ -34,6 +31,11 @@ const data = {
           title: 'Clients',
           url: '/admin/clients',
         },
+        {
+          title: 'Employees',
+          url: '/admin/employees',
+          adminOnly: true,
+        },
       ],
     },
   ],
@@ -41,6 +43,8 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const employeeData = useEmployee();
+  const isAdmin = employeeData.employeeData?.isAdmin;
 
   return (
     <Sidebar {...props}>
@@ -55,19 +59,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {item.items.map((item) => {
-                  const isActive = item.url === pathname;
-                  return (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        isActive={isActive}
-                        render={<a href={item.url} />}
-                      >
-                        {item.title}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
+                {item.items
+                  .filter((item) => !item.adminOnly || isAdmin)
+                  .map((item) => {
+                    const isActive = item.url === pathname;
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          isActive={isActive}
+                          render={<a href={item.url} />}
+                        >
+                          {item.title}
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
