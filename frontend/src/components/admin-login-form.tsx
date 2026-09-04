@@ -2,7 +2,7 @@
 
 import ModeToggle from './ui/mode-toggle';
 import { adminApiFetch } from '@/lib/api';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -21,8 +21,13 @@ export function AdminLoginForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [error, setError] = useState<string | null>(
+    searchParams.get('expired') === 'true'
+      ? 'Session expired, login again'
+      : null,
+  );
 
   const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -53,7 +58,7 @@ export function AdminLoginForm({
             <CardTitle>Admin panel</CardTitle>
             <ModeToggle></ModeToggle>
           </div>
-          <CardDescription>
+          <CardDescription className={error ? 'text-destructive' : ''}>
             {error === null
               ? 'Enter your email below to login to your account'
               : error}
