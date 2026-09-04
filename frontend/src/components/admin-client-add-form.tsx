@@ -49,20 +49,11 @@ export function AdminClientAddForm({
         body: JSON.stringify(payload),
       });
 
-      if (!result.ok) {
-        try {
-          const data = await result.json();
-          message = data?.message ?? data?.error ?? message;
-        } catch {}
-        setError(message);
-        return;
-      }
-
       setError(null);
       alert('Client account created');
       router.push('/admin/clients');
-    } catch {
-      setError(message);
+    } catch (err: any) {
+      setError(err?.message ?? 'API error, tru again later');
     }
   };
 

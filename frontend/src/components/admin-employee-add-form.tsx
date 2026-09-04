@@ -39,20 +39,11 @@ export function AdminEmployeeAddForm({
         body: JSON.stringify(payload),
       });
 
-      if (!result.ok) {
-        try {
-          const data = await result.json();
-          message = data?.message ?? data?.error ?? message;
-        } catch {}
-        setError(message);
-        return;
-      }
-
       setError(null);
       alert('Employee account created');
       router.push('/admin/employees');
-    } catch {
-      setError(message);
+    } catch (err: any) {
+      setError(err?.message ?? 'API error, tru again later');
     }
   };
 
