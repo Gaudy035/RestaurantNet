@@ -3,8 +3,7 @@
 import EmployeeData from '@/interfaces/EmployeeData';
 import { adminApiFetch } from '@/lib/api';
 import { useState, useEffect } from 'react';
-import { useEmployee } from '@/lib/employee-context';
-// import EmployeeCard
+import EmployeeCard from './EmployeeCard';
 
 export default function AdminEmployeesMain({
   employeeData,
@@ -14,8 +13,6 @@ export default function AdminEmployeesMain({
   const [employees, setEmployees] = useState<EmployeeData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
-  const EmployeeContext = useEmployee();
 
   const handleEmployeeDelete = (userId: string) => {
     setEmployees((prev) => prev.filter((e) => e.userId !== userId));
@@ -34,8 +31,6 @@ export default function AdminEmployeesMain({
       .finally(() => setLoading(false));
   }, [employeeData]);
 
-  console.log(EmployeeContext);
-
   return (
     <div className='flex justify-center flex-col items-center'>
       <p className='text-destructive'>{error ? error : null}</p>
@@ -44,19 +39,14 @@ export default function AdminEmployeesMain({
       ) : employees.length > 0 ? (
         // Employees found
         <div className='flex flex-col m-8 w-full justify-center items-center gap-4'>
-          {employees.map(
-            (e) => (
-              <p key={e.userId}>{e.firstName}</p>
-            ),
-            // Make it employee card when created
-            // <ClientCard
-            //   key={c.userId}
-            //   clientData={c}
-            //   isAdmin={EmployeeContext.employeeData?.isAdmin ?? false}
-            //   setError={setError}
-            //   handleDelete={handleClientDelete}
-            // />
-          )}
+          {employees.map((e) => (
+            <EmployeeCard
+              key={e.userId}
+              employeeData={e}
+              setError={setError}
+              handleDelete={handleEmployeeDelete}
+            />
+          ))}
         </div>
       ) : (
         // No employees found
