@@ -2,7 +2,7 @@
 
 import ModeToggle from './ui/mode-toggle';
 import { adminApiFetch } from '@/lib/api';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,12 +22,7 @@ export function AdminLoginForm({
   ...props
 }: React.ComponentProps<'div'>) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [error, setError] = useState<string | null>(
-    searchParams.get('expired') === 'true'
-      ? 'Session expired, login again'
-      : null,
-  );
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();

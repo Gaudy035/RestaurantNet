@@ -25,8 +25,7 @@ const createApiFetch = (surface: 'admin' | 'store') => {
     surface === 'admin' ? '/admin/auth/refresh' : '/auth/refresh';
   const loginEndpoint =
     surface === 'admin' ? '/admin/auth/login' : '/auth/login';
-  const loginPath =
-    surface === 'admin' ? '/admin/login?expired=true' : '/login?expired=true';
+  const loginPath = surface === 'admin' ? '/admin/login' : '/login';
 
   let refreshPromise: Promise<boolean> | null = null;
 
