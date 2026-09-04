@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using backend.DTOs.Users;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -80,6 +81,13 @@ public class AdminUserController: ControllerBase
     [HttpDelete("employees/{employeeId:int}")]
     public async Task<IActionResult> DeleteEmployee([FromRoute] int employeeId)
     {
+        var activeAdminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        if (activeAdminId == employeeId)
+        {
+            return BadRequest(new { detail = "You cannot delete your own account" });
+        }
+
         var success = await _userService.DeleteEmployee(employeeId);
 
         if (!success)
