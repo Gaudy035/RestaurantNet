@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext } from 'react';
 import EmployeeData from '@/interfaces/EmployeeData';
-import { adminApiFetch } from '../api';
+import { adminApiFetch } from './api';
 import { useState, useEffect } from 'react';
 
 const EmployeeContext = createContext<{

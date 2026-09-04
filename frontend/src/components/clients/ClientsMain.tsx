@@ -3,7 +3,7 @@
 import ClientData from '@/interfaces/ClientData';
 import { adminApiFetch } from '@/lib/api';
 import { useState, useEffect } from 'react';
-import { useEmployee } from '@/lib/employee-context/employee-context';
+import { useEmployee } from '@/lib/employee-context';
 import ClientCard from './ClientCard';
 
 export default function AdminClientsMain({

@@ -8,7 +8,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { EmployeeProvider } from '@/lib/employee-context/employee-context';
+import { EmployeeProvider } from '@/lib/employee-context';
 
 export default function AdminLayout({
   children,
