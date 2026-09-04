@@ -2,6 +2,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import AdminEmployeesSearchBar from '@/components/employees/EmployeesSearchBar';
+import AdminEmployeesMain from '@/components/employees/EmployeesMain';
 
 export default async function AdminEmployeesPage({
   searchParams,
@@ -25,6 +26,7 @@ export default async function AdminEmployeesPage({
           </Link>
         </div>
       </div>
+      <AdminEmployeesMain employeeData={param} />
     </div>
   );
 }
