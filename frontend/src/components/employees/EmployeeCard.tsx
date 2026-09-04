@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card';
+import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import React from 'react';
 
@@ -23,6 +24,8 @@ export default function EmployeeCard({
   setError: React.Dispatch<React.SetStateAction<string | null>>;
   handleDelete: (userId: string) => void;
 }) {
+  const isSelf = currentId === employeeData.userId;
+
   const deleteUser = async (userId: string) => {
     setError(null);
     try {
@@ -40,9 +43,9 @@ export default function EmployeeCard({
     <Card className='flex w-full py-4'>
       <CardHeader className='flex flex-row justify-between items-center'>
         <div className='flex flex-col justify-center items-start gap-2'>
-          <CardTitle className='flex flex-row gap-2'>
+          <CardTitle className='flex justify-center items-center flex-row gap-2'>
             {employeeData.firstName} {employeeData.lastName}
-            {employeeData.isAdmin ? ' [Administrator]' : null}
+            {employeeData.isAdmin ? <Badge>Administrator</Badge> : null}
           </CardTitle>
           <CardDescription className='flex flex-row justify-center items-center gap-4'>
             <p>Email: {employeeData.email}</p>
@@ -50,23 +53,23 @@ export default function EmployeeCard({
         </div>
 
         <CardAction>
-          {currentId !== employeeData.userId ? (
-            <Button
-              className='font-semibold bg-destructive hover:text-destructive hover:border-destructive hover:bg-primary'
-              size={'lg'}
-              onClick={() => {
-                if (
-                  window.confirm(
-                    `Delete user: ${employeeData.firstName} ${employeeData.lastName} (ID: ${employeeData.userId})?`,
-                  )
-                ) {
-                  deleteUser(employeeData.userId);
-                }
-              }}
-            >
-              Delete
-            </Button>
-          ) : null}
+          <Button
+            variant={isSelf ? 'outline' : 'destructive'}
+            className='font-semibold'
+            size={'lg'}
+            disabled={isSelf}
+            onClick={() => {
+              if (
+                window.confirm(
+                  `Delete user: ${employeeData.firstName} ${employeeData.lastName} (ID: ${employeeData.userId})?`,
+                )
+              ) {
+                deleteUser(employeeData.userId);
+              }
+            }}
+          >
+            {isSelf ? 'You' : 'Delete'}
+          </Button>
         </CardAction>
       </CardHeader>
     </Card>
