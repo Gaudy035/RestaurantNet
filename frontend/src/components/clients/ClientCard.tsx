@@ -51,7 +51,8 @@ export default function ClientCard({
         {isAdmin ? (
           <CardAction>
             <Button
-              className='font-semibold bg-destructive hover:text-destructive hover:border-destructive hover:bg-primary'
+              variant='destructive'
+              className='font-semibold'
               size={'lg'}
               onClick={() => {
                 if (
