@@ -1,6 +1,7 @@
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import AdminEmployeesSearchBar from '@/components/employees/EmployeesSearchBar';
 
 export default async function AdminEmployeesPage({
   searchParams,
@@ -13,6 +14,7 @@ export default async function AdminEmployeesPage({
       <div className='flex justify-between items-center'>
         <h1 className='text-2xl'>Employees</h1>
         <div className='flex justify-end items-center gap-2'>
+          <AdminEmployeesSearchBar val={param} />
           <Link
             href='/admin/employees/add'
             className={cn(
