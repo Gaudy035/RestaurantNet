@@ -34,8 +34,6 @@ export default function AdminClientsMain({
       .finally(() => setLoading(false));
   }, [clientData]);
 
-  console.log(EmployeeContext);
-
   return (
     <div className='flex justify-center flex-col items-center'>
       <p className='text-destructive'>{error ? error : null}</p>
