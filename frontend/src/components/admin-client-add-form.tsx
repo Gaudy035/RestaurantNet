@@ -28,6 +28,7 @@ export function AdminClientAddForm({
 
     const formData = new FormData(e.currentTarget);
     let payload = Object.fromEntries(formData.entries());
+    payload.email = payload.email.toString().trim().toLowerCase();
 
     const phoneNumber = payload.phoneNumber
       .toString()
@@ -41,10 +42,8 @@ export function AdminClientAddForm({
 
     payload.phoneNumber = phoneNumber;
 
-    let message = 'API error, try again later';
-
     try {
-      const result = await adminApiFetch('/admin/user/clients', {
+      await adminApiFetch('/admin/user/clients', {
         method: 'POST',
         body: JSON.stringify(payload),
       });

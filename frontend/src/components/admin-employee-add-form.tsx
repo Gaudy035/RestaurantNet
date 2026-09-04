@@ -28,13 +28,12 @@ export function AdminEmployeeAddForm({
     const formData = new FormData(e.currentTarget);
     let payload = {
       ...Object.fromEntries(formData.entries()),
+      email: formData.get('email')?.toString().trim().toLowerCase(),
       isAdmin: formData.get('isAdmin') === 'on',
     };
 
-    let message = 'API error, try again later';
-
     try {
-      const result = await adminApiFetch('/admin/user/employees', {
+      await adminApiFetch('/admin/user/employees', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
