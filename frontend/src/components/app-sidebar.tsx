@@ -50,7 +50,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar {...props}>
       <SidebarHeader>
         <div className='flex justify-start items-center px-2'>
-          <p>Admin panel</p>
+          <p className='font-semibold text-xl'>Admin panel</p>
         </div>
       </SidebarHeader>
       <SidebarContent>
