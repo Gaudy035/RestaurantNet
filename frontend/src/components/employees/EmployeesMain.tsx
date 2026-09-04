@@ -4,6 +4,7 @@ import EmployeeData from '@/interfaces/EmployeeData';
 import { adminApiFetch } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import EmployeeCard from './EmployeeCard';
+import { useEmployee } from '@/lib/employee-context';
 
 export default function AdminEmployeesMain({
   employeeData,
@@ -13,6 +14,8 @@ export default function AdminEmployeesMain({
   const [employees, setEmployees] = useState<EmployeeData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  const employeeContext = useEmployee();
 
   const handleEmployeeDelete = (userId: string) => {
     setEmployees((prev) => prev.filter((e) => e.userId !== userId));
@@ -43,6 +46,7 @@ export default function AdminEmployeesMain({
             <EmployeeCard
               key={e.userId}
               employeeData={e}
+              currentId={employeeContext.employeeData!.userId}
               setError={setError}
               handleDelete={handleEmployeeDelete}
             />

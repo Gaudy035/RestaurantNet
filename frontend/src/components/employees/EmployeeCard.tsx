@@ -14,10 +14,12 @@ import React from 'react';
 
 export default function EmployeeCard({
   employeeData,
+  currentId,
   setError,
   handleDelete,
 }: {
   employeeData: EmployeeData;
+  currentId: string;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
   handleDelete: (userId: string) => void;
 }) {
@@ -48,21 +50,23 @@ export default function EmployeeCard({
         </div>
 
         <CardAction>
-          <Button
-            className='font-semibold bg-destructive hover:text-destructive hover:border-destructive hover:bg-primary'
-            size={'lg'}
-            onClick={() => {
-              if (
-                window.confirm(
-                  `Delete user: ${employeeData.firstName} ${employeeData.lastName} (ID: ${employeeData.userId})?`,
-                )
-              ) {
-                deleteUser(employeeData.userId);
-              }
-            }}
-          >
-            Delete
-          </Button>
+          {currentId !== employeeData.userId ? (
+            <Button
+              className='font-semibold bg-destructive hover:text-destructive hover:border-destructive hover:bg-primary'
+              size={'lg'}
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `Delete user: ${employeeData.firstName} ${employeeData.lastName} (ID: ${employeeData.userId})?`,
+                  )
+                ) {
+                  deleteUser(employeeData.userId);
+                }
+              }}
+            >
+              Delete
+            </Button>
+          ) : null}
         </CardAction>
       </CardHeader>
     </Card>
