@@ -55,6 +55,7 @@ export function AdminClientAddForm({
           message = data?.message ?? data?.error ?? message;
         } catch {}
         setError(message);
+        return;
       }
 
       setError(null);
