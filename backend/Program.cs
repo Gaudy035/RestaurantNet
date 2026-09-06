@@ -98,6 +98,11 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
+}
+
 await AdminSeeder.SeedInitialAdminAccount(app.Services.GetRequiredService<IServiceScopeFactory>());
 
 app.UseStaticFiles();
