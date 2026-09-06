@@ -1,0 +1,17 @@
+bin/
+obj/
+Tests/
+*.user
+*.suo
+*.csproj.user
+appsettings.json
+appsettings.Development.json
+*.secret.json
+backend.http
+.git/
+.gitignore
+Dockerfile
+.dockerignore
+.vs/
+.idea/
+**/*.log
