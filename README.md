@@ -23,7 +23,7 @@ Project is still work in progress. Authentication and parts of the admin panel a
 - Employee accounts created and managed by admins (admins are also employees)
 - Admin panel: manage clients and employees (list, search, add, delete)
 - Initial admin seeded automatically when no admins exist in database
-- Background job for daily cleaning expired/revoked refresh-token cleanup (Quartz)
+- Background job for daily cleaning up expired/revoked refresh-token (Quartz)
 - Scalar UI API docs in dev at `/docs`
 
 ### Planned / work in progress
@@ -106,8 +106,9 @@ separate cookies (`admin_*` vs `client_*`).
 
 ## Testing
 
+Run from the project root
+
 ```sh
-cd backend
 dotnet test
 ```
 
