@@ -33,7 +33,7 @@ export function AdminEmployeeAddForm({
     };
 
     try {
-      await adminApiFetch('/admin/user/employees', {
+      await adminApiFetch('/admin/users/employees', {
         method: 'POST',
         body: JSON.stringify(payload),
       });

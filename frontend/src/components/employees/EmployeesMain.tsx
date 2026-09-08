@@ -25,8 +25,8 @@ export default function AdminEmployeesMain({
     setLoading(true);
 
     const endpoint = employeeData
-      ? `/admin/user/employees?param=${employeeData}`
-      : '/admin/user/employees';
+      ? `/admin/users/employees?param=${employeeData}`
+      : '/admin/users/employees';
 
     adminApiFetch(endpoint, { method: 'GET', cache: 'no-store' })
       .then((data) => setEmployees(data))

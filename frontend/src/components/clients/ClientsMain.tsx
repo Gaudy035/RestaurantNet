@@ -25,8 +25,8 @@ export default function AdminClientsMain({
     setLoading(true);
 
     const endpoint = clientData
-      ? `/admin/user/clients?param=${clientData}`
-      : '/admin/user/clients';
+      ? `/admin/users/clients?param=${clientData}`
+      : '/admin/users/clients';
 
     adminApiFetch(endpoint, { method: 'GET', cache: 'no-store' })
       .then((data) => setClients(data))

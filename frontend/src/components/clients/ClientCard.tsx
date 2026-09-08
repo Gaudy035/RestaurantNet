@@ -26,7 +26,7 @@ export default function ClientCard({
   const deleteUser = async (userId: string) => {
     setError(null);
     try {
-      await adminApiFetch(`/admin/user/clients/${userId}`, {
+      await adminApiFetch(`/admin/users/clients/${userId}`, {
         method: 'DELETE',
       });
       handleDelete(userId);

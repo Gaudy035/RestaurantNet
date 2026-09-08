@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace backend.Controllers.Admin;
 
 [ApiController]
-[Route("admin/user")]
+[Route("admin/users")]
 public class AdminUserController: ControllerBase
 {
     private readonly IUserService _userService;

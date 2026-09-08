@@ -29,7 +29,7 @@ export default function EmployeeCard({
   const deleteUser = async (userId: string) => {
     setError(null);
     try {
-      await adminApiFetch(`/admin/user/employees/${userId}`, {
+      await adminApiFetch(`/admin/users/employees/${userId}`, {
         method: 'DELETE',
       });
       handleDelete(userId);

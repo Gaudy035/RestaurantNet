@@ -43,7 +43,7 @@ export function AdminClientAddForm({
     payload.phoneNumber = phoneNumber;
 
     try {
-      await adminApiFetch('/admin/user/clients', {
+      await adminApiFetch('/admin/users/clients', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
