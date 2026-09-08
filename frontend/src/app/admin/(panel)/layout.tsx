@@ -1,7 +1,7 @@
 import React from 'react';
 import ModeToggle from '@/components/ui/mode-toggle';
-import AdminLogoutButton from '@/components/ui/admin-logout-button';
-import { AppSidebar } from '@/components/app-sidebar';
+import AdminLogoutButton from '@/components/admin/AdminLogoutButton';
+import { AppSidebar } from '@/components/admin/AdminSidebar';
 import { Separator } from '@/components/ui/separator';
 import {
   SidebarInset,
