@@ -1,6 +1,8 @@
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import AdminLocationsMain from '@/components/locations/LocationsMain';
+import AdminLocationsSearchBar from '@/components/locations/LocationsSearchBar';
 
 export default async function AdminEmployeesPage({
   searchParams,
@@ -13,7 +15,7 @@ export default async function AdminEmployeesPage({
       <div className='flex justify-between items-center'>
         <h1 className='text-2xl'>Locations</h1>
         <div className='flex justify-end items-center gap-2'>
-          {/* Search bar here */}
+          <AdminLocationsSearchBar val={param} />
           <Link
             href='/admin/locations/add'
             className={cn(
@@ -24,7 +26,7 @@ export default async function AdminEmployeesPage({
           </Link>
         </div>
       </div>
-      {/* Main here */}
+      <AdminLocationsMain locationData={param} />
     </div>
   );
 }
