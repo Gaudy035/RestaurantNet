@@ -1,8 +1,8 @@
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import AdminLocationsMain from '@/components/locations/LocationsMain';
-import AdminLocationsSearchBar from '@/components/locations/LocationsSearchBar';
+import AdminLocationsMain from '@/components/admin/locations/LocationsMain';
+import AdminLocationsSearchBar from '@/components/admin/locations/LocationsSearchBar';
 
 export default async function AdminEmployeesPage({
   searchParams,

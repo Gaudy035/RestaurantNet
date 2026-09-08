@@ -1,6 +1,6 @@
 'use client';
 
-import ModeToggle from './ui/mode-toggle';
+import ModeToggle from '../ui/mode-toggle';
 import { adminApiFetch } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 

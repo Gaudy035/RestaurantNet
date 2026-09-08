@@ -1,4 +1,4 @@
-import { AdminEmployeeAddForm } from '@/components/admin-employee-add-form';
+import { AdminEmployeeAddForm } from '@/components/admin/employees/EmployeeAddForm';
 
 export default function AdminClientAddPage() {
   return (

@@ -1,5 +1,5 @@
-import AdminClientsMain from '@/components/clients/ClientsMain';
-import AdminClientsSearchBar from '@/components/clients/ClientsSearchBar';
+import AdminClientsMain from '@/components/admin/clients/ClientsMain';
+import AdminClientsSearchBar from '@/components/admin/clients/ClientsSearchBar';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';

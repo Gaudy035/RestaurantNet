@@ -1,4 +1,4 @@
-import { AdminClientAddForm } from '@/components/admin-client-add-form';
+import { AdminClientAddForm } from '@/components/admin/clients/ClientAddForm';
 
 export default function AdminClientAddPage() {
   return (

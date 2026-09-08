@@ -1,4 +1,4 @@
-import { AdminLocationAddForm } from '@/components/admin-location-add-form';
+import { AdminLocationAddForm } from '@/components/admin/locations/LocationAddForm';
 
 export default function AdminClientAddPage() {
   return (

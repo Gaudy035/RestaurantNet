@@ -1,10 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Input } from '../ui/input';
+import { Input } from '../../ui/input';
 import React, { useState } from 'react';
 import { Search } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '../../ui/button';
 
 export default function AdminEmployeesSearchBar({ val }: { val?: string }) {
   const router = useRouter();

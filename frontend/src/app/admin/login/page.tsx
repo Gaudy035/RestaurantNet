@@ -1,4 +1,4 @@
-import { AdminLoginForm } from '@/components/admin-login-form';
+import { AdminLoginForm } from '@/components/admin/AdminLoginForm';
 
 export default function AdminLoginPage() {
   return (
