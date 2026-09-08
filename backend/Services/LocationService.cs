@@ -37,5 +37,32 @@ public class LocationService : ILocationService
             City = newLocation.Entity.City,
             Address = newLocation.Entity.Address
         };
-    }    
+    }
+    
+    public async Task<IEnumerable<LocationResponseDto>> GetLocations()
+    {
+        var locations = await _context.Locations.AsNoTracking()
+            .Select(l => new LocationResponseDto
+            {
+                LocationId = l.LocationId,
+                City = l.City,
+                Address = l.Address
+            }).ToListAsync();
+
+        return locations;
+    }
+
+    public async Task<LocationResponseDto?> FindLocation(int locationId)
+    {
+        var location = await _context.Locations.AsNoTracking()
+            .Where(l => l.LocationId == locationId)
+            .Select(l => new LocationResponseDto
+            {
+                LocationId = l.LocationId,
+                City = l.City,
+                Address = l.Address
+            }).FirstOrDefaultAsync();
+            
+        return location;
+    }
 }
