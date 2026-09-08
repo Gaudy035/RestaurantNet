@@ -41,17 +41,25 @@ public class LocationService : ILocationService
         };
     }
     
-    public async Task<IEnumerable<LocationResponseDto>> GetLocations()
+    public async Task<IEnumerable<LocationResponseDto>> GetLocations(string? param)
     {
-        var locations = await _context.Locations.AsNoTracking()
-            .Select(l => new LocationResponseDto
-            {
-                LocationId = l.LocationId,
-                City = l.City,
-                Address = l.Address
-            }).ToListAsync();
+        var query = _context.Locations.AsNoTracking().AsQueryable();
 
-        return locations;
+        if (!string.IsNullOrWhiteSpace(param))
+        {
+            var par = $"%{param.ToLower()}%";
+            query = query.Where(l => 
+                EF.Functions.Like(l.City.ToLower() + " " + l.Address.ToLower(), par) ||
+                EF.Functions.Like(l.Address.ToLower() + " " + l.City.ToLower(), par) 
+            );
+        }
+
+        return await query.Select(l => new LocationResponseDto
+        {
+            LocationId = l.LocationId,
+            City = l.City,
+            Address = l.Address
+        }).ToListAsync();
     }
 
     public async Task<LocationResponseDto?> FindLocation(int locationId)

@@ -18,9 +18,9 @@ public class AdminLocationsController: ControllerBase
 
     [Authorize(Roles = "Admin,Employee")]
     [HttpGet()]
-    public async Task<IActionResult> GetLocations()
+    public async Task<IActionResult> GetLocations([FromQuery] string? param)
     {
-        var foundLocations = await _locationService.GetLocations();
+        var foundLocations = await _locationService.GetLocations(param);
 
         return Ok(foundLocations);
     }
