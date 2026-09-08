@@ -95,6 +95,7 @@ builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
 
 var app = builder.Build();
 
