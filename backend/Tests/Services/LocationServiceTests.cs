@@ -57,12 +57,20 @@ public class LocationSericveTests: IDisposable
     }
 
     [Fact]
-    public async Task GetLocations_IfLocationsExist_ReturnsAllLocations()
+    public async Task GetLocations_WhenNoLocationsExist_ReturnEmpty()
+    {
+        var result = await _locationService.GetLocations(null);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetLocations_WithNoParam_ReturnsAllLocations()
     {
         var location1 = await SeedLocation();
         var location2 = await SeedLocation(city: "City2", address: "Address2");
 
-        var result = await _locationService.GetLocations();
+        var result = await _locationService.GetLocations(null);
 
         Assert.Equal(2, result.Count());
         Assert.Contains(result, l => l.City == "City1" && l.Address == "Address1");
@@ -70,9 +78,26 @@ public class LocationSericveTests: IDisposable
     }
 
     [Fact]
-    public async Task GetLocations_WhenNoLocationsExist_ReturnEmptyList()
+    public async Task GetLocation_WithCorrectParam_ReturnsAllMatches()
     {
-        var result = await _locationService.GetLocations();
+        var location1 = await SeedLocation();
+        var location2 = await SeedLocation(city: "City2", address: "Address2");
+        var location3 = await SeedLocation(city: "City3", address: "Address2");
+
+        var result = await _locationService.GetLocations("ess2");
+
+        Assert.Equal(2, result.Count());
+        Assert.Contains(result, l => l.City == "City2" && l.Address == "Address2");
+        Assert.Contains(result, l => l.City == "City3" && l.Address == "Address2");
+        Assert.DoesNotContain(result, l => l.City == "City1" && l.Address == "Address1");
+    }
+
+    [Fact]
+    public async Task GetLocation_WithNoMatches_ReturnEmpty()
+    {
+        await SeedLocation();
+
+        var result = await _locationService.GetLocations("NonExistantAddress");
 
         Assert.Empty(result);
     }
