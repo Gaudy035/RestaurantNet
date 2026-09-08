@@ -69,7 +69,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task CreateClient_WithValidData_ReturnsClientWithUserId()
     {
-        var dto = new CreateClientDto
+        var dto = new ClientCreateDto
         {
             FirstName = "John",
             LastName = "Doe",
@@ -89,7 +89,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task CreateClient_WithDuplicateEmail_ReturnsNull()
     {
-        var dto = new CreateClientDto
+        var dto = new ClientCreateDto
         {
             FirstName = "John",
             LastName = "Doe",
@@ -108,7 +108,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task CreateEmployee_WithValidData_ReturnsEmployeeWithUserId()
     {
-        var dto = new CreateEmployeeDto
+        var dto = new EmployeeCreateDto
         {
             FirstName = "John",
             LastName = "Doe",
@@ -128,7 +128,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task CreateEmployee_WithDuplicateEmail_ReturnsNull()
     {
-        var dto = new CreateEmployeeDto
+        var dto = new EmployeeCreateDto
         {
             FirstName = "John",
             LastName = "Doe",

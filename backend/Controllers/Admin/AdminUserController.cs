@@ -19,7 +19,7 @@ public class AdminUserController: ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPost("employees")]
-    public async Task<IActionResult> CreateEmployeeAccount([FromBody] CreateEmployeeDto dto)
+    public async Task<IActionResult> CreateEmployeeAccount([FromBody] EmployeeCreateDto dto)
     {
         var newEmployee = await _userService.CreateEmployee(dto);
 
@@ -33,7 +33,7 @@ public class AdminUserController: ControllerBase
 
     [Authorize(Roles = "Admin,Employee")]
     [HttpPost("clients")]
-    public async Task<IActionResult> CreateClientAccount([FromBody] CreateClientDto dto)
+    public async Task<IActionResult> CreateClientAccount([FromBody] ClientCreateDto dto)
     {
         var newClient = await _userService.CreateClient(dto);
 

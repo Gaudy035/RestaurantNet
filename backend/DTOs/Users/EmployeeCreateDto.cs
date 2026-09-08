@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace backend.DTOs.Users;
 
-public class CreateClientDto
+public class EmployeeCreateDto
 {
     [Required]
     [MaxLength(30)]
@@ -21,7 +21,5 @@ public class CreateClientDto
     [MaxLength(255)]
     public string Password { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(20)]
-    public string PhoneNumber { get; set; } = string.Empty;
+    public bool IsAdmin { get; set; }
 }

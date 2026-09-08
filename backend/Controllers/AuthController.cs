@@ -103,7 +103,7 @@ public class AuthController: ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] CreateClientDto dto)
+    public async Task<IActionResult> Register([FromBody] ClientCreateDto dto)
     {
         var createClientResponse = await _userService.CreateClient(dto);
 
