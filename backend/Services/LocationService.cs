@@ -16,11 +16,13 @@ public class LocationService : ILocationService
 
     public async Task<LocationResponseDto?> CreateLocation(LocationCreateDto dto)
     {
-        var newLocation = await _context.Locations.AddAsync(new Location
+        var newLocation = new Location
         {
             City = dto.City,
             Address = dto.Address
-        });
+        };
+
+        _context.Locations.Add(newLocation);
 
         try
         {
@@ -33,9 +35,9 @@ public class LocationService : ILocationService
 
         return new LocationResponseDto
         {
-            LocationId = newLocation.Entity.LocationId,
-            City = newLocation.Entity.City,
-            Address = newLocation.Entity.Address
+            LocationId = newLocation.LocationId,
+            City = newLocation.City,
+            Address = newLocation.Address
         };
     }
     
