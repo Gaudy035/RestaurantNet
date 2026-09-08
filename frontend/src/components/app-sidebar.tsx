@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 import { useEmployee } from '@/lib/employee-context';
+import Link from 'next/link';
 
 const data = {
   navMain: [
@@ -54,9 +55,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <div className='flex justify-start items-center px-2'>
+        <Link href='/admin' className='flex justify-start items-center px-2'>
           <p className='font-semibold text-xl'>Admin panel</p>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         {data.navMain.map((item) => (
