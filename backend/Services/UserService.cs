@@ -114,14 +114,16 @@ public class UserService: IUserService
             );
         }
 
-        return await query.Select(c => new ClientResponseDto
-        {
-            UserId = c.UserId,
-            FirstName = c.User.FirstName,
-            LastName = c.User.LastName,
-            Email = c.User.Email,
-            PhoneNumber = c.PhoneNumber
-        }).ToListAsync();
+        return await query.OrderBy(c => c.User.LastName)
+            .ThenBy(c => c.User.FirstName)
+            .Select(c => new ClientResponseDto
+            {
+                UserId = c.UserId,
+                FirstName = c.User.FirstName,
+                LastName = c.User.LastName,
+                Email = c.User.Email,
+                PhoneNumber = c.PhoneNumber
+            }).ToListAsync();
     }
 
     public async Task<IEnumerable<EmployeeResponseDto>> FindEmployee(string? parameter)
@@ -138,14 +140,16 @@ public class UserService: IUserService
             );
         }
 
-        return await query.Select(e => new EmployeeResponseDto
-        {
-            UserId = e.UserId,
-            FirstName = e.User.FirstName,
-            LastName = e.User.LastName,
-            Email = e.User.Email,
-            IsAdmin = e.IsAdmin
-        }).ToListAsync();
+        return await query.OrderBy(e => e.User.LastName)
+            .ThenBy(e => e.User.FirstName)
+            .Select(e => new EmployeeResponseDto
+            {
+                UserId = e.UserId,
+                FirstName = e.User.FirstName,
+                LastName = e.User.LastName,
+                Email = e.User.Email,
+                IsAdmin = e.IsAdmin
+            }).ToListAsync();
     }
 
     public async Task<bool> DeleteClient(int clientId)

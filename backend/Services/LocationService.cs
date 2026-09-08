@@ -54,12 +54,14 @@ public class LocationService : ILocationService
             );
         }
 
-        return await query.Select(l => new LocationResponseDto
-        {
-            LocationId = l.LocationId,
-            City = l.City,
-            Address = l.Address
-        }).ToListAsync();
+        return await query.OrderBy(l => l.City)
+            .ThenBy(l => l.Address)
+            .Select(l => new LocationResponseDto
+            {
+                LocationId = l.LocationId,
+                City = l.City,
+                Address = l.Address
+            }).ToListAsync();
     }
 
     public async Task<LocationResponseDto?> FindLocation(int locationId)
