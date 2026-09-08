@@ -1,6 +1,5 @@
 'use client';
 
-import { adminApiFetch } from '@/lib/api';
 import LocationData from '@/interfaces/LocationData';
 import {
   Card,
@@ -9,15 +8,16 @@ import {
   CardHeader,
   CardTitle,
 } from '../../ui/card';
-import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
-import React from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LocationCard({
   locationData,
 }: {
   locationData: LocationData;
 }) {
+  const router = useRouter();
+
   return (
     <Card className='flex w-full py-4'>
       <CardHeader className='flex flex-row justify-between items-center'>
@@ -29,6 +29,17 @@ export default function LocationCard({
             <p>{locationData.address}</p>
           </CardDescription>
         </div>
+        <CardAction>
+          <Button
+            variant='default'
+            size={'lg'}
+            onClick={() => {
+              router.push(`/admin/locations/${locationData.locationId}`);
+            }}
+          >
+            Details
+          </Button>
+        </CardAction>
       </CardHeader>
     </Card>
   );
