@@ -36,6 +36,11 @@ const data = {
           url: '/admin/employees',
           adminOnly: true,
         },
+        {
+          title: 'Locations',
+          url: '/admin/locations',
+          adminOnly: true,
+        },
       ],
     },
   ],
