@@ -26,7 +26,7 @@ public class AdminLocationsController: ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpGet("${int:locationId}")]
+    [HttpGet("{locationId:int}")]
     public async Task<IActionResult> FindLocation([FromRoute] int locationId)
     {
         var location = await _locationService.FindLocation(locationId);
