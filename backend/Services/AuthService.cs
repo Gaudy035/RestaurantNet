@@ -106,6 +106,7 @@ public class AuthService: IAuthService
     public async Task<LoginResponseDto?> Login(LoginDto dto, string destination)
     {
         var foundUser = await _context.Users
+            .AsNoTracking()
             .Include(u => u.Client)
             .Include(u => u.Employee)
             .FirstOrDefaultAsync(u => u.Email == dto.Email);
@@ -156,6 +157,7 @@ public class AuthService: IAuthService
     public async Task<LoginResponseDto?> Refresh(string refreshTokenValue)
     {
         var oldToken = await _context.RefreshTokens
+            .AsNoTracking()
             .Include(rt => rt.User)
             .FirstOrDefaultAsync(rt => rt.TokenValue == refreshTokenValue);
 
@@ -190,6 +192,7 @@ public class AuthService: IAuthService
     public async Task<ClientResponseDto?> MeClient(int userId)
     {
         var client = await _context.Clients
+            .AsNoTracking()
             .Include(c => c.User)
             .FirstOrDefaultAsync(c => c.UserId == userId);
         
@@ -211,6 +214,7 @@ public class AuthService: IAuthService
     public async Task<EmployeeResponseDto?> MeAdmin(int userId)
     {
         var employee = await _context.Employees
+            .AsNoTracking()
             .Include(e => e.User)
             .FirstOrDefaultAsync(e => e.UserId == userId);
 

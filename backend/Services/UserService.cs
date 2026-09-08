@@ -26,7 +26,7 @@ public class UserService: IUserService
 
         var hashedPass = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
-        var newClient = await _context.Clients.AddAsync(new Client
+        var newClient = _context.Clients.Add(new Client
         {
             PhoneNumber = dto.PhoneNumber,
             User = new User
@@ -69,7 +69,7 @@ public class UserService: IUserService
 
         var hashedPass = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
-        var newEmployee = await _context.Employees.AddAsync(new Employee
+        var newEmployee = _context.Employees.Add(new Employee
         {
             IsAdmin = dto.IsAdmin,
             User = new User
@@ -102,7 +102,7 @@ public class UserService: IUserService
 
     public async Task<IEnumerable<ClientResponseDto>> FindClient(string? parameter)
     {
-        var query = _context.Clients.AsQueryable();
+        var query = _context.Clients.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(parameter))
         {
@@ -126,7 +126,7 @@ public class UserService: IUserService
 
     public async Task<IEnumerable<EmployeeResponseDto>> FindEmployee(string? parameter)
     {
-        var query = _context.Employees.AsQueryable();
+        var query = _context.Employees.AsNoTracking().AsQueryable();
         
         if (!string.IsNullOrWhiteSpace(parameter))
         {
