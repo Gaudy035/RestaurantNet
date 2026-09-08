@@ -52,7 +52,7 @@ export function AdminClientAddForm({
       alert('Client account created');
       router.push('/admin/clients');
     } catch (err: any) {
-      setError(err?.message ?? 'API error, tru again later');
+      setError(err?.message ?? 'API error, try again later');
     }
   };
 

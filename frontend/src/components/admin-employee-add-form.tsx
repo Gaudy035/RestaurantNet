@@ -42,7 +42,7 @@ export function AdminEmployeeAddForm({
       alert('Employee account created');
       router.push('/admin/employees');
     } catch (err: any) {
-      setError(err?.message ?? 'API error, tru again later');
+      setError(err?.message ?? 'API error, try again later');
     }
   };
 
