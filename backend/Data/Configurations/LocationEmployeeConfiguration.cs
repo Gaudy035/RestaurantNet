@@ -8,7 +8,9 @@ public class LocationEmployeeConfiguration : IEntityTypeConfiguration<LocationEm
 {
     public void Configure(EntityTypeBuilder<LocationEmployee> builder)
     {
-        builder.HasKey(le => new { le.UserId, le.LocationId });
+        builder.HasKey(le => new { le.UserId, le.LocationId, le.Position });
+
+        builder.HasIndex(le => le.LocationId);
 
         builder.HasOne(le => le.Employee)
             .WithMany(e => e.LocationEmployees)
@@ -22,7 +24,7 @@ public class LocationEmployeeConfiguration : IEntityTypeConfiguration<LocationEm
 
         builder.Property(le => le.Position)
             .HasConversion<string>()
-            .HasMaxLength(10)
+            .HasMaxLength(Enum.GetNames<Position>().Max(n => n.Length))
             .IsRequired();
     }
 }
