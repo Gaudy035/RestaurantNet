@@ -17,20 +17,6 @@ public class AdminUserController: ControllerBase
         _userService = userService;
     }
 
-    [Authorize(Roles = "Admin")]
-    [HttpPost("employees")]
-    public async Task<IActionResult> CreateEmployeeAccount([FromBody] EmployeeCreateDto dto)
-    {
-        var newEmployee = await _userService.CreateEmployee(dto);
-
-        if (newEmployee == null)
-        {
-            return BadRequest(new { detail = "Failed to create employee account" });
-        }
-
-        return Ok(newEmployee);
-    }
-
     [Authorize(Roles = "Admin,Employee")]
     [HttpPost("clients")]
     public async Task<IActionResult> CreateClientAccount([FromBody] ClientCreateDto dto)
@@ -55,15 +41,6 @@ public class AdminUserController: ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpGet("employees")]
-    public async Task<IActionResult> GetEmployees([FromQuery] string? param)
-    {
-        var foundEmployees = await _userService.FindEmployee(param);
-
-        return Ok(foundEmployees);
-    }
-
-    [Authorize(Roles = "Admin")]
     [HttpDelete("clients/{clientId:int}")]
     public async Task<IActionResult> DeleteClient([FromRoute] int clientId)
     {
@@ -75,6 +52,29 @@ public class AdminUserController: ControllerBase
         }
 
         return NoContent();
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("employees")]
+    public async Task<IActionResult> CreateEmployeeAccount([FromBody] EmployeeCreateDto dto)
+    {
+        var newEmployee = await _userService.CreateEmployee(dto);
+
+        if (newEmployee == null)
+        {
+            return BadRequest(new { detail = "Failed to create employee account" });
+        }
+
+        return Ok(newEmployee);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("employees")]
+    public async Task<IActionResult> GetEmployees([FromQuery] string? param)
+    {
+        var foundEmployees = await _userService.FindEmployee(param);
+
+        return Ok(foundEmployees);
     }
 
     [Authorize(Roles = "Admin")]
