@@ -56,6 +56,56 @@ public class UserService: IUserService
             PhoneNumber = newClient.Entity.PhoneNumber
         };
     }
+   
+    public async Task<IEnumerable<ClientResponseDto>> FindClient(string? parameter)
+    {
+        var query = _context.Clients.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(parameter))
+        {
+            var par = $"%{parameter.ToLower()}%";
+            query = query.Where(c => 
+                EF.Functions.Like(c.User.FirstName.ToLower() + " " + c.User.LastName.ToLower(), par) ||
+                EF.Functions.Like(c.User.LastName.ToLower() + " " + c.User.FirstName.ToLower(), par) ||
+                EF.Functions.Like(c.User.Email.ToLower(), par)
+            );
+        }
+
+        return await query.OrderBy(c => c.User.LastName)
+            .ThenBy(c => c.User.FirstName)
+            .Select(c => new ClientResponseDto
+            {
+                UserId = c.UserId,
+                FirstName = c.User.FirstName,
+                LastName = c.User.LastName,
+                Email = c.User.Email,
+                PhoneNumber = c.PhoneNumber
+            }).ToListAsync();
+    }
+
+    public async Task<bool> DeleteClient(int clientId)
+    {
+        var client = await _context.Clients
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.UserId == clientId);
+
+        if (client == null)
+        {
+            return false;
+        }
+
+        _context.Users.Remove(client.User);
+
+        try
+        {
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (DbUpdateException)
+        {
+            return false;
+        }
+    }
 
     public async Task<EmployeeResponseDto?> CreateEmployee (EmployeeCreateDto dto)
     {
@@ -100,32 +150,6 @@ public class UserService: IUserService
         };
     }
 
-    public async Task<IEnumerable<ClientResponseDto>> FindClient(string? parameter)
-    {
-        var query = _context.Clients.AsNoTracking().AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(parameter))
-        {
-            var par = $"%{parameter.ToLower()}%";
-            query = query.Where(c => 
-                EF.Functions.Like(c.User.FirstName.ToLower() + " " + c.User.LastName.ToLower(), par) ||
-                EF.Functions.Like(c.User.LastName.ToLower() + " " + c.User.FirstName.ToLower(), par) ||
-                EF.Functions.Like(c.User.Email.ToLower(), par)
-            );
-        }
-
-        return await query.OrderBy(c => c.User.LastName)
-            .ThenBy(c => c.User.FirstName)
-            .Select(c => new ClientResponseDto
-            {
-                UserId = c.UserId,
-                FirstName = c.User.FirstName,
-                LastName = c.User.LastName,
-                Email = c.User.Email,
-                PhoneNumber = c.PhoneNumber
-            }).ToListAsync();
-    }
-
     public async Task<IEnumerable<EmployeeResponseDto>> FindEmployee(string? parameter)
     {
         var query = _context.Employees.AsNoTracking().AsQueryable();
@@ -150,30 +174,6 @@ public class UserService: IUserService
                 Email = e.User.Email,
                 IsAdmin = e.IsAdmin
             }).ToListAsync();
-    }
-
-    public async Task<bool> DeleteClient(int clientId)
-    {
-        var client = await _context.Clients
-            .Include(c => c.User)
-            .FirstOrDefaultAsync(c => c.UserId == clientId);
-
-        if (client == null)
-        {
-            return false;
-        }
-
-        _context.Users.Remove(client.User);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-            return true;
-        }
-        catch (DbUpdateException)
-        {
-            return false;
-        }
     }
 
     public async Task<bool> DeleteEmployee(int employeeId)
