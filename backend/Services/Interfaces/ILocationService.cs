@@ -9,4 +9,6 @@ public interface ILocationService
     Task<IEnumerable<LocationResponseDto>> GetLocations(string? param);
 
     Task<LocationResponseDto?> FindLocation(int locationId);
+
+    Task<bool> AssignEmployee(LocationAssignEmployeeDto dto);
 }

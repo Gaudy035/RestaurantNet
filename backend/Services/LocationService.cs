@@ -77,4 +77,52 @@ public class LocationService : ILocationService
             
         return location;
     }
+
+    public async Task<bool> AssignEmployee(LocationAssignEmployeeDto dto)
+    {
+        var employeeExists = await _context.Employees.AsNoTracking()
+            .AnyAsync(e => e.UserId == dto.UserId);
+        
+        if (!employeeExists)
+        {
+            return false;
+        }
+
+        var locationExists = await _context.Locations.AsNoTracking()
+            .AnyAsync(l => l.LocationId == dto.LocationId);
+        
+        if (!locationExists)
+        {
+            return false;
+        }
+
+        var alreadyAssigned = await _context.LocationEmployees.AsNoTracking()
+            .AnyAsync(le => le.UserId == dto.UserId
+                && le.LocationId == dto.LocationId
+                && le.Position == dto.Position
+            );
+
+        if (alreadyAssigned)
+        {
+            return false;
+        }
+
+        _context.LocationEmployees.Add(new LocationEmployee
+        {
+            UserId = dto.UserId,
+            LocationId = dto.LocationId,
+            Position = dto.Position
+        });
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
