@@ -4,6 +4,7 @@ using backend.DTOs.Locations;
 using backend.Services;
 using backend.Tests.Helpers;
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Tests.Services;
 
@@ -37,6 +38,46 @@ public class LocationSericveTests: IDisposable
         await _context.SaveChangesAsync();
 
         return newLocation;
+    }
+
+    private async Task<Client> SeedClientUser(string firstName = "John", string lastName = "Doe", string email = "john@example.com", string password = "password1234", string phoneNumber = "123 456 789")
+    {
+        var newClient = new Client
+        {
+            PhoneNumber = phoneNumber,
+            User = new User
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                Password = BCrypt.Net.BCrypt.HashPassword(password)
+            }
+        };
+
+        _context.Clients.Add(newClient);
+        await _context.SaveChangesAsync();
+
+        return newClient;
+    }
+
+    private async Task<Employee> SeedEmployeeUser(string firstName = "John", string lastName = "Doe", string email = "jane@example.com", string password = "password1234", bool isAdmin = false)
+    {
+        var newEmployee = new Employee
+        {
+            IsAdmin = isAdmin,
+            User = new User
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                Password = BCrypt.Net.BCrypt.HashPassword(password)
+            }
+        };
+
+        _context.Employees.Add(newEmployee);
+        await _context.SaveChangesAsync();
+
+        return newEmployee;
     }
 
     [Fact]
@@ -123,5 +164,140 @@ public class LocationSericveTests: IDisposable
         var result = await _locationService.FindLocation(42);
 
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task AssignEmployee_WithCorrectData_AssignsEmployeeAndReturnsTrue()
+    {
+        var employee = await SeedEmployeeUser();
+        var location = await SeedLocation();
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+
+        var result = await _locationService.AssignEmployee(dto);
+        var assignedEmployees = await _context.LocationEmployees
+            .Where(le => le.Location == location
+                && le.Employee == employee
+                && le.Position == dto.Position
+            )
+            .CountAsync();
+
+        Assert.True(result);
+        Assert.Equal(1, assignedEmployees);
+        
+    }
+
+    [Fact]
+    public async Task AssignEmployee_WithClientId_DoesntAssignAndReturnsFalse()
+    {
+        var client = await SeedClientUser();
+        var location = await SeedLocation();
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = client.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+
+        var result = await _locationService.AssignEmployee(dto);
+        var assignedEmployees = await _context.LocationEmployees.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(0, assignedEmployees);
+    }
+
+    [Fact]
+    public async Task AssignEmployee_WithNonExistentUser_DoesntAssignAndReturnsFalse()
+    {
+        var location = await SeedLocation();
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = 42,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+
+        var result = await _locationService.AssignEmployee(dto);
+        var assignedEmployees = await _context.LocationEmployees.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(0, assignedEmployees);
+    }
+
+    [Fact]
+    public async Task AssignEmployee_WithNonExistentLocation_DoesntAssignAndReturnsFalse()
+    {
+        var employee = await SeedEmployeeUser();
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = 42,
+            Position = Position.Cashier
+        };
+
+        var result = await _locationService.AssignEmployee(dto);
+        var assignedEmployees = await _context.LocationEmployees.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(0, assignedEmployees);
+    }
+
+    [Fact]
+    public async Task AssignEmployee_WithDuplicateData_DoesntAssignAndReturnsFalse()
+    {
+        var employee = await SeedEmployeeUser();
+        var location = await SeedLocation();
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+
+        var result1 = await _locationService.AssignEmployee(dto);
+        var result2 = await _locationService.AssignEmployee(dto);
+        var assignedEmployees = await _context.LocationEmployees.CountAsync();
+
+        Assert.True(result1);
+        Assert.False(result2);
+        Assert.Equal(1, assignedEmployees);
+    }
+
+    [Fact]
+    public async Task AssignEmployee_WithSameIdsAndDifferentPosition_AssignsAndReturnsTrue()
+    {
+        var employee = await SeedEmployeeUser();
+        var location = await SeedLocation();
+
+        var dto1 = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+        
+        var dto2 = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Chef
+        };
+
+        var result1 = await _locationService.AssignEmployee(dto1);
+        var result2 = await _locationService.AssignEmployee(dto2);
+        var assignedEmployees = await _context.LocationEmployees.CountAsync();
+
+        Assert.True(result1);
+        Assert.True(result2);
+        Assert.Equal(2, assignedEmployees);
     }
 }   
