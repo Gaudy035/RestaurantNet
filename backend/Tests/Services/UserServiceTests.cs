@@ -106,45 +106,6 @@ public class UserServiceTests: IDisposable
     }
 
     [Fact]
-    public async Task CreateEmployee_WithValidData_ReturnsEmployeeWithUserId()
-    {
-        var dto = new EmployeeCreateDto
-        {
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john@example.com",
-            Password = "password1234",
-            IsAdmin = false
-        };
-
-        var resultEmployee = await _userService.CreateEmployee(dto);
-
-        Assert.NotNull(resultEmployee);
-        Assert.True(resultEmployee.UserId > 0);
-        Assert.Equal(resultEmployee.Email, dto.Email);
-        Assert.Equal(resultEmployee.IsAdmin, dto.IsAdmin);
-    }
-
-    [Fact]
-    public async Task CreateEmployee_WithDuplicateEmail_ReturnsNull()
-    {
-        var dto = new EmployeeCreateDto
-        {
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john@example.com",
-            Password = "password1234",
-            IsAdmin = false
-        };
-
-        // First Employee with said email
-        await _userService.CreateEmployee(dto);
-        var secondEmployee = await _userService.CreateEmployee(dto);
-
-        Assert.Null(secondEmployee);
-    }
-
-    [Fact]
     public async Task FindClient_WithNoParameter_ReturnsAllClients()
     {
         await SeedClientUser();
@@ -222,6 +183,97 @@ public class UserServiceTests: IDisposable
     }
 
     [Fact]
+    public async Task DeleteClient_WithCorrectId_DeletesAndReturnsTrue()
+    {
+        var client = await SeedClientUser();
+
+        var countBefore = await _context.Clients.CountAsync();
+
+        Assert.Equal(1, countBefore);
+
+        var result = await _userService.DeleteClient(client.UserId);
+        var countAfter = await _context.Users.CountAsync();
+        var countAfter2 = await _context.Clients.CountAsync();
+
+        Assert.True(result);
+        Assert.Equal(0, countAfter);
+        Assert.Equal(0, countAfter2);
+    }
+
+    [Fact]
+    public async Task DeleteClient_WithNoMatch_DoesntDeleteAndReturnsFalse()
+    {
+        var client = await SeedClientUser();
+
+        var countBefore = await _context.Clients.CountAsync();
+
+        Assert.Equal(1, countBefore);
+
+        var result = await _userService.DeleteClient(99);
+        var countAfter = await _context.Users.CountAsync();
+        var countAfter2 = await _context.Clients.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(countBefore, countAfter);
+        Assert.Equal(countBefore, countAfter2);
+    }
+
+    [Fact]
+    public async Task DeleteClient_WithMatchInEmployees_DoesntDeleteAndReturnsFalse()
+    {
+        var employee = await SeedEmployeeUser();
+
+        var countBefore = await _context.Users.CountAsync();
+
+        Assert.Equal(1, countBefore);
+
+        var result = await _userService.DeleteClient(employee.UserId);
+        var countAfter = await _context.Users.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(countBefore, countAfter);
+    }
+
+    [Fact]
+    public async Task CreateEmployee_WithValidData_ReturnsEmployeeWithUserId()
+    {
+        var dto = new EmployeeCreateDto
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Email = "john@example.com",
+            Password = "password1234",
+            IsAdmin = false
+        };
+
+        var resultEmployee = await _userService.CreateEmployee(dto);
+
+        Assert.NotNull(resultEmployee);
+        Assert.True(resultEmployee.UserId > 0);
+        Assert.Equal(resultEmployee.Email, dto.Email);
+        Assert.Equal(resultEmployee.IsAdmin, dto.IsAdmin);
+    }
+
+    [Fact]
+    public async Task CreateEmployee_WithDuplicateEmail_ReturnsNull()
+    {
+        var dto = new EmployeeCreateDto
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Email = "john@example.com",
+            Password = "password1234",
+            IsAdmin = false
+        };
+
+        // First Employee with said email
+        await _userService.CreateEmployee(dto);
+        var secondEmployee = await _userService.CreateEmployee(dto);
+
+        Assert.Null(secondEmployee);
+    }
+
+    [Fact]
     public async Task FindEmployee_WithNoParameter_ReturnsAllEmployees()
     {
         await SeedEmployeeUser();
@@ -296,58 +348,6 @@ public class UserServiceTests: IDisposable
         var result = await _userService.FindEmployee(client.User.FirstName);
 
         Assert.Empty(result);
-    }
-
-    [Fact]
-    public async Task DeleteClient_WithCorrectId_DeletesAndReturnsTrue()
-    {
-        var client = await SeedClientUser();
-
-        var countBefore = await _context.Clients.CountAsync();
-
-        Assert.Equal(1, countBefore);
-
-        var result = await _userService.DeleteClient(client.UserId);
-        var countAfter = await _context.Users.CountAsync();
-        var countAfter2 = await _context.Clients.CountAsync();
-
-        Assert.True(result);
-        Assert.Equal(0, countAfter);
-        Assert.Equal(0, countAfter2);
-    }
-
-    [Fact]
-    public async Task DeleteClient_WithNoMatch_DoesntDeleteAndReturnsFalse()
-    {
-        var client = await SeedClientUser();
-
-        var countBefore = await _context.Clients.CountAsync();
-
-        Assert.Equal(1, countBefore);
-
-        var result = await _userService.DeleteClient(99);
-        var countAfter = await _context.Users.CountAsync();
-        var countAfter2 = await _context.Clients.CountAsync();
-
-        Assert.False(result);
-        Assert.Equal(countBefore, countAfter);
-        Assert.Equal(countBefore, countAfter2);
-    }
-
-    [Fact]
-    public async Task DeleteClient_WithMatchInEmployees_DoesntDeleteAndReturnsFalse()
-    {
-        var employee = await SeedEmployeeUser();
-
-        var countBefore = await _context.Users.CountAsync();
-
-        Assert.Equal(1, countBefore);
-
-        var result = await _userService.DeleteClient(employee.UserId);
-        var countAfter = await _context.Users.CountAsync();
-
-        Assert.False(result);
-        Assert.Equal(countBefore, countAfter);
     }
 
     [Fact]
