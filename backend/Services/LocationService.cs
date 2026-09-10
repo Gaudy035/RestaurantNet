@@ -125,4 +125,31 @@ public class LocationService : ILocationService
 
         return true;
     }
+
+    public async Task<bool> UnassignEmployee(LocationAssignEmployeeDto dto)
+    {
+        var assignment = await _context.LocationEmployees
+            .Where(le => le.UserId == dto.UserId 
+                && le.LocationId == dto.LocationId
+                && le.Position == dto.Position
+            ).FirstOrDefaultAsync();
+        
+        if (assignment == null)
+        {
+            return false;
+        }
+
+        _context.LocationEmployees.Remove(assignment);
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
