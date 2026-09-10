@@ -54,6 +54,20 @@ public class AdminLocationsController: ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
+    [HttpDelete("{locationId:int}")]
+    public async Task<IActionResult> DeleteLocation([FromRoute] int locationId)
+    {
+        var success = await _locationService.DeleteLocation(locationId);
+
+        if (!success)
+        {
+            return NotFound(new { detail = $"Location with id {locationId} not found" });
+        }
+
+        return NoContent();
+    }
+
+    [Authorize(Roles = "Admin")]
     [HttpPost("employees")]
     public async Task<IActionResult> AssignEmployee(LocationAssignEmployeeDto dto)
     {

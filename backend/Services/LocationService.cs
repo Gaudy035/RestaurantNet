@@ -78,6 +78,30 @@ public class LocationService : ILocationService
         return location;
     }
 
+    public async Task<bool> DeleteLocation(int locationId)
+    {
+        var location = await _context.Locations
+            .FindAsync(locationId);
+
+        if (location == null)
+        {
+            return false;
+        }
+
+        _context.Locations.Remove(location);
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        } 
+        catch (DbUpdateException)
+        {
+            return false;
+        }
+        
+        return true;
+    }
+
     public async Task<bool> AssignEmployee(LocationAssignEmployeeDto dto)
     {
         var employeeExists = await _context.Employees.AsNoTracking()
