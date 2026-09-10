@@ -370,6 +370,64 @@ public class LocationSericveTests: IDisposable
     }
 
     [Fact]
+    public async Task GetAssignedEmployees_WithMatchingEmployees_ReturnsAllMatches()
+    {
+        var employee1 = await SeedEmployeeUser();
+        var employee2 = await SeedEmployeeUser(firstName: "Jane", lastName: "Doe", email: "jane@example.net");
+        var location = await SeedLocation();
+        await SeedAssignment(employee1.UserId, location.LocationId, Position.Chef);
+        await SeedAssignment(employee2.UserId, location.LocationId, Position.Cashier);
+
+        var assignmentCount = await _context.LocationEmployees.CountAsync();
+        var result = await _locationService.GetAssignedEmployees(location.LocationId);
+
+        Assert.Equal(2, assignmentCount);
+        Assert.Equal(assignmentCount, result.Count());
+        Assert.Contains(result, x =>
+            x.UserId == employee1.UserId &&
+            x.FirstName == employee1.User.FirstName &&
+            x.LastName == employee1.User.LastName &&
+            x.LocationId == location.LocationId &&
+            x.Position == Position.Chef
+        );
+        Assert.Contains(result, x =>
+            x.UserId == employee2.UserId &&
+            x.FirstName == employee2.User.FirstName &&
+            x.LastName == employee2.User.LastName &&
+            x.LocationId == location.LocationId &&
+            x.Position == Position.Cashier
+        );
+    }
+
+    [Fact]
+    public async Task GetAssignedEmployees_WithoutMatches_ReturnsEmptyList()
+    {
+        var location = await SeedLocation();
+
+        var result = await _locationService.GetAssignedEmployees(location.LocationId);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetAssignedEmployees_WithMatches_ReturnsOnlyThoseAtRightLocation()
+    {
+        var location1 = await SeedLocation();
+        var employee1 = await SeedEmployeeUser();
+        await SeedAssignment(employee1.UserId, location1.LocationId, Position.Server);
+
+        var location2 = await SeedLocation(city: "City2", address: "Address2");
+        var employee2 = await SeedEmployeeUser(firstName: "Jane", lastName: "Doe", email: "jane@example.net");
+        await SeedAssignment(employee2.UserId, location2.LocationId, Position.Server);
+
+        var countAssigned = await _context.LocationEmployees.CountAsync();
+        var result = await _locationService.GetAssignedEmployees(location1.LocationId);
+
+        Assert.Equal(2, countAssigned);
+        Assert.Single(result);
+    }
+
+    [Fact]
     public async Task UnassignEmployee_AfterRemoving_DoesntRemoveLocationOrEmployee()
     {
         var employee = await SeedEmployeeUser();
