@@ -4,12 +4,11 @@ namespace backend.Data.Entities;
 
 public enum Position
 {
-    Admin,
     Manager,
+    Chef,
     Server,
     Cashier,
     Driver,
-    Chef
 }
 
 [Table("t_location_employee")]
