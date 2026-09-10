@@ -66,6 +66,35 @@ public class UserServiceTests: IDisposable
         return newEmployee;
     }
 
+    private async Task<Location> SeedLocation(string city = "City1", string address = "Address1")
+    {
+        var newLocation = new Location
+        {
+            City = city,
+            Address = address
+        };
+
+        _context.Locations.Add(newLocation);
+        await _context.SaveChangesAsync();
+
+        return newLocation;
+    }
+
+    private async Task<LocationEmployee> SeedAssignment(int userId, int locationId, Position position)
+    {
+        var newAssignment = new LocationEmployee
+        {
+            UserId = userId,
+            LocationId = locationId,
+            Position = position
+        };
+
+        _context.LocationEmployees.Add(newAssignment);
+        await _context.SaveChangesAsync();
+
+        return newAssignment;
+    }
+    
     [Fact]
     public async Task CreateClient_WithValidData_ReturnsClientWithUserId()
     {
@@ -203,7 +232,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task DeleteClient_WithNoMatch_DoesntDeleteAndReturnsFalse()
     {
-        var client = await SeedClientUser();
+        await SeedClientUser();
 
         var countBefore = await _context.Clients.CountAsync();
 
@@ -348,6 +377,71 @@ public class UserServiceTests: IDisposable
         var result = await _userService.FindEmployee(client.User.FirstName);
 
         Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetEmployeeLocations_WithMultipleMatches_ReturnsAllMatches()
+    {
+        var employee = await SeedEmployeeUser();
+        var location1 = await SeedLocation();
+        var location2 = await SeedLocation(city: "City 2", address: "Address 2");
+        await SeedAssignment(employee.UserId, location1.LocationId, Position.Server);
+        await SeedAssignment(employee.UserId, location1.LocationId, Position.Cashier);
+        await SeedAssignment(employee.UserId, location2.LocationId, Position.Driver);
+
+        var assignmentCount = await _context.LocationEmployees.CountAsync();
+        var result = await _userService.GetEmployeeLocations(employee.UserId);
+
+        Assert.Equal(3, assignmentCount);
+        Assert.Equal(assignmentCount, result.Count());
+        Assert.Contains(result, x => 
+            x.LocationId == location1.LocationId &&
+            x.City == location1.City &&
+            x.Address == location1.Address &&
+            x.UserId == employee.UserId &&
+            x.Position == Position.Server
+        );
+        Assert.Contains(result, x => 
+            x.LocationId == location1.LocationId &&
+            x.City == location1.City &&
+            x.Address == location1.Address &&
+            x.UserId == employee.UserId &&
+            x.Position == Position.Cashier
+        );
+        Assert.Contains(result, x => 
+            x.LocationId == location2.LocationId &&
+            x.City == location2.City &&
+            x.Address == location2.Address &&
+            x.UserId == employee.UserId &&
+            x.Position == Position.Driver
+        );
+    }
+
+    [Fact]
+    public async Task GetEmployeeLocations_WithNoMatches_ReturnsEmptyList()
+    {
+        var employee = await SeedEmployeeUser();
+
+        var result = await _userService.GetEmployeeLocations(employee.UserId);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetEmployeeLocations_WithMatches_ReturnsOnlyThoseWithRightEmployee()
+    {
+        var employee1 = await SeedEmployeeUser();
+        var employee2 = await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        var location = await SeedLocation();
+        await SeedAssignment(employee1.UserId, location.LocationId, Position.Chef);
+        await SeedAssignment(employee1.UserId, location.LocationId, Position.Server);
+        await SeedAssignment(employee2.UserId, location.LocationId, Position.Chef);
+
+        var countAssigned = await _context.LocationEmployees.CountAsync();
+        var result = await _userService.GetEmployeeLocations(employee1.UserId);
+
+        Assert.Equal(3, countAssigned);
+        Assert.Equal(2, result.Count());
     }
 
     [Fact]
