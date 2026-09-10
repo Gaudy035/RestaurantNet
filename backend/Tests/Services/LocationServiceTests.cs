@@ -300,4 +300,180 @@ public class LocationSericveTests: IDisposable
         Assert.True(result2);
         Assert.Equal(2, assignedEmployees);
     }
+
+    [Fact]
+    public async Task UnassignEmployee_AfterRemoving_DoesntRemoveLocationOrEmployee()
+    {
+        var employee = await SeedEmployeeUser();
+        var location = await SeedLocation();
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+
+        await _locationService.AssignEmployee(dto);
+        await _locationService.UnassignEmployee(dto);
+
+        var employeeExists = await _context.Employees
+            .AsNoTracking()
+            .Where(e => e.UserId == employee.UserId)
+            .AnyAsync();
+
+        var locationExists = await _context.Locations
+            .AsNoTracking()
+            .Where(l => l.LocationId == location.LocationId)
+            .AnyAsync();
+
+        Assert.True(employeeExists);
+        Assert.True(locationExists);
+    }
+
+    [Fact]
+    public async Task UnassignEmployee_WithCorrectData_RemovesAssignmentAndReturnsTrue()
+    {
+        var employee = await SeedEmployeeUser();
+        var location = await SeedLocation();
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+
+        await _locationService.AssignEmployee(dto);
+        var before = await _context.LocationEmployees.CountAsync();
+
+        var result = await _locationService.UnassignEmployee(dto);
+        var after = await _context.LocationEmployees.CountAsync();
+
+        Assert.True(result);
+        Assert.Equal(1, before);
+        Assert.Equal(0, after);
+    }
+
+    [Fact]
+    public async Task UnassignEmployee_WithIncorrectLocationId_DoesntRemoveAndReturnsFalse()
+    {
+        var employee = await SeedEmployeeUser();
+        var location = await SeedLocation();
+
+        var dto1 = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+
+        var dto2 = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = 42,
+            Position = Position.Cashier
+        };
+
+        await _locationService.AssignEmployee(dto1);
+        var before = await _context.LocationEmployees.CountAsync();
+
+        var result = await _locationService.UnassignEmployee(dto2);
+        var after = await _context.LocationEmployees.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(before, after);
+    }
+
+    [Fact]
+    public async Task UnassignEmployee_WithIncorrectUserId_DoesntRemoveAndReturnsFalse()
+    {
+        var employee = await SeedEmployeeUser();
+        var location = await SeedLocation();
+
+        var dto1 = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+
+        var dto2 = new LocationAssignEmployeeDto
+        {
+            UserId = 42,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+
+        await _locationService.AssignEmployee(dto1);
+        var before = await _context.LocationEmployees.CountAsync();
+
+        var result = await _locationService.UnassignEmployee(dto2);
+        var after = await _context.LocationEmployees.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(before, after);
+    }
+
+    [Fact]
+    public async Task UnassignEmployee_WithIncorrectPosition_DoesntRemoveAndReturnsFalse()
+    {
+        var employee = await SeedEmployeeUser();
+        var location = await SeedLocation();
+
+        var dto1 = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+
+        var dto2 = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Driver
+        };
+
+        await _locationService.AssignEmployee(dto1);
+        var before = await _context.LocationEmployees.CountAsync();
+
+        var result = await _locationService.UnassignEmployee(dto2);
+        var after = await _context.LocationEmployees.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(before, after);
+    }
+
+    [Fact]
+    public async Task UnassignEmployee_WithMultipleIdMatches_OnlyDeletesWithMatchingPosition()
+    {
+        var employee = await SeedEmployeeUser();
+        var location = await SeedLocation();
+
+        var dto1 = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+
+        var dto2 = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Driver
+        };
+
+        await _locationService.AssignEmployee(dto1);
+        await _locationService.AssignEmployee(dto2);
+
+        var before = await _context.LocationEmployees.CountAsync();
+        await _locationService.UnassignEmployee(dto1);
+
+        var after = await _context.LocationEmployees.CountAsync();
+
+        Assert.Equal(2, before);
+        Assert.Equal(1, after);
+    }
 }   
