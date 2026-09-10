@@ -16,6 +16,20 @@ public class AdminLocationsController: ControllerBase
         _locationService = locationService;
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpPost()]
+    public async Task<IActionResult> CreateLocation(LocationCreateDto dto)
+    {
+        var newLocation = await _locationService.CreateLocation(dto);
+
+        if (newLocation == null)
+        {
+            return StatusCode(500);
+        }
+
+        return Ok(newLocation);
+    }
+
     [Authorize(Roles = "Admin,Employee")]
     [HttpGet()]
     public async Task<IActionResult> GetLocations([FromQuery] string? param)
@@ -40,17 +54,16 @@ public class AdminLocationsController: ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPost()]
-    public async Task<IActionResult> CreateLocation(LocationCreateDto dto)
+    [HttpPost("employees")]
+    public async Task<IActionResult> AssignEmployee(LocationAssignEmployeeDto dto)
     {
-        var newLocation = await _locationService.CreateLocation(dto);
+        var success = await _locationService.AssignEmployee(dto);
 
-        if (newLocation == null)
+        if (!success)
         {
-            return StatusCode(500);
+            return BadRequest(new { detail = "Assignment failed" });
         }
 
-        return Ok(newLocation);
+        return Ok();
     }
-
 }
