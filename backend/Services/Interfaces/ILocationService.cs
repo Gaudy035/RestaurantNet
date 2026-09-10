@@ -11,4 +11,6 @@ public interface ILocationService
     Task<LocationResponseDto?> FindLocation(int locationId);
 
     Task<bool> AssignEmployee(LocationAssignEmployeeDto dto);
+    
+    Task<bool> UnassignEmployee(LocationAssignEmployeeDto dto);
 }
