@@ -13,6 +13,8 @@ public interface ILocationService
     Task<bool> DeleteLocation (int locationId);
 
     Task<bool> AssignEmployee(LocationAssignEmployeeDto dto);
+
+    Task<IEnumerable<LocationEmployeesResponseDto>> GetAssignedEmployees(int locationId);
     
     Task<bool> UnassignEmployee(LocationAssignEmployeeDto dto);
 }

@@ -1,3 +1,4 @@
+using System.Collections;
 using backend.Data;
 using backend.Data.Entities;
 using backend.DTOs.Locations;
@@ -148,6 +149,24 @@ public class LocationService : ILocationService
         }
 
         return true;
+    }
+
+    public async Task<IEnumerable<LocationEmployeesResponseDto>> GetAssignedEmployees(int locationId)
+    {
+        return await _context.LocationEmployees
+            .AsNoTracking()
+            .Where(le => le.LocationId == locationId)
+            .OrderBy(le => le.Position)
+            .ThenBy(le => le.Employee.User.LastName)
+            .ThenBy(le => le.Employee.User.FirstName)
+            .Select(le => new LocationEmployeesResponseDto
+            {
+                UserId = le.UserId,
+                FirstName = le.Employee.User.FirstName,
+                LastName = le.Employee.User.LastName,
+                LocationId = le.LocationId,
+                Position = le.Position
+            }).ToListAsync();
     }
 
     public async Task<bool> UnassignEmployee(LocationAssignEmployeeDto dto)

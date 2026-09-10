@@ -82,6 +82,15 @@ public class AdminLocationsController: ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
+    [HttpGet("employees/{locationId:int}")]
+    public async Task<IActionResult> GetAssignedEmployees([FromRoute] int locationId)
+    {
+        var employees = await _locationService.GetAssignedEmployees(locationId);
+
+        return Ok(employees);
+    }
+
+    [Authorize(Roles = "Admin")]
     [HttpDelete("employees")]
     public async Task<IActionResult> UnassignEmployee(LocationAssignEmployeeDto dto)
     {
