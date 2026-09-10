@@ -66,4 +66,18 @@ public class AdminLocationsController: ControllerBase
 
         return Ok();
     }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("employees")]
+    public async Task<IActionResult> UnassignEmployee(LocationAssignEmployeeDto dto)
+    {
+        var success = await _locationService.UnassignEmployee(dto);
+
+        if (!success)
+        {
+            return BadRequest(new { detail = "Unassignment failed" });
+        }
+
+        return NoContent();
+    }
 }
