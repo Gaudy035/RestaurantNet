@@ -80,6 +80,21 @@ public class LocationSericveTests: IDisposable
         return newEmployee;
     }
 
+    private async Task<LocationEmployee> SeedAssignment(int userId, int locationId, Position position)
+    {
+        var newAssignment = new LocationEmployee
+        {
+            UserId = userId,
+            LocationId = locationId,
+            Position = position
+        };
+
+        _context.LocationEmployees.Add(newAssignment);
+        await _context.SaveChangesAsync();
+
+        return newAssignment;
+    }
+
     [Fact]
     public async Task CreateLocation_WithValidData_CreatesLocationAndReturnsItsData()
     {
@@ -166,6 +181,59 @@ public class LocationSericveTests: IDisposable
         Assert.Null(result);
     }
 
+    [Fact]
+    public async Task DeleteLocation_WithCorrectId_DeletesAndReturnsTrue()
+    {
+        var location = await SeedLocation();
+
+        var before = await _context.Locations.CountAsync();
+        var result = await _locationService.DeleteLocation(location.LocationId);
+        var after = await _context.Locations.CountAsync();
+
+        Assert.True(result);
+        Assert.Equal(1, before);
+        Assert.Equal(0, after);
+    }
+
+    [Fact]
+    public async Task DeleteLocation_WithIncorrectId_DoesntRemoveAndReturnsFalse()
+    {
+        await SeedLocation();
+
+        var before = await _context.Locations.CountAsync();
+        var result = await _locationService.DeleteLocation(42);
+        var after = await _context.Locations.CountAsync();
+
+        Assert.False(result);
+        Assert.Equal(before, after);
+    }
+
+    [Fact]
+    public async Task DeleteLocation_WithCorrectId_DeletesEmployeeAsignmentsButKeepsEmployees()
+    {
+        var employee = await SeedEmployeeUser();
+        var location = await SeedLocation();
+        await SeedAssignment(employee.UserId, location.LocationId, Position.Server);
+
+        var employeesBefore = await _context.Employees.CountAsync();
+        var assignmentsBefore = await _context.LocationEmployees.CountAsync();
+        var locationsBefore = await _context.Locations.CountAsync();
+
+        await _locationService.DeleteLocation(location.LocationId);
+
+        var employeesAfter = await _context.Employees.CountAsync();
+        var assignmentsAfter = await _context.LocationEmployees.CountAsync();
+        var locationsAfter = await _context.Locations.CountAsync();
+
+        Assert.Equal(1, employeesBefore);
+        Assert.Equal(1, locationsBefore);
+        Assert.Equal(1, assignmentsBefore);
+
+        Assert.Equal(employeesBefore, employeesAfter);
+        Assert.Equal(0, locationsAfter);
+        Assert.Equal(0, assignmentsAfter);
+    }
+    
     [Fact]
     public async Task AssignEmployee_WithCorrectData_AssignsEmployeeAndReturnsTrue()
     {
