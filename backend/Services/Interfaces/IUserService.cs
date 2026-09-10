@@ -13,6 +13,8 @@ public interface IUserService
     Task<EmployeeResponseDto?> CreateEmployee(EmployeeCreateDto dto);
 
     Task<IEnumerable<EmployeeResponseDto>> FindEmployee(string? parameter);
+
+    Task<IEnumerable<EmployeeLocationsResponseDto>> GetEmployeeLocations(int employeeId);
     
     Task<bool> DeleteEmployee(int employeeId);
 }

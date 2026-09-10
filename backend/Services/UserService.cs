@@ -176,6 +176,23 @@ public class UserService: IUserService
             }).ToListAsync();
     }
 
+    public async Task<IEnumerable<EmployeeLocationsResponseDto>> GetEmployeeLocations(int employeeId)
+    {
+        return await _context.LocationEmployees
+            .AsNoTracking()
+            .Where(le => le.UserId == employeeId)
+            .OrderBy(le => le.Location.City)
+            .ThenBy(le => le.Location.Address)
+            .ThenBy(le => le.Position)
+            .Select(le => new EmployeeLocationsResponseDto
+            {
+                LocationId = le.LocationId,
+                City = le.Location.City,
+                Address = le.Location.Address,
+                UserId = le.UserId,
+                Position = le.Position
+            }).ToListAsync();
+    }
     public async Task<bool> DeleteEmployee(int employeeId)
     {
         var employee = await _context.Employees

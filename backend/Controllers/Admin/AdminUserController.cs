@@ -78,6 +78,15 @@ public class AdminUserController: ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
+    [HttpGet("employees/{employeeId:int}/locations")]
+    public async Task<IActionResult> GetEmployeeLocations([FromRoute] int employeeId)
+    {
+        var locations = await _userService.GetEmployeeLocations(employeeId);
+
+        return Ok(locations);
+    }
+    
+    [Authorize(Roles = "Admin")]
     [HttpDelete("employees/{employeeId:int}")]
     public async Task<IActionResult> DeleteEmployee([FromRoute] int employeeId)
     {
