@@ -1,6 +1,5 @@
 'use client';
 
-import { adminApiFetch } from '@/lib/api';
 import EmployeeData from '@/interfaces/EmployeeData';
 import {
   Card,
@@ -11,33 +10,15 @@ import {
 } from '../../ui/card';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
-import React from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function EmployeeCard({
   employeeData,
-  currentId,
-  setError,
-  handleDelete,
 }: {
   employeeData: EmployeeData;
   currentId: string;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
-  handleDelete: (userId: string) => void;
 }) {
-  const isSelf = currentId === employeeData.userId;
-
-  const deleteUser = async (userId: string) => {
-    setError(null);
-    try {
-      await adminApiFetch(`/admin/users/employees/${userId}`, {
-        method: 'DELETE',
-      });
-      handleDelete(userId);
-    } catch (e: any) {
-      setError(e?.message);
-      console.log(e?.message);
-    }
-  };
+  const router = useRouter();
 
   return (
     <Card className='flex w-full py-4'>
@@ -54,21 +35,13 @@ export default function EmployeeCard({
 
         <CardAction>
           <Button
-            variant={isSelf ? 'outline' : 'destructive'}
-            className='font-semibold'
+            variant='link'
             size={'lg'}
-            disabled={isSelf}
-            onClick={() => {
-              if (
-                window.confirm(
-                  `Delete user: ${employeeData.firstName} ${employeeData.lastName} (ID: ${employeeData.userId})?`,
-                )
-              ) {
-                deleteUser(employeeData.userId);
-              }
-            }}
+            onClick={() =>
+              router.push(`/admin/employees/${employeeData.userId}`)
+            }
           >
-            {isSelf ? 'You' : 'Delete'}
+            Details
           </Button>
         </CardAction>
       </CardHeader>

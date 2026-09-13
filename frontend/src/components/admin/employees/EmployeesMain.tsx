@@ -17,10 +17,6 @@ export default function AdminEmployeesMain({
 
   const employeeContext = useEmployee();
 
-  const handleEmployeeDelete = (userId: string) => {
-    setEmployees((prev) => prev.filter((e) => e.userId !== userId));
-  };
-
   useEffect(() => {
     setLoading(true);
 
@@ -40,20 +36,16 @@ export default function AdminEmployeesMain({
       {loading ? (
         <p>Loading employee data...</p>
       ) : employees.length > 0 ? (
-        // Employees found
         <div className='flex flex-col m-8 w-full justify-center items-center gap-4'>
           {employees.map((e) => (
             <EmployeeCard
               key={e.userId}
               employeeData={e}
               currentId={employeeContext.employeeData!.userId}
-              setError={setError}
-              handleDelete={handleEmployeeDelete}
             />
           ))}
         </div>
       ) : (
-        // No employees found
         <p>No employees found</p>
       )}
     </div>
