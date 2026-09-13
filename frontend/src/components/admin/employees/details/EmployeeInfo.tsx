@@ -46,7 +46,7 @@ export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
       await adminApiFetch(`/admin/users/employees/${userId}`, {
         method: 'DELETE',
       });
-      router.push;
+      router.push('/admin/employees');
     } catch (e: any) {
       setError(e?.message);
       console.log(e?.message);

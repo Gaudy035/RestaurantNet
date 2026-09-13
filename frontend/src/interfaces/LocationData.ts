@@ -1,5 +1,5 @@
 interface LocationData {
-  locationId: number;
+  locationId: string;
   city: string;
   address: string;
 }
