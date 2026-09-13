@@ -31,7 +31,7 @@ export default function LocationCard({
         </div>
         <CardAction>
           <Button
-            variant='default'
+            variant='link'
             size={'lg'}
             onClick={() => {
               router.push(`/admin/locations/${locationData.locationId}`);
