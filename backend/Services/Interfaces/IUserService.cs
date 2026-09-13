@@ -8,11 +8,15 @@ public interface IUserService
 
     Task<IEnumerable<ClientResponseDto>> FindClient(string? parameter);
 
+    Task<ClientResponseDto?> FindClientById(int clientId);
+
     Task<bool> DeleteClient(int clientId);
 
     Task<EmployeeResponseDto?> CreateEmployee(EmployeeCreateDto dto);
 
     Task<IEnumerable<EmployeeResponseDto>> FindEmployee(string? parameter);
+
+    Task<EmployeeResponseDto?> FindEmployeeById(int employeeId);
 
     Task<IEnumerable<EmployeeLocationsResponseDto>> GetEmployeeLocations(int employeeId);
     

@@ -40,6 +40,20 @@ public class AdminUserController: ControllerBase
         return Ok(foundClients);
     }
 
+    [Authorize(Roles = "Admin,Employee")]
+    [HttpGet("clients/{clientId:int}")]
+    public async Task<IActionResult> GetClientById([FromRoute] int clientId)
+    {
+        var client = await _userService.FindClientById(clientId);
+
+        if (client == null)
+        {
+            return NotFound(new { detail = $"Client with ID {clientId} not found" });
+        }
+
+        return Ok(client);
+    }
+    
     [Authorize(Roles = "Admin")]
     [HttpDelete("clients/{clientId:int}")]
     public async Task<IActionResult> DeleteClient([FromRoute] int clientId)
@@ -75,6 +89,20 @@ public class AdminUserController: ControllerBase
         var foundEmployees = await _userService.FindEmployee(param);
 
         return Ok(foundEmployees);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("employees/{employeeId:int}")]
+    public async Task<IActionResult> GetEmployeeById([FromRoute] int employeeId)
+    {
+        var employee = await _userService.FindEmployeeById(employeeId);
+
+        if (employee == null)
+        {
+            return NotFound(new { detail = $"Employee with ID {employeeId} not found" });
+        }
+
+        return Ok(employee);
     }
 
     [Authorize(Roles = "Admin")]

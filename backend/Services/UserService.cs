@@ -83,6 +83,21 @@ public class UserService: IUserService
             }).ToListAsync();
     }
 
+    public async Task<ClientResponseDto?> FindClientById(int clientId)
+    {
+        return await _context.Clients
+            .AsNoTracking()
+            .Where(c => c.UserId == clientId)
+            .Select(c => new ClientResponseDto
+            {
+                UserId = c.UserId,
+                FirstName = c.User.FirstName,
+                LastName = c.User.LastName,
+                Email = c.User.Email,
+                PhoneNumber = c.PhoneNumber
+            }).SingleOrDefaultAsync();
+    }
+
     public async Task<bool> DeleteClient(int clientId)
     {
         var client = await _context.Clients
@@ -174,6 +189,21 @@ public class UserService: IUserService
                 Email = e.User.Email,
                 IsAdmin = e.IsAdmin
             }).ToListAsync();
+    }
+
+    public async Task<EmployeeResponseDto?> FindEmployeeById(int employeeId)
+    {
+        return await _context.Employees
+            .AsNoTracking()
+            .Where(e => e.UserId == employeeId)
+            .Select(e => new EmployeeResponseDto
+            {
+                UserId = e.UserId,
+                FirstName = e.User.FirstName,
+                LastName = e.User.LastName,
+                Email = e.User.Email,
+                IsAdmin = e.IsAdmin
+            }).SingleOrDefaultAsync();
     }
 
     public async Task<IEnumerable<EmployeeLocationsResponseDto>> GetEmployeeLocations(int employeeId)
