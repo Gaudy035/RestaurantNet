@@ -212,6 +212,32 @@ public class UserServiceTests: IDisposable
     }
 
     [Fact]
+    public async Task FindClientById_WithCorrectId_ReturnsCorrectClientData()
+    {
+        var client = await SeedClientUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        await SeedClientUser();
+
+        var result = await _userService.FindClientById(client.UserId);
+
+        Assert.NotNull(result);
+        Assert.Equal(result.UserId, client.UserId);
+        Assert.Equal(result.FirstName, client.User.FirstName);
+        Assert.Equal(result.LastName, client.User.LastName);
+        Assert.Equal(result.Email, client.User.Email);
+        Assert.Equal(result.PhoneNumber, client.PhoneNumber);
+    }
+
+    [Fact]
+    public async Task FindClientById_WithNoMatch_ReturnsNull()
+    {
+        await SeedClientUser();
+
+        var result = await _userService.FindClientById(42);
+
+        Assert.Null(result);
+    }
+    
+    [Fact]
     public async Task DeleteClient_WithCorrectId_DeletesAndReturnsTrue()
     {
         var client = await SeedClientUser();
@@ -377,6 +403,32 @@ public class UserServiceTests: IDisposable
         var result = await _userService.FindEmployee(client.User.FirstName);
 
         Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task FindEmployeeById_WithCorrectId_ReturnsCorrectEmployeeData()
+    {
+        var employee = await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        await SeedEmployeeUser();
+
+        var result = await _userService.FindEmployeeById(employee.UserId);
+
+        Assert.NotNull(result);
+        Assert.Equal(result.UserId, employee.UserId);
+        Assert.Equal(result.FirstName, employee.User.FirstName);
+        Assert.Equal(result.LastName, employee.User.LastName);
+        Assert.Equal(result.Email, employee.User.Email);
+        Assert.Equal(result.IsAdmin, employee.IsAdmin);
+    }
+
+    [Fact]
+    public async Task FindEmployeeById_WithNoMatch_ReturnsNull()
+    {
+        await SeedEmployeeUser();
+
+        var result = await _userService.FindEmployeeById(42);
+
+        Assert.Null(result);
     }
 
     [Fact]
