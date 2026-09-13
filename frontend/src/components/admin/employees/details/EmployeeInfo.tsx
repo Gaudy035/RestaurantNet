@@ -3,21 +3,96 @@
 import EmployeeData from '@/interfaces/EmployeeData';
 import { adminApiFetch } from '@/lib/api';
 import { useState, useEffect } from 'react';
+import {
+  Card,
+  CardAction,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useEmployee } from '@/lib/employee-context';
-import { Card } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
 
 export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
-  const loggedInEmployee = useEmployee();
-
-  const [employeeData, setEmployeeData] = useState<null | EmployeeData>(null);
+  const [employeeInfo, setEmployeeInfo] = useState<null | EmployeeData>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<null | string>(null);
+
+  const router = useRouter();
+  const currentEmployee = useEmployee();
 
   useEffect(() => {
     setLoading(true);
 
-    // adminApiFetch();
+    adminApiFetch(`/admin/users/employees/${employeeId}`, {
+      method: 'GET',
+      cache: 'no-store',
+    })
+      .then((res) => setEmployeeInfo(res))
+      .catch((e: any) => setError(e?.message))
+      .finally(() => setLoading(false));
   }, [employeeId]);
 
-  return <Card></Card>;
+  const isSelf: boolean =
+    currentEmployee.employeeData?.userId === employeeInfo?.userId &&
+    !!employeeInfo?.userId &&
+    !!currentEmployee.employeeData?.userId;
+
+  const deleteUser = async (userId: string) => {
+    setError(null);
+    try {
+      await adminApiFetch(`/admin/users/employees/${userId}`, {
+        method: 'DELETE',
+      });
+      router.push;
+    } catch (e: any) {
+      setError(e?.message);
+      console.log(e?.message);
+    }
+  };
+
+  return (
+    <div className='flex justify-center flex-col items-center'>
+      <p className='text-destructive'>{error ? error : null}</p>
+      {loading ? (
+        <p>Loading employee data...</p>
+      ) : employeeInfo ? (
+        <Card className='flex w-full py-8 px-4'>
+          <CardHeader className='flex flex-row justify-between items-center'>
+            <div className='flex flex-col justify-center items-start gap-2'>
+              <CardTitle className='flex justify-center items-center flex-row gap-4 text-2xl font-semibold'>
+                {employeeInfo.firstName} {employeeInfo.lastName}
+                {employeeInfo.isAdmin ? <Badge>Administrator</Badge> : null}
+              </CardTitle>
+              <CardDescription className='flex flex-row justify-center items-center gap-4 text-lg'>
+                <p>Email: {employeeInfo.email}</p>
+              </CardDescription>
+            </div>
+
+            <CardAction>
+              <Button
+                variant={isSelf ? 'outline' : 'destructive'}
+                className='text-lg p-4'
+                size={'lg'}
+                disabled={isSelf}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Delete user: ${employeeInfo.firstName} ${employeeInfo.lastName} (ID: ${employeeInfo.userId})?`,
+                    )
+                  ) {
+                    deleteUser(employeeInfo.userId);
+                  }
+                }}
+              >
+                {isSelf ? 'You' : 'Delete'}
+              </Button>
+            </CardAction>
+          </CardHeader>
+        </Card>
+      ) : null}
+    </div>
+  );
 }
