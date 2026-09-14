@@ -63,7 +63,9 @@ export default function EmployeeLocations({
               <CardAction>
                 <Button
                   variant='default'
-                  //   Link to assign form
+                  onClick={() =>
+                    router.push(`/admin/employees/${employeeId}/assign`)
+                  }
                 >
                   Assign to location
                 </Button>
