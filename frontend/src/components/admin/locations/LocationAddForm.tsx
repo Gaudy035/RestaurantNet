@@ -15,9 +15,7 @@ import { adminApiFetch } from '@/lib/api';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function AdminLocationAddForm({
-  ...props
-}: React.ComponentProps<typeof Card>) {
+export function AdminLocationAddForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -43,7 +41,7 @@ export function AdminLocationAddForm({
   };
 
   return (
-    <Card {...props}>
+    <Card>
       <CardHeader>
         <CardTitle>Create a new location</CardTitle>
         <CardDescription>Enter new locations address below</CardDescription>

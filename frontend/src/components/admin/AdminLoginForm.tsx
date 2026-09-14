@@ -17,10 +17,7 @@ import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import React, { useState } from 'react';
 
-export function AdminLoginForm({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
+export function AdminLoginForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +43,7 @@ export function AdminLoginForm({
   };
 
   return (
-    <div className={cn('flex flex-col gap-6', className)} {...props}>
+    <div className={cn('flex flex-col gap-6')}>
       <Card>
         <CardHeader>
           <div className='flex flex-row items-center justify-between'>

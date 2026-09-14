@@ -15,9 +15,7 @@ import { adminApiFetch } from '@/lib/api';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function AdminClientAddForm({
-  ...props
-}: React.ComponentProps<typeof Card>) {
+export function AdminClientAddForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const phoneRegex = /^\+?[1-9]\d{1,14}$/;
@@ -57,7 +55,7 @@ export function AdminClientAddForm({
   };
 
   return (
-    <Card {...props}>
+    <Card>
       <CardHeader>
         <CardTitle>Create a client account</CardTitle>
         <CardDescription>Enter clients information below</CardDescription>

@@ -15,9 +15,7 @@ import { adminApiFetch } from '@/lib/api';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function AdminEmployeeAddForm({
-  ...props
-}: React.ComponentProps<typeof Card>) {
+export function AdminEmployeeAddForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -47,7 +45,7 @@ export function AdminEmployeeAddForm({
   };
 
   return (
-    <Card {...props}>
+    <Card>
       <CardHeader>
         <CardTitle>Create an employee account</CardTitle>
         <CardDescription>Enter new employees information below</CardDescription>
