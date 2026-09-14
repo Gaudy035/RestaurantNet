@@ -44,6 +44,7 @@ export default function LocationEmployees({
 
     try {
       await unassignEmployee(employeeId, locationId, position);
+      setEmployees((prev) => prev.filter((e) => e.userId != employeeId));
     } catch (e: any) {
       setError(e?.message);
       console.log(e?.message);
