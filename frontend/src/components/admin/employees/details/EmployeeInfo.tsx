@@ -25,6 +25,7 @@ export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
 
     adminApiFetch(`/admin/users/employees/${employeeId}`, {
       method: 'GET',
