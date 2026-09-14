@@ -67,8 +67,9 @@ export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
                 {employeeInfo.firstName} {employeeInfo.lastName}
                 {employeeInfo.isAdmin ? <Badge>Administrator</Badge> : null}
               </CardTitle>
-              <CardDescription className='flex flex-row justify-center items-center gap-4 text-lg'>
+              <CardDescription className='flex flex-col justify-center items-start text-lg'>
                 <p>Email: {employeeInfo.email}</p>
+                <p>User ID: {employeeInfo.userId}</p>
               </CardDescription>
             </div>
 
