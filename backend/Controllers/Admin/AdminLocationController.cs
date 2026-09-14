@@ -82,7 +82,7 @@ public class AdminLocationsController: ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpGet("employees/{locationId:int}")]
+    [HttpGet("{locationId:int}/employees")]
     public async Task<IActionResult> GetAssignedEmployees([FromRoute] int locationId)
     {
         var employees = await _locationService.GetAssignedEmployees(locationId);
