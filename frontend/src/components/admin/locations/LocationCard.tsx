@@ -19,7 +19,12 @@ export default function LocationCard({
   const router = useRouter();
 
   return (
-    <Card className='flex w-full py-4'>
+    <Card
+      className='group flex w-full px-4 py-6 cursor-pointer hover:bg-accent hover:text-accent-foreground transition'
+      onClick={() => {
+        router.push(`/admin/locations/${locationData.locationId}`);
+      }}
+    >
       <CardHeader className='flex flex-row justify-between items-center'>
         <div className='flex flex-col justify-center items-start gap-2'>
           <CardTitle className='flex justify-center items-center flex-row gap-2'>
@@ -33,9 +38,7 @@ export default function LocationCard({
           <Button
             variant='link'
             size={'lg'}
-            onClick={() => {
-              router.push(`/admin/locations/${locationData.locationId}`);
-            }}
+            className='pointer-events-none group-hover:underline'
           >
             Details
           </Button>
