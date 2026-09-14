@@ -44,7 +44,11 @@ export default function LocationEmployees({
 
     try {
       await unassignEmployee(employeeId, locationId, position);
-      setEmployees((prev) => prev.filter((e) => e.userId != employeeId));
+      setEmployees((prev) =>
+        prev.filter(
+          (e) => !(e.userId === employeeId && e.position === position),
+        ),
+      );
     } catch (e: any) {
       setError(e?.message);
       console.log(e?.message);
@@ -76,7 +80,7 @@ export default function LocationEmployees({
                   {employees.map((e) => (
                     <div
                       className='flex flex-row justify-between items-center w-full py-2'
-                      key={e.userId}
+                      key={`${e.userId}-${e.position}`}
                     >
                       <div className='flex flex-row justify-center items-center gap-4'>
                         <Button
