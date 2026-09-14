@@ -16,7 +16,6 @@ export default function EmployeeCard({
   employeeData,
 }: {
   employeeData: EmployeeData;
-  currentId: string;
 }) {
   const router = useRouter();
 
