@@ -1,10 +1,8 @@
 # RestaurantNet
 
-Full-stack restaurant management system. A web application for managing a restaurant
-chain: locations, tables, bookings, menu, orders and deliveries — with a public
-storefront and an admin panel.
+Full-stack restaurant management system. A web application for managing a restaurant chain: locations, tables, bookings, menu, orders and deliveries — with a public storefront and an admin panel.
 
-Project is still work in progress. Authentication and parts of the admin panel are functional but ordering, menu, booking, and location management are currently still in development.
+Project is still work in progress. Authentication and parts of the admin panel including client, employee, and location management with staff assignment are functional but ordering, menu, and booking are still in development. The public storefront page is not built yet.
 
 ## Tech stack
 
@@ -21,7 +19,8 @@ Project is still work in progress. Authentication and parts of the admin panel a
 - Role-based access (`Admin`, `Employee`, `Client`)
 - Client accounts created by employees or self-registered by the client
 - Employee accounts created and managed by admins (admins are also employees)
-- Admin panel: manage clients and employees (list, search, add, delete)
+- Admin panel: manage clients, employees and locations (list, search, add, delete)
+- Assign/unassign employees to locations by position (Manager, Chef, Server, Cashier, Driver), with detail pages showing staff per location and locations per employee
 - Initial admin seeded automatically when no admins exist in database
 - Background job for daily cleaning up expired/revoked refresh-token (Quartz)
 - Scalar UI API docs in dev at `/docs`
@@ -32,7 +31,7 @@ The following are modeled in the database but not yet exposed in the UI or API:
 
 - Menu (categories, items, ingredients, allergens)
 - Orders (dine-in / pickup / delivery) and order status flow
-- Tables, bookings, and multi-location support
+- Tables and bookings
 - Delivery management
 
 ## Prerequisites
