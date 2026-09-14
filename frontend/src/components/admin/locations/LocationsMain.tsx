@@ -18,7 +18,7 @@ export default function AdminLocationsMain({
     setLoading(true);
 
     const endpoint = locationData
-      ? `/admin/locations?param=${locationData}`
+      ? `/admin/locations?param=${encodeURIComponent(locationData)}`
       : '/admin/locations';
 
     adminApiFetch(endpoint, { method: 'GET', cache: 'no-store' })

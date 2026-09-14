@@ -18,7 +18,7 @@ export default function AdminEmployeesMain({
     setLoading(true);
 
     const endpoint = employeeData
-      ? `/admin/users/employees?param=${employeeData}`
+      ? `/admin/users/employees?param=${encodeURIComponent(employeeData)}`
       : '/admin/users/employees';
 
     adminApiFetch(endpoint, { method: 'GET', cache: 'no-store' })

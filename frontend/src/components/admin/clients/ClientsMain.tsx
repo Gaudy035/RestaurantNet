@@ -25,7 +25,7 @@ export default function AdminClientsMain({
     setLoading(true);
 
     const endpoint = clientData
-      ? `/admin/users/clients?param=${clientData}`
+      ? `/admin/users/clients?param=${encodeURIComponent(clientData)}`
       : '/admin/users/clients';
 
     adminApiFetch(endpoint, { method: 'GET', cache: 'no-store' })
