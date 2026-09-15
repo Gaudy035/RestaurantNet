@@ -57,7 +57,7 @@ export default function EmployeeLocations({
 
   return (
     <div className='flex justify-center flex-col items-center'>
-      <Card className='flex w-full p-4'>
+      <Card className='flex w-full py-4 px-2'>
         {loading ? (
           'Loading locations...'
         ) : (
@@ -80,7 +80,7 @@ export default function EmployeeLocations({
                 <div className='divide-y'>
                   {locations.map((l) => (
                     <div
-                      className='flex flex-row justify-between items-center w-full py-2'
+                      className='flex flex-row justify-between items-center w-full py-1'
                       key={`${l.locationId}-${l.position}`}
                     >
                       <div className='flex flex-row justify-center items-center gap-4'>

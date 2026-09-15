@@ -57,7 +57,7 @@ export default function LocationEmployees({
 
   return (
     <div className='flex justify-center flex-col items-center'>
-      <Card className='flex w-full p-4'>
+      <Card className='flex w-full py-4 px-2'>
         {loading ? (
           'Loading employees...'
         ) : (

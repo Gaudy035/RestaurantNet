@@ -60,7 +60,7 @@ export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
       {loading ? (
         <p>Loading employee data...</p>
       ) : employeeInfo ? (
-        <Card className='flex w-full py-8 px-4'>
+        <Card className='flex w-full py-6 px-3'>
           <CardHeader className='flex flex-row justify-between items-center'>
             <div className='flex flex-col justify-center items-start gap-2'>
               <CardTitle className='flex justify-center items-center flex-row gap-4 text-2xl font-semibold'>

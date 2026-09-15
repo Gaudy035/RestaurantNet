@@ -37,7 +37,7 @@ export default function ClientCard({
   };
 
   return (
-    <Card className='flex w-full py-4'>
+    <Card className='flex w-full px-2 py-5'>
       <CardHeader className='flex flex-row justify-between items-center'>
         <div className='flex flex-col justify-center items-start gap-2'>
           <CardTitle>

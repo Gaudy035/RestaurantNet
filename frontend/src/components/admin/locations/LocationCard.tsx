@@ -20,7 +20,7 @@ export default function LocationCard({
 
   return (
     <Card
-      className='group flex w-full px-4 py-6 cursor-pointer hover:bg-accent hover:text-accent-foreground transition'
+      className='group flex w-full px-2 py-5 cursor-pointer hover:bg-accent hover:text-accent-foreground transition'
       onClick={() => {
         router.push(`/admin/locations/${locationData.locationId}`);
       }}
