@@ -31,7 +31,7 @@ public class LocationService : ILocationService
         }
         catch (DbUpdateException)
         {
-            return Result<LocationResponseDto>.Fail(Error.From(ErrorCode.DbOperationFailed));
+            return Result<LocationResponseDto>.Fail(ErrorCode.DbOperationFailed);
         }
 
         return Result<LocationResponseDto>.Success(new LocationResponseDto
@@ -79,7 +79,7 @@ public class LocationService : ILocationService
             }).FirstOrDefaultAsync();
             
         return location == null
-            ? Result<LocationResponseDto>.Fail(Error.From(ErrorCode.LocationNotFound))
+            ? Result<LocationResponseDto>.Fail(ErrorCode.LocationNotFound)
             : Result<LocationResponseDto>.Success(location);
     }
 
@@ -90,7 +90,7 @@ public class LocationService : ILocationService
 
         if (location == null)
         {
-            return Result.Fail(Error.From(ErrorCode.LocationNotFound));
+            return Result.Fail(ErrorCode.LocationNotFound);
         }
 
         _context.Locations.Remove(location);
@@ -101,7 +101,7 @@ public class LocationService : ILocationService
         } 
         catch (DbUpdateException)
         {
-            return Result.Fail(Error.From(ErrorCode.DbOperationFailed));
+            return Result.Fail(ErrorCode.DbOperationFailed);
         }
         
         return Result.Success();
@@ -114,7 +114,7 @@ public class LocationService : ILocationService
         
         if (!employeeExists)
         {
-            return Result.Fail(Error.From(ErrorCode.EmployeeNotFound));
+            return Result.Fail(ErrorCode.EmployeeNotFound);
         }
 
         var locationExists = await _context.Locations.AsNoTracking()
@@ -122,7 +122,7 @@ public class LocationService : ILocationService
         
         if (!locationExists)
         {
-            return Result.Fail(Error.From(ErrorCode.LocationNotFound));
+            return Result.Fail(ErrorCode.LocationNotFound);
         }
 
         var alreadyAssigned = await _context.LocationEmployees.AsNoTracking()
@@ -133,7 +133,7 @@ public class LocationService : ILocationService
 
         if (alreadyAssigned)
         {
-            return Result.Fail(Error.From(ErrorCode.AlreadyAssigned));
+            return Result.Fail(ErrorCode.AlreadyAssigned);
         }
 
         _context.LocationEmployees.Add(new LocationEmployee
@@ -149,7 +149,7 @@ public class LocationService : ILocationService
         }
         catch (DbUpdateException)
         {
-            return Result.Fail(Error.From(ErrorCode.DbOperationFailed));
+            return Result.Fail(ErrorCode.DbOperationFailed);
         }
 
         return Result.Success();
@@ -185,7 +185,7 @@ public class LocationService : ILocationService
         
         if (assignment == null)
         {
-            return Result.Fail(Error.From(ErrorCode.AssignmentNotFound));
+            return Result.Fail(ErrorCode.AssignmentNotFound);
         }
 
         _context.LocationEmployees.Remove(assignment);
@@ -196,7 +196,7 @@ public class LocationService : ILocationService
         }
         catch (DbUpdateException)
         {
-            return Result.Fail(Error.From(ErrorCode.DbOperationFailed));
+            return Result.Fail(ErrorCode.DbOperationFailed);
         }
 
         return Result.Success();

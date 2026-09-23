@@ -102,7 +102,7 @@ public class AuthService: IAuthService
         
         if (foundUser == null)
         {
-            return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.InvalidCredentials));
+            return Result<LoginResponseDto>.Fail(ErrorCode.InvalidCredentials);
         }
         
         string role;
@@ -119,12 +119,12 @@ public class AuthService: IAuthService
         }
         else
         {
-            return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.InvalidCredentials));
+            return Result<LoginResponseDto>.Fail(ErrorCode.InvalidCredentials);
         }
 
         if (!BCrypt.Net.BCrypt.Verify(dto.Password, foundUser.Password))
         {
-            return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.InvalidCredentials));
+            return Result<LoginResponseDto>.Fail(ErrorCode.InvalidCredentials);
         }
 
         try
@@ -141,7 +141,7 @@ public class AuthService: IAuthService
         }
         catch (DbUpdateException)
         {
-            return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.DbOperationFailed));
+            return Result<LoginResponseDto>.Fail(ErrorCode.DbOperationFailed);
         }
     }
 
@@ -154,7 +154,7 @@ public class AuthService: IAuthService
 
         if (oldToken == null || !oldToken.IsActive)
         {
-            return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.InvalidRefreshToken));
+            return Result<LoginResponseDto>.Fail(ErrorCode.InvalidRefreshToken);
         }
 
         try
@@ -163,7 +163,7 @@ public class AuthService: IAuthService
 
             if (oldToken.ExpiresAt <= DateTimeOffset.UtcNow)
             {
-                return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.InvalidRefreshToken));
+                return Result<LoginResponseDto>.Fail(ErrorCode.InvalidRefreshToken);
             }
             var newAccessToken = GenerateAccessToken(oldToken.UserId, oldToken.Role);
             var newRefreshToken = await GenerateRefreshToken(oldToken.UserId, oldToken.Role);
@@ -177,7 +177,7 @@ public class AuthService: IAuthService
         }
         catch (DbUpdateException)
         {
-            return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.DbOperationFailed));
+            return Result<LoginResponseDto>.Fail(ErrorCode.DbOperationFailed);
         }
     }
 
@@ -190,7 +190,7 @@ public class AuthService: IAuthService
         
         if (client == null)
         {
-            return Result<ClientResponseDto>.Fail(Error.From(ErrorCode.ClientNotFound));
+            return Result<ClientResponseDto>.Fail(ErrorCode.ClientNotFound);
         }
 
         return Result<ClientResponseDto>.Success(new ClientResponseDto
@@ -212,7 +212,7 @@ public class AuthService: IAuthService
 
         if (employee == null)
         {
-            return Result<EmployeeResponseDto>.Fail(Error.From(ErrorCode.EmployeeNotFound));
+            return Result<EmployeeResponseDto>.Fail(ErrorCode.EmployeeNotFound);
         }
 
         return Result<EmployeeResponseDto>.Success(new EmployeeResponseDto

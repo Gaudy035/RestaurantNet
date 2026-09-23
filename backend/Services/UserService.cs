@@ -22,7 +22,7 @@ public class UserService: IUserService
         
         if (emailTaken)
         {
-            return Result<ClientResponseDto>.Fail(Error.From(ErrorCode.EmailAlreadyTaken));
+            return Result<ClientResponseDto>.Fail(ErrorCode.EmailAlreadyTaken);
         }
 
         var hashedPass = BCrypt.Net.BCrypt.HashPassword(dto.Password);
@@ -45,7 +45,7 @@ public class UserService: IUserService
         }
         catch (DbUpdateException)
         {
-            return Result<ClientResponseDto>.Fail(Error.From(ErrorCode.DbOperationFailed));
+            return Result<ClientResponseDto>.Fail(ErrorCode.DbOperationFailed);
         }
 
         return Result<ClientResponseDto>.Success(new ClientResponseDto
@@ -101,7 +101,7 @@ public class UserService: IUserService
             }).SingleOrDefaultAsync();
 
         return client == null 
-            ? Result<ClientResponseDto>.Fail(Error.From(ErrorCode.ClientNotFound))
+            ? Result<ClientResponseDto>.Fail(ErrorCode.ClientNotFound)
             : Result<ClientResponseDto>.Success(client);
     }
 
@@ -113,7 +113,7 @@ public class UserService: IUserService
 
         if (client == null)
         {
-            return Result.Fail(Error.From(ErrorCode.ClientNotFound));
+            return Result.Fail(ErrorCode.ClientNotFound);
         }
 
         _context.Users.Remove(client.User);
@@ -125,7 +125,7 @@ public class UserService: IUserService
         }
         catch (DbUpdateException)
         {
-            return Result.Fail(Error.From(ErrorCode.DbOperationFailed));
+            return Result.Fail(ErrorCode.DbOperationFailed);
         }
     }
 
@@ -136,7 +136,7 @@ public class UserService: IUserService
         
         if (emailTaken)
         {
-            return Result<EmployeeResponseDto>.Fail(Error.From(ErrorCode.EmailAlreadyTaken));
+            return Result<EmployeeResponseDto>.Fail(ErrorCode.EmailAlreadyTaken);
         }
 
         var hashedPass = BCrypt.Net.BCrypt.HashPassword(dto.Password);
@@ -159,7 +159,7 @@ public class UserService: IUserService
         }
         catch (DbUpdateException)
         {
-            return Result<EmployeeResponseDto>.Fail(Error.From(ErrorCode.DbOperationFailed));
+            return Result<EmployeeResponseDto>.Fail(ErrorCode.DbOperationFailed);
         }
 
         return Result<EmployeeResponseDto>.Success(new EmployeeResponseDto
@@ -215,7 +215,7 @@ public class UserService: IUserService
             }).SingleOrDefaultAsync();
 
         return employee == null
-            ? Result<EmployeeResponseDto>.Fail(Error.From(ErrorCode.EmployeeNotFound))
+            ? Result<EmployeeResponseDto>.Fail(ErrorCode.EmployeeNotFound)
             : Result<EmployeeResponseDto>.Success(employee);
     }
 
@@ -242,7 +242,7 @@ public class UserService: IUserService
     {
         if (employeeId == currentAdminId)
         {
-            return Result.Fail(Error.From(ErrorCode.OwnAccountDeletion));
+            return Result.Fail(ErrorCode.OwnAccountDeletion);
         }
 
         var employee = await _context.Employees
@@ -251,7 +251,7 @@ public class UserService: IUserService
 
         if (employee == null)
         {
-            return Result.Fail(Error.From(ErrorCode.EmployeeNotFound));
+            return Result.Fail(ErrorCode.EmployeeNotFound);
         }
 
         _context.Users.Remove(employee.User);
@@ -263,7 +263,7 @@ public class UserService: IUserService
         }
         catch (DbUpdateException)
         {
-            return Result.Fail(Error.From(ErrorCode.DbOperationFailed));
+            return Result.Fail(ErrorCode.DbOperationFailed);
         }
     }
 }
