@@ -325,16 +325,17 @@ public class UserServiceTests: IDisposable
             IsAdmin = false
         };
 
-        var resultEmployee = await _userService.CreateEmployee(dto);
+        var result = await _userService.CreateEmployee(dto);
 
-        Assert.NotNull(resultEmployee);
-        Assert.True(resultEmployee.UserId > 0);
-        Assert.Equal(resultEmployee.Email, dto.Email);
-        Assert.Equal(resultEmployee.IsAdmin, dto.IsAdmin);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.True(result.Data.UserId > 0);
+        Assert.Equal(result.Data.Email, dto.Email);
+        Assert.Equal(result.Data.IsAdmin, dto.IsAdmin);
     }
 
     [Fact]
-    public async Task CreateEmployee_WithDuplicateEmail_ReturnsNull()
+    public async Task CreateEmployee_WithDuplicateEmail_ReturnsDuplicateEmailError()
     {
         var dto = new EmployeeCreateDto
         {
@@ -347,9 +348,13 @@ public class UserServiceTests: IDisposable
 
         // First Employee with said email
         await _userService.CreateEmployee(dto);
-        var secondEmployee = await _userService.CreateEmployee(dto);
+        // Second employee
+        var result = await _userService.CreateEmployee(dto);
 
-        Assert.Null(secondEmployee);
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.Data);
+        Assert.NotNull(result.Error);
+        Assert.Equal(409, result.Error.StatusCode);
     }
 
     [Fact]
@@ -360,7 +365,9 @@ public class UserServiceTests: IDisposable
         
         var result = await _userService.FindEmployee(null);
 
-        Assert.Equal(2, result.Count());
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(2, result.Data.Count());
     }
 
     [Fact]
@@ -371,9 +378,11 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindEmployee("ack");
 
-        Assert.Single(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data);
         
-        var employee = result.Single();
+        var employee = result.Data.Single();
 
         Assert.Equal("Jack", employee.FirstName);
         Assert.Equal("Jackson", employee.LastName);
@@ -389,10 +398,12 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindEmployee("doe");
 
-        Assert.Equal(2, result.Count());
-        Assert.Contains(result, e => e.UserId == employee1.UserId);
-        Assert.DoesNotContain(result, e => e.UserId == employee2.UserId);
-        Assert.Contains(result, e => e.UserId == employee3.UserId);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(2, result.Data.Count());
+        Assert.Contains(result.Data, e => e.UserId == employee1.UserId);
+        Assert.DoesNotContain(result.Data, e => e.UserId == employee2.UserId);
+        Assert.Contains(result.Data, e => e.UserId == employee3.UserId);
     }
 
     [Fact]
@@ -403,9 +414,11 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindEmployee("jane doe");
 
-        Assert.Single(result);
-        Assert.Contains(result, e => e.UserId == employee1.UserId);
-        Assert.DoesNotContain(result, e => e.UserId == employee2.UserId);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data);
+        Assert.Contains(result.Data, e => e.UserId == employee1.UserId);
+        Assert.DoesNotContain(result.Data, e => e.UserId == employee2.UserId);
     }
 
     [Fact]
@@ -416,7 +429,9 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindEmployee("someRandomParameter");
 
-        Assert.Empty(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Empty(result.Data);
     }
 
     [Fact]
@@ -426,7 +441,9 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindEmployee(client.User.FirstName);
 
-        Assert.Empty(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Empty(result.Data);
     }
 
     [Fact]
@@ -437,22 +454,26 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindEmployeeById(employee.UserId);
 
-        Assert.NotNull(result);
-        Assert.Equal(result.UserId, employee.UserId);
-        Assert.Equal(result.FirstName, employee.User.FirstName);
-        Assert.Equal(result.LastName, employee.User.LastName);
-        Assert.Equal(result.Email, employee.User.Email);
-        Assert.Equal(result.IsAdmin, employee.IsAdmin);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(result.Data.UserId, employee.UserId);
+        Assert.Equal(result.Data.FirstName, employee.User.FirstName);
+        Assert.Equal(result.Data.LastName, employee.User.LastName);
+        Assert.Equal(result.Data.Email, employee.User.Email);
+        Assert.Equal(result.Data.IsAdmin, employee.IsAdmin);
     }
 
     [Fact]
-    public async Task FindEmployeeById_WithNoMatch_ReturnsNull()
+    public async Task FindEmployeeById_WithNoMatch_ReturnsEmployeeNotFoundError()
     {
         await SeedEmployeeUser();
 
         var result = await _userService.FindEmployeeById(42);
 
-        Assert.Null(result);
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.Data);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
     }
 
     [Fact]
@@ -468,23 +489,25 @@ public class UserServiceTests: IDisposable
         var assignmentCount = await _context.LocationEmployees.CountAsync();
         var result = await _userService.GetEmployeeLocations(employee.UserId);
 
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
         Assert.Equal(3, assignmentCount);
-        Assert.Equal(assignmentCount, result.Count());
-        Assert.Contains(result, x => 
+        Assert.Equal(assignmentCount, result.Data.Count());
+        Assert.Contains(result.Data, x => 
             x.LocationId == location1.LocationId &&
             x.City == location1.City &&
             x.Address == location1.Address &&
             x.UserId == employee.UserId &&
             x.Position == Position.Server
         );
-        Assert.Contains(result, x => 
+        Assert.Contains(result.Data, x => 
             x.LocationId == location1.LocationId &&
             x.City == location1.City &&
             x.Address == location1.Address &&
             x.UserId == employee.UserId &&
             x.Position == Position.Cashier
         );
-        Assert.Contains(result, x => 
+        Assert.Contains(result.Data, x => 
             x.LocationId == location2.LocationId &&
             x.City == location2.City &&
             x.Address == location2.Address &&
@@ -500,7 +523,9 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.GetEmployeeLocations(employee.UserId);
 
-        Assert.Empty(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Empty(result.Data);
     }
 
     [Fact]
@@ -517,11 +542,13 @@ public class UserServiceTests: IDisposable
         var result = await _userService.GetEmployeeLocations(employee1.UserId);
 
         Assert.Equal(3, countAssigned);
-        Assert.Equal(2, result.Count());
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(2, result.Data.Count());
     }
 
     [Fact]
-    public async Task DeleteEmployee_WithCorrectId_DeletesAndReturnsTrue()
+    public async Task DeleteEmployee_WithCorrectId_DeletesAndReturnsSuccess()
     {
         var employee = await SeedEmployeeUser();
 
@@ -529,17 +556,17 @@ public class UserServiceTests: IDisposable
 
         Assert.Equal(1, countBefore);
 
-        var result = await _userService.DeleteEmployee(employee.UserId);
+        var result = await _userService.DeleteEmployee(employee.UserId, 42);
         var countAfter = await _context.Users.CountAsync();
         var countAfter2 = await _context.Employees.CountAsync();
         
-        Assert.True(result);
+        Assert.True(result.IsSuccess);
         Assert.Equal(0, countAfter);
         Assert.Equal(0, countAfter2);
     }
 
     [Fact]
-    public async Task DeleteEmployee_WithNoMatch_DoesntDeleteAndReturnsFalse()
+    public async Task DeleteEmployee_WithNoMatch_DoesntDeleteAndReturnsEmployeeNotFoundError()
     {
         var employee = await SeedEmployeeUser();
 
@@ -547,17 +574,19 @@ public class UserServiceTests: IDisposable
 
         Assert.Equal(1, countBefore);
 
-        var result = await _userService.DeleteEmployee(99);
+        var result = await _userService.DeleteEmployee(99, 42);
         var countAfter = await _context.Users.CountAsync();
         var countAfter2 = await _context.Employees.CountAsync();
 
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
         Assert.Equal(countBefore, countAfter);
         Assert.Equal(countBefore, countAfter2);
     }
 
      [Fact]
-    public async Task DeleteEmployee_WithMatchInClients_DoesntDeleteAndReturnsFalse()
+    public async Task DeleteEmployee_WithMatchInClients_DoesntDeleteAndReturnsEmployeeNotFoundError()
     {
         var client = await SeedClientUser();
 
@@ -565,10 +594,12 @@ public class UserServiceTests: IDisposable
 
         Assert.Equal(1, countBefore);
 
-        var result = await _userService.DeleteEmployee(client.UserId);
+        var result = await _userService.DeleteEmployee(client.UserId, 42);
         var countAfter = await _context.Users.CountAsync();
 
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
         Assert.Equal(countBefore, countAfter);
     }
 }
