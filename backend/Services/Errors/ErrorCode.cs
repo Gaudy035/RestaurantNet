@@ -2,6 +2,7 @@ namespace backend.Services.Errors;
 
 public enum ErrorCode
 {
+    InvalidRefreshToken,
     InvalidCredentials,
     EmailAlreadyTaken,
     NotFound,

@@ -6,6 +6,7 @@ using backend.Data;
 using backend.Data.Entities;
 using backend.DTOs.Auth;
 using backend.DTOs.Users;
+using backend.Services.Errors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -24,13 +25,8 @@ public class AuthService: IAuthService
 
     private static readonly string[] roles = ["Admin", "Employee", "Client"];
 
-    private string? GenerateAccessToken(int userId, string userRole)
+    private string GenerateAccessToken(int userId, string userRole)
     {
-        if (!roles.Contains(userRole))
-        {
-            return null;
-        }
-
         var tokenHandler = new JwtSecurityTokenHandler();
 
         var keyStr = _configuration["Jwt:Key"];
@@ -54,13 +50,8 @@ public class AuthService: IAuthService
         return tokenHandler.WriteToken(token);
     }
 
-    private async Task<string?> GenerateRefreshToken(int userId, string role)
+    private async Task<string> GenerateRefreshToken(int userId, string role)
     {
-        if (!roles.Contains(role))
-        {
-            return null;
-        }
-
         var expiration = role == "Client" 
             ? DateTimeOffset.UtcNow.AddDays(7) 
             : DateTimeOffset.UtcNow.AddHours(12);
@@ -103,7 +94,7 @@ public class AuthService: IAuthService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<LoginResponseDto?> Login(LoginDto dto, string destination)
+    public async Task<Result<LoginResponseDto>> Login(LoginDto dto, string destination)
     {
         var foundUser = await _context.Users
             .AsNoTracking()
@@ -113,7 +104,7 @@ public class AuthService: IAuthService
         
         if (foundUser == null)
         {
-            return null;
+            return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.InvalidCredentials));
         }
         
         string role;
@@ -130,31 +121,33 @@ public class AuthService: IAuthService
         }
         else
         {
-            return null;
+            return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.InvalidCredentials));
         }
 
         if (!BCrypt.Net.BCrypt.Verify(dto.Password, foundUser.Password))
         {
-            return null;
+            return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.InvalidCredentials));
         }
 
-        var accessToken = GenerateAccessToken(foundUser.UserId, role);
-        var refreshToken = await GenerateRefreshToken(foundUser.UserId, role);
-
-        if (accessToken == null || refreshToken == null)
+        try
         {
-            return null;
+            var accessToken = GenerateAccessToken(foundUser.UserId, role);
+            var refreshToken = await GenerateRefreshToken(foundUser.UserId, role);
+
+            return Result<LoginResponseDto>.Success(new LoginResponseDto
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                Role = role
+            });
         }
-
-        return new LoginResponseDto
+        catch (DbUpdateException)
         {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            Role = role
-        };
+            return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.DbOperationFailed));
+        }
     }
 
-    public async Task<LoginResponseDto?> Refresh(string refreshTokenValue)
+    public async Task<Result<LoginResponseDto>> Refresh(string refreshTokenValue)
     {
         var oldToken = await _context.RefreshTokens
             .AsNoTracking()
@@ -163,33 +156,34 @@ public class AuthService: IAuthService
 
         if (oldToken == null || !oldToken.IsActive)
         {
-            return null;
+            return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.InvalidRefreshToken));
         }
 
-        await RevokeToken(oldToken.TokenValue);
-
-        if (oldToken.ExpiresAt <= DateTimeOffset.UtcNow)
+        try
         {
-            return null;
+            await RevokeToken(oldToken.TokenValue);
+
+            if (oldToken.ExpiresAt <= DateTimeOffset.UtcNow)
+            {
+                return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.InvalidRefreshToken));
+            }
+            var newAccessToken = GenerateAccessToken(oldToken.UserId, oldToken.Role);
+            var newRefreshToken = await GenerateRefreshToken(oldToken.UserId, oldToken.Role);
+
+            return Result<LoginResponseDto>.Success(new LoginResponseDto
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
+                Role = oldToken.Role
+            });
         }
-
-        var newAccessToken = GenerateAccessToken(oldToken.UserId, oldToken.Role);
-        var newRefreshToken = await GenerateRefreshToken(oldToken.UserId, oldToken.Role);
-
-        if (newAccessToken == null || newRefreshToken == null)
+        catch (DbUpdateException)
         {
-            return null;
+            return Result<LoginResponseDto>.Fail(Error.From(ErrorCode.DbOperationFailed));
         }
-
-        return new LoginResponseDto
-        {
-            AccessToken = newAccessToken,
-            RefreshToken = newRefreshToken,
-            Role = oldToken.Role
-        };
     }
 
-    public async Task<ClientResponseDto?> MeClient(int userId)
+    public async Task<Result<ClientResponseDto>> MeClient(int userId)
     {
         var client = await _context.Clients
             .AsNoTracking()
@@ -198,20 +192,20 @@ public class AuthService: IAuthService
         
         if (client == null)
         {
-            return null;
+            return Result<ClientResponseDto>.Fail(Error.From(ErrorCode.ClientNotFound));
         }
 
-        return new ClientResponseDto
+        return Result<ClientResponseDto>.Success(new ClientResponseDto
         {
             UserId = client.UserId,
             FirstName = client.User.FirstName,
             LastName = client.User.LastName,
             Email = client.User.Email,
             PhoneNumber = client.PhoneNumber
-        };
+        });
     }
 
-    public async Task<EmployeeResponseDto?> MeAdmin(int userId)
+    public async Task<Result<EmployeeResponseDto>> MeAdmin(int userId)
     {
         var employee = await _context.Employees
             .AsNoTracking()
@@ -220,16 +214,16 @@ public class AuthService: IAuthService
 
         if (employee == null)
         {
-            return null;
+            return Result<EmployeeResponseDto>.Fail(Error.From(ErrorCode.EmployeeNotFound));
         }
 
-        return new EmployeeResponseDto
+        return Result<EmployeeResponseDto>.Success(new EmployeeResponseDto
         {
             UserId = employee.UserId,
             FirstName = employee.User.FirstName,
             LastName = employee.User.LastName,
             Email = employee.User.Email,
             IsAdmin = employee.IsAdmin
-        };
+        });
     }
 }

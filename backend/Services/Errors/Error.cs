@@ -15,7 +15,8 @@ public sealed class Error
 
     public static Error From(ErrorCode code, string? customMessage = null) => 
         code switch
-        {
+        {  
+            ErrorCode.InvalidRefreshToken => new Error(code, customMessage ?? "Invalid refresh token", StatusCodes.Status401Unauthorized),
             ErrorCode.InvalidCredentials => new Error(code, customMessage ?? "Invalid credentials", StatusCodes.Status401Unauthorized),
             ErrorCode.EmailAlreadyTaken => new Error(code, customMessage ?? "Email already taken", StatusCodes.Status409Conflict),
             ErrorCode.NotFound => new Error(code, customMessage ?? "Resource not found", StatusCodes.Status404NotFound),
