@@ -106,10 +106,11 @@ public class LocationSericveTests: IDisposable
 
         var result = await _locationService.CreateLocation(newLocationDto);
 
-        Assert.NotNull(result);
-        Assert.NotEqual(0, result.LocationId);
-        Assert.Equal("TestCity", result.City);
-        Assert.Equal("TestAddress", result.Address);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.NotEqual(0, result.Data.LocationId);
+        Assert.Equal("TestCity", result.Data.City);
+        Assert.Equal("TestAddress", result.Data.Address);
     }
 
     [Fact]
@@ -117,7 +118,9 @@ public class LocationSericveTests: IDisposable
     {
         var result = await _locationService.GetLocations(null);
 
-        Assert.Empty(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Empty(result.Data);
     }
 
     [Fact]
@@ -128,9 +131,11 @@ public class LocationSericveTests: IDisposable
 
         var result = await _locationService.GetLocations(null);
 
-        Assert.Equal(2, result.Count());
-        Assert.Contains(result, l => l.City == "City1" && l.Address == "Address1");
-        Assert.Contains(result, l => l.City == "City2" && l.Address == "Address2");
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(2, result.Data.Count());
+        Assert.Contains(result.Data, l => l.City == "City1" && l.Address == "Address1");
+        Assert.Contains(result.Data, l => l.City == "City2" && l.Address == "Address2");
     }
 
     [Fact]
@@ -142,10 +147,12 @@ public class LocationSericveTests: IDisposable
 
         var result = await _locationService.GetLocations("ess2");
 
-        Assert.Equal(2, result.Count());
-        Assert.Contains(result, l => l.City == "City2" && l.Address == "Address2");
-        Assert.Contains(result, l => l.City == "City3" && l.Address == "Address2");
-        Assert.DoesNotContain(result, l => l.City == "City1" && l.Address == "Address1");
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(2, result.Data.Count());
+        Assert.Contains(result.Data, l => l.City == "City2" && l.Address == "Address2");
+        Assert.Contains(result.Data, l => l.City == "City3" && l.Address == "Address2");
+        Assert.DoesNotContain(result.Data, l => l.City == "City1" && l.Address == "Address1");
     }
 
     [Fact]
@@ -155,34 +162,40 @@ public class LocationSericveTests: IDisposable
 
         var result = await _locationService.GetLocations("NonExistantAddress");
 
-        Assert.Empty(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Empty(result.Data);
     }
 
     [Fact]
-    public async Task FindLocation_WithCorrectId_ReturnsCorrectLocationData()
+    public async Task FindLocationById_WithCorrectId_ReturnsCorrectLocationData()
     {
         var location = await SeedLocation();
 
-        var result = await _locationService.FindLocation(location.LocationId);
+        var result = await _locationService.FindLocationById(location.LocationId);
 
-        Assert.NotNull(result);
-        Assert.Equal(location.LocationId, result.LocationId);
-        Assert.Equal(location.City, result.City);
-        Assert.Equal(location.Address, result.Address);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(location.LocationId, result.Data.LocationId);
+        Assert.Equal(location.City, result.Data.City);
+        Assert.Equal(location.Address, result.Data.Address);
     }
 
     [Fact]
-    public async Task FindLocation_WithIncorrectId_ReturnsNull()
+    public async Task FindLocationById_WithIncorrectId_ReturnsLocationNotFoundError()
     {
         await SeedLocation();
 
-        var result = await _locationService.FindLocation(42);
+        var result = await _locationService.FindLocationById(42);
 
-        Assert.Null(result);
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.Data);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
     }
 
     [Fact]
-    public async Task DeleteLocation_WithCorrectId_DeletesAndReturnsTrue()
+    public async Task DeleteLocation_WithCorrectId_DeletesAndReturnsSuccess()
     {
         var location = await SeedLocation();
 
@@ -190,13 +203,13 @@ public class LocationSericveTests: IDisposable
         var result = await _locationService.DeleteLocation(location.LocationId);
         var after = await _context.Locations.CountAsync();
 
-        Assert.True(result);
+        Assert.True(result.IsSuccess);
         Assert.Equal(1, before);
         Assert.Equal(0, after);
     }
 
     [Fact]
-    public async Task DeleteLocation_WithIncorrectId_DoesntRemoveAndReturnsFalse()
+    public async Task DeleteLocation_WithIncorrectId_DoesntRemoveAndReturnsLocationNotFoundError()
     {
         await SeedLocation();
 
@@ -204,7 +217,9 @@ public class LocationSericveTests: IDisposable
         var result = await _locationService.DeleteLocation(42);
         var after = await _context.Locations.CountAsync();
 
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
         Assert.Equal(before, after);
     }
 
@@ -235,7 +250,7 @@ public class LocationSericveTests: IDisposable
     }
     
     [Fact]
-    public async Task AssignEmployee_WithCorrectData_AssignsEmployeeAndReturnsTrue()
+    public async Task AssignEmployee_WithCorrectData_AssignsEmployeeAndReturnsSuccess()
     {
         var employee = await SeedEmployeeUser();
         var location = await SeedLocation();
@@ -255,13 +270,13 @@ public class LocationSericveTests: IDisposable
             )
             .CountAsync();
 
-        Assert.True(result);
+        Assert.True(result.IsSuccess);
         Assert.Equal(1, assignedEmployees);
         
     }
 
     [Fact]
-    public async Task AssignEmployee_WithClientId_DoesntAssignAndReturnsFalse()
+    public async Task AssignEmployee_WithClientId_DoesntAssignAndReturnsEmployeeNotFoundError()
     {
         var client = await SeedClientUser();
         var location = await SeedLocation();
@@ -276,12 +291,14 @@ public class LocationSericveTests: IDisposable
         var result = await _locationService.AssignEmployee(dto);
         var assignedEmployees = await _context.LocationEmployees.CountAsync();
 
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
         Assert.Equal(0, assignedEmployees);
     }
 
     [Fact]
-    public async Task AssignEmployee_WithNonExistentUser_DoesntAssignAndReturnsFalse()
+    public async Task AssignEmployee_WithNonExistentUser_DoesntAssignAndReturnsEmployeeNotFoundError()
     {
         var location = await SeedLocation();
 
@@ -295,12 +312,14 @@ public class LocationSericveTests: IDisposable
         var result = await _locationService.AssignEmployee(dto);
         var assignedEmployees = await _context.LocationEmployees.CountAsync();
 
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
         Assert.Equal(0, assignedEmployees);
     }
 
     [Fact]
-    public async Task AssignEmployee_WithNonExistentLocation_DoesntAssignAndReturnsFalse()
+    public async Task AssignEmployee_WithNonExistentLocation_DoesntAssignAndReturnsLocationNotFoundError()
     {
         var employee = await SeedEmployeeUser();
 
@@ -314,12 +333,14 @@ public class LocationSericveTests: IDisposable
         var result = await _locationService.AssignEmployee(dto);
         var assignedEmployees = await _context.LocationEmployees.CountAsync();
 
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
         Assert.Equal(0, assignedEmployees);
     }
 
     [Fact]
-    public async Task AssignEmployee_WithDuplicateData_DoesntAssignAndReturnsFalse()
+    public async Task AssignEmployee_WithDuplicateData_DoesntAssignAndReturnsAlreadyAssignedError()
     {
         var employee = await SeedEmployeeUser();
         var location = await SeedLocation();
@@ -335,8 +356,10 @@ public class LocationSericveTests: IDisposable
         var result2 = await _locationService.AssignEmployee(dto);
         var assignedEmployees = await _context.LocationEmployees.CountAsync();
 
-        Assert.True(result1);
-        Assert.False(result2);
+        Assert.True(result1.IsSuccess);
+        Assert.False(result2.IsSuccess);
+        Assert.NotNull(result2.Error);
+        Assert.Equal(409, result2.Error.StatusCode);
         Assert.Equal(1, assignedEmployees);
     }
 
@@ -364,8 +387,8 @@ public class LocationSericveTests: IDisposable
         var result2 = await _locationService.AssignEmployee(dto2);
         var assignedEmployees = await _context.LocationEmployees.CountAsync();
 
-        Assert.True(result1);
-        Assert.True(result2);
+        Assert.True(result1.IsSuccess);
+        Assert.True(result2.IsSuccess);
         Assert.Equal(2, assignedEmployees);
     }
 
@@ -381,16 +404,18 @@ public class LocationSericveTests: IDisposable
         var assignmentCount = await _context.LocationEmployees.CountAsync();
         var result = await _locationService.GetAssignedEmployees(location.LocationId);
 
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
         Assert.Equal(2, assignmentCount);
-        Assert.Equal(assignmentCount, result.Count());
-        Assert.Contains(result, x =>
+        Assert.Equal(assignmentCount, result.Data.Count());
+        Assert.Contains(result.Data, x =>
             x.UserId == employee1.UserId &&
             x.FirstName == employee1.User.FirstName &&
             x.LastName == employee1.User.LastName &&
             x.LocationId == location.LocationId &&
             x.Position == Position.Chef
         );
-        Assert.Contains(result, x =>
+        Assert.Contains(result.Data, x =>
             x.UserId == employee2.UserId &&
             x.FirstName == employee2.User.FirstName &&
             x.LastName == employee2.User.LastName &&
@@ -406,7 +431,9 @@ public class LocationSericveTests: IDisposable
 
         var result = await _locationService.GetAssignedEmployees(location.LocationId);
 
-        Assert.Empty(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Empty(result.Data);
     }
 
     [Fact]
@@ -424,7 +451,9 @@ public class LocationSericveTests: IDisposable
         var result = await _locationService.GetAssignedEmployees(location1.LocationId);
 
         Assert.Equal(2, countAssigned);
-        Assert.Single(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data);
     }
 
     [Fact]
@@ -458,7 +487,7 @@ public class LocationSericveTests: IDisposable
     }
 
     [Fact]
-    public async Task UnassignEmployee_WithCorrectData_RemovesAssignmentAndReturnsTrue()
+    public async Task UnassignEmployee_WithCorrectData_RemovesAssignmentAndReturnsSuccess()
     {
         var employee = await SeedEmployeeUser();
         var location = await SeedLocation();
@@ -476,13 +505,13 @@ public class LocationSericveTests: IDisposable
         var result = await _locationService.UnassignEmployee(dto);
         var after = await _context.LocationEmployees.CountAsync();
 
-        Assert.True(result);
+        Assert.True(result.IsSuccess);
         Assert.Equal(1, before);
         Assert.Equal(0, after);
     }
 
     [Fact]
-    public async Task UnassignEmployee_WithIncorrectLocationId_DoesntRemoveAndReturnsFalse()
+    public async Task UnassignEmployee_WithIncorrectLocationId_DoesntRemoveAndReturnsAssignmentNotFoundError()
     {
         var employee = await SeedEmployeeUser();
         var location = await SeedLocation();
@@ -507,12 +536,14 @@ public class LocationSericveTests: IDisposable
         var result = await _locationService.UnassignEmployee(dto2);
         var after = await _context.LocationEmployees.CountAsync();
 
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
         Assert.Equal(before, after);
     }
 
     [Fact]
-    public async Task UnassignEmployee_WithIncorrectUserId_DoesntRemoveAndReturnsFalse()
+    public async Task UnassignEmployee_WithIncorrectUserId_DoesntRemoveAndReturnsAssignmentNotFoundError()
     {
         var employee = await SeedEmployeeUser();
         var location = await SeedLocation();
@@ -537,12 +568,14 @@ public class LocationSericveTests: IDisposable
         var result = await _locationService.UnassignEmployee(dto2);
         var after = await _context.LocationEmployees.CountAsync();
 
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
         Assert.Equal(before, after);
     }
 
     [Fact]
-    public async Task UnassignEmployee_WithIncorrectPosition_DoesntRemoveAndReturnsFalse()
+    public async Task UnassignEmployee_WithIncorrectPosition_DoesntRemoveAndReturnsAssignmentNotFoundError()
     {
         var employee = await SeedEmployeeUser();
         var location = await SeedLocation();
@@ -567,7 +600,9 @@ public class LocationSericveTests: IDisposable
         var result = await _locationService.UnassignEmployee(dto2);
         var after = await _context.LocationEmployees.CountAsync();
 
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
         Assert.Equal(before, after);
     }
 
