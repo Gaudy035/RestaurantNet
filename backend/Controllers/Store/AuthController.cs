@@ -2,6 +2,7 @@ using System.Security.Claims;
 using backend.DTOs.Auth;
 using backend.DTOs.Users;
 using backend.Services;
+using backend.Services.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -61,22 +62,25 @@ public class AuthController: ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var loginResponse = await _authService.Login(dto, "Client");
+        var result = await _authService.Login(dto, "Client");
 
-        if (loginResponse == null)
+        if (!result.IsSuccess)
         {
-            return Unauthorized();
+            return result.ToActionResult(this);
         }
-
-        CreateTokenCookies(loginResponse.AccessToken, loginResponse.RefreshToken);
-        return Ok(new { message = "Logged in successfully" });
+        
+        var tokens = result.Data!;
+        
+        CreateTokenCookies(tokens.AccessToken, tokens.RefreshToken);
+        
+        return NoContent();
     }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
         await RemoveTokenCookies();
-        return Ok(new { message = "Logged out successfully" });
+        return NoContent();
     }
 
     [HttpPost("refresh")]
@@ -89,17 +93,19 @@ public class AuthController: ControllerBase
             return Unauthorized();
         }
 
-        var newTokens = await _authService.Refresh(refreshToken);
+        var result = await _authService.Refresh(refreshToken);
 
-        if (newTokens == null)
+        if (!result.IsSuccess)
         {
             await RemoveTokenCookies();
-            return Unauthorized();
+            return result.ToActionResult(this);
         }
 
-        CreateTokenCookies(newTokens.AccessToken, newTokens.RefreshToken);
-
-        return Ok(new { message = "Tokens refreshed" });
+        var tokens = result.Data!;
+        
+        CreateTokenCookies(tokens.AccessToken, tokens.RefreshToken);
+        
+        return NoContent();
     }
 
     [HttpPost("register")]
@@ -107,9 +113,9 @@ public class AuthController: ControllerBase
     {
         var createClientResponse = await _userService.CreateClient(dto);
 
-        if (createClientResponse == null)
+        if (!createClientResponse.IsSuccess)
         {
-            return BadRequest();
+            return createClientResponse.ToActionResult(this);
         }
 
         var loginDto = new LoginDto
@@ -120,9 +126,16 @@ public class AuthController: ControllerBase
 
         var loginResponse = await _authService.Login(loginDto, "Client");
 
-        CreateTokenCookies(loginResponse!.AccessToken, loginResponse!.RefreshToken);
+        if (!loginResponse.IsSuccess)
+        {
+            return loginResponse.ToActionResult(this);
+        }
 
-        return Ok(new { message = "Registered successfully" });
+        var tokens = loginResponse.Data!;
+
+        CreateTokenCookies(tokens.AccessToken, tokens.RefreshToken);
+
+        return NoContent();
     }
 
     [Authorize(Roles = "Client")]
@@ -135,13 +148,8 @@ public class AuthController: ControllerBase
             return Unauthorized();
         }
 
-        var clientData = await _authService.MeClient(userId);
+        var result = await _authService.MeClient(userId);
 
-        if (clientData == null)
-        {
-            return NotFound(new { message = "Client not found" });
-        }
-
-        return Ok(clientData);
+        return result.ToActionResult(this);
     }
 }

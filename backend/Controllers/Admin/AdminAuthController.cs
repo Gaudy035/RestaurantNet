@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using backend.DTOs.Auth;
 using backend.Services;
+using backend.Services.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -56,45 +57,50 @@ public class AdminAuthController: ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var loginResponse = await _authService.Login(dto, "Admin");
+        var result = await _authService.Login(dto, "Admin");
 
-        if (loginResponse == null)
+        if (!result.IsSuccess)
         {
-            return Unauthorized();
+            return result.ToActionResult(this);
         }
+
+        var tokens = result.Data!;
         
-        CreateTokenCookies(loginResponse.AccessToken, loginResponse.RefreshToken);
-        return Ok(new { message = "Logged in successfully" });
+        CreateTokenCookies(tokens.AccessToken, tokens.RefreshToken);
+        
+        return NoContent();
     }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
         await RemoveTokenCookies();
-        return Ok(new { message = "Logged out successfully" });
+        return NoContent();
     }
 
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh()
     {
-        var refreshTokenValue = Request.Cookies["admin_refresh_token"];
+        var refreshToken = Request.Cookies["admin_refresh_token"];
         
-        if (string.IsNullOrEmpty(refreshTokenValue))
+        if (string.IsNullOrEmpty(refreshToken))
         {
             return Unauthorized();
         }
 
-        var newTokens = await _authService.Refresh(refreshTokenValue);
+        var result = await _authService.Refresh(refreshToken);
 
-        if (newTokens == null)
+        if (!result.IsSuccess)
         {
             await RemoveTokenCookies();
-            return Unauthorized();
+            return result.ToActionResult(this);
         }
 
-        CreateTokenCookies(newTokens.AccessToken, newTokens.RefreshToken);
+        var tokens = result.Data!;
 
-        return Ok(new { message = "Tokens refreshed" });
+        CreateTokenCookies(tokens.AccessToken, tokens.RefreshToken);
+
+        return NoContent();
     }
 
     [Authorize(Roles = "Admin,Employee")]
@@ -107,13 +113,8 @@ public class AdminAuthController: ControllerBase
             return Unauthorized();
         }
 
-        var employeeData = await _authService.MeAdmin(userId);
+        var result = await _authService.MeAdmin(userId);
 
-        if (employeeData == null)
-        {
-            return NotFound(new { message = "Employee not found" });
-        }
-
-        return Ok(employeeData);
+        return result.ToActionResult(this);
     }
 }
