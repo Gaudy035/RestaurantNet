@@ -1,7 +1,7 @@
-using System.Collections;
 using backend.Data;
 using backend.Data.Entities;
 using backend.DTOs.Locations;
+using backend.Services.Errors;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services;
@@ -15,7 +15,7 @@ public class LocationService : ILocationService
         _context = context;
     }
 
-    public async Task<LocationResponseDto?> CreateLocation(LocationCreateDto dto)
+    public async Task<Result<LocationResponseDto>> CreateLocation(LocationCreateDto dto)
     {
         var newLocation = new Location
         {
@@ -31,18 +31,18 @@ public class LocationService : ILocationService
         }
         catch (DbUpdateException)
         {
-            return null;
+            return Result<LocationResponseDto>.Fail(Error.From(ErrorCode.DbOperationFailed));
         }
 
-        return new LocationResponseDto
+        return Result<LocationResponseDto>.Success(new LocationResponseDto
         {
             LocationId = newLocation.LocationId,
             City = newLocation.City,
             Address = newLocation.Address
-        };
+        });
     }
     
-    public async Task<IEnumerable<LocationResponseDto>> GetLocations(string? param)
+    public async Task<Result<IEnumerable<LocationResponseDto>>> GetLocations(string? param)
     {
         var query = _context.Locations.AsNoTracking().AsQueryable();
 
@@ -55,7 +55,7 @@ public class LocationService : ILocationService
             );
         }
 
-        return await query.OrderBy(l => l.City)
+        var locations = await query.OrderBy(l => l.City)
             .ThenBy(l => l.Address)
             .Select(l => new LocationResponseDto
             {
@@ -63,9 +63,11 @@ public class LocationService : ILocationService
                 City = l.City,
                 Address = l.Address
             }).ToListAsync();
+
+        return Result<IEnumerable<LocationResponseDto>>.Success(locations);
     }
 
-    public async Task<LocationResponseDto?> FindLocation(int locationId)
+    public async Task<Result<LocationResponseDto>> FindLocationById(int locationId)
     {
         var location = await _context.Locations.AsNoTracking()
             .Where(l => l.LocationId == locationId)
@@ -76,17 +78,19 @@ public class LocationService : ILocationService
                 Address = l.Address
             }).FirstOrDefaultAsync();
             
-        return location;
+        return location == null
+            ? Result<LocationResponseDto>.Fail(Error.From(ErrorCode.LocationNotFound))
+            : Result<LocationResponseDto>.Success(location);
     }
 
-    public async Task<bool> DeleteLocation(int locationId)
+    public async Task<Result> DeleteLocation(int locationId)
     {
         var location = await _context.Locations
             .FindAsync(locationId);
 
         if (location == null)
         {
-            return false;
+            return Result.Fail(Error.From(ErrorCode.LocationNotFound));
         }
 
         _context.Locations.Remove(location);
@@ -97,20 +101,20 @@ public class LocationService : ILocationService
         } 
         catch (DbUpdateException)
         {
-            return false;
+            return Result.Fail(Error.From(ErrorCode.DbOperationFailed));
         }
         
-        return true;
+        return Result.Success();
     }
 
-    public async Task<bool> AssignEmployee(LocationAssignEmployeeDto dto)
+    public async Task<Result> AssignEmployee(LocationAssignEmployeeDto dto)
     {
         var employeeExists = await _context.Employees.AsNoTracking()
             .AnyAsync(e => e.UserId == dto.UserId);
         
         if (!employeeExists)
         {
-            return false;
+            return Result.Fail(Error.From(ErrorCode.EmployeeNotFound));
         }
 
         var locationExists = await _context.Locations.AsNoTracking()
@@ -118,7 +122,7 @@ public class LocationService : ILocationService
         
         if (!locationExists)
         {
-            return false;
+            return Result.Fail(Error.From(ErrorCode.LocationNotFound));
         }
 
         var alreadyAssigned = await _context.LocationEmployees.AsNoTracking()
@@ -129,7 +133,7 @@ public class LocationService : ILocationService
 
         if (alreadyAssigned)
         {
-            return false;
+            return Result.Fail(Error.From(ErrorCode.AlreadyAssigned));
         }
 
         _context.LocationEmployees.Add(new LocationEmployee
@@ -145,15 +149,15 @@ public class LocationService : ILocationService
         }
         catch (DbUpdateException)
         {
-            return false;
+            return Result.Fail(Error.From(ErrorCode.DbOperationFailed));
         }
 
-        return true;
+        return Result.Success();
     }
 
-    public async Task<IEnumerable<LocationEmployeesResponseDto>> GetAssignedEmployees(int locationId)
+    public async Task<Result<IEnumerable<LocationEmployeesResponseDto>>> GetAssignedEmployees(int locationId)
     {
-        return await _context.LocationEmployees
+        var employees = await _context.LocationEmployees
             .AsNoTracking()
             .Where(le => le.LocationId == locationId)
             .OrderBy(le => le.Position)
@@ -167,9 +171,11 @@ public class LocationService : ILocationService
                 LocationId = le.LocationId,
                 Position = le.Position
             }).ToListAsync();
+        
+        return Result<IEnumerable<LocationEmployeesResponseDto>>.Success(employees);
     }
 
-    public async Task<bool> UnassignEmployee(LocationAssignEmployeeDto dto)
+    public async Task<Result> UnassignEmployee(LocationAssignEmployeeDto dto)
     {
         var assignment = await _context.LocationEmployees
             .Where(le => le.UserId == dto.UserId 
@@ -179,7 +185,7 @@ public class LocationService : ILocationService
         
         if (assignment == null)
         {
-            return false;
+            return Result.Fail(Error.From(ErrorCode.AssignmentNotFound));
         }
 
         _context.LocationEmployees.Remove(assignment);
@@ -190,9 +196,9 @@ public class LocationService : ILocationService
         }
         catch (DbUpdateException)
         {
-            return false;
+            return Result.Fail(Error.From(ErrorCode.DbOperationFailed));
         }
 
-        return true;
+        return Result.Success();
     }
 }

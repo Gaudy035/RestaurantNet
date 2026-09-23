@@ -1,20 +1,21 @@
 using backend.DTOs.Locations;
+using backend.Services.Errors;
 
 namespace backend.Services;
 
 public interface ILocationService
 {
-    Task<LocationResponseDto?> CreateLocation(LocationCreateDto dto);
+    Task<Result<LocationResponseDto>> CreateLocation(LocationCreateDto dto);
 
-    Task<IEnumerable<LocationResponseDto>> GetLocations(string? param);
+    Task<Result<IEnumerable<LocationResponseDto>>> GetLocations(string? param);
 
-    Task<LocationResponseDto?> FindLocation(int locationId);
+    Task<Result<LocationResponseDto>> FindLocationById(int locationId);
 
-    Task<bool> DeleteLocation (int locationId);
+    Task<Result> DeleteLocation (int locationId);
 
-    Task<bool> AssignEmployee(LocationAssignEmployeeDto dto);
+    Task<Result> AssignEmployee(LocationAssignEmployeeDto dto);
 
-    Task<IEnumerable<LocationEmployeesResponseDto>> GetAssignedEmployees(int locationId);
+    Task<Result<IEnumerable<LocationEmployeesResponseDto>>> GetAssignedEmployees(int locationId);
     
-    Task<bool> UnassignEmployee(LocationAssignEmployeeDto dto);
+    Task<Result> UnassignEmployee(LocationAssignEmployeeDto dto);
 }

@@ -10,5 +10,6 @@ public enum ErrorCode
     DbOperationFailed,
     ClientNotFound,
     LocationNotFound,
-    EmployeeNotFound
+    EmployeeNotFound,
+    AssignmentNotFound
 }

@@ -1,5 +1,6 @@
 using backend.DTOs.Locations;
 using backend.Services;
+using backend.Services.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,87 +21,62 @@ public class AdminLocationsController: ControllerBase
     [HttpPost()]
     public async Task<IActionResult> CreateLocation(LocationCreateDto dto)
     {
-        var newLocation = await _locationService.CreateLocation(dto);
+        var result = await _locationService.CreateLocation(dto);
 
-        if (newLocation == null)
-        {
-            return StatusCode(500);
-        }
-
-        return Ok(newLocation);
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Admin,Employee")]
     [HttpGet()]
     public async Task<IActionResult> GetLocations([FromQuery] string? param)
     {
-        var foundLocations = await _locationService.GetLocations(param);
+        var result = await _locationService.GetLocations(param);
 
-        return Ok(foundLocations);
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpGet("{locationId:int}")]
-    public async Task<IActionResult> FindLocation([FromRoute] int locationId)
+    public async Task<IActionResult> FindLocationById([FromRoute] int locationId)
     {
-        var location = await _locationService.FindLocation(locationId);
+        var result = await _locationService.FindLocationById(locationId);
 
-        if (location == null)
-        {
-            return NotFound(new { detail = "Location not found" });
-        }
-
-        return Ok(location);
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpDelete("{locationId:int}")]
     public async Task<IActionResult> DeleteLocation([FromRoute] int locationId)
     {
-        var success = await _locationService.DeleteLocation(locationId);
+        var result = await _locationService.DeleteLocation(locationId);
 
-        if (!success)
-        {
-            return NotFound(new { detail = $"Location with id {locationId} not found" });
-        }
-
-        return NoContent();
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpPost("employees")]
     public async Task<IActionResult> AssignEmployee(LocationAssignEmployeeDto dto)
     {
-        var success = await _locationService.AssignEmployee(dto);
+        var result = await _locationService.AssignEmployee(dto);
 
-        if (!success)
-        {
-            return BadRequest(new { detail = "Assignment failed" });
-        }
-
-        return Ok();
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpGet("{locationId:int}/employees")]
     public async Task<IActionResult> GetAssignedEmployees([FromRoute] int locationId)
     {
-        var employees = await _locationService.GetAssignedEmployees(locationId);
+        var result = await _locationService.GetAssignedEmployees(locationId);
 
-        return Ok(employees);
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpDelete("employees")]
     public async Task<IActionResult> UnassignEmployee(LocationAssignEmployeeDto dto)
     {
-        var success = await _locationService.UnassignEmployee(dto);
+        var result = await _locationService.UnassignEmployee(dto);
 
-        if (!success)
-        {
-            return BadRequest(new { detail = "Unassignment failed" });
-        }
-
-        return NoContent();
+        return result.ToActionResult(this);
     }
 }
