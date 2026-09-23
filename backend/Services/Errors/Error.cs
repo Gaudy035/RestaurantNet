@@ -22,6 +22,7 @@ public sealed class Error
             ErrorCode.AlreadyAssigned => new Error(code, customMessage ?? "Employee already assigned", StatusCodes.Status409Conflict),
             ErrorCode.OwnAccountDeletion => new Error(code, customMessage ?? "Cannot delete own account", StatusCodes.Status400BadRequest),
             ErrorCode.DbOperationFailed => new Error(code, customMessage ?? "Database operation failed", StatusCodes.Status500InternalServerError),
+            ErrorCode.ClientNotFound => new Error(code, customMessage ?? "Client not found", StatusCodes.Status404NotFound),
             ErrorCode.EmployeeNotFound => new Error(code, customMessage ?? "Employee not found", StatusCodes.Status404NotFound),
             ErrorCode.LocationNotFound => new Error(code, customMessage ?? "Location not found", StatusCodes.Status404NotFound),
             _ => new Error(code, customMessage ?? "Unknown error", StatusCodes.Status500InternalServerError)

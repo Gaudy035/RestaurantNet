@@ -1,6 +1,7 @@
 using backend.Data;
 using backend.Data.Entities;
 using backend.DTOs.Users;
+using backend.Services.Errors;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services;
@@ -14,14 +15,14 @@ public class UserService: IUserService
         _context = context;
     }
 
-    public async Task<ClientResponseDto?> CreateClient(ClientCreateDto dto)
+    public async Task<Result<ClientResponseDto>> CreateClient(ClientCreateDto dto)
     {
         var emailTaken = await _context.Users
             .AnyAsync(u => u.Email == dto.Email);
         
         if (emailTaken)
         {
-            return null;
+            return Result<ClientResponseDto>.Fail(Error.From(ErrorCode.EmailAlreadyTaken));
         }
 
         var hashedPass = BCrypt.Net.BCrypt.HashPassword(dto.Password);
@@ -44,20 +45,20 @@ public class UserService: IUserService
         }
         catch (DbUpdateException)
         {
-            return null;
+            return Result<ClientResponseDto>.Fail(Error.From(ErrorCode.DbOperationFailed));
         }
 
-        return new ClientResponseDto
+        return Result<ClientResponseDto>.Success(new ClientResponseDto
         {
             UserId = newClient.Entity.UserId,
             FirstName = newClient.Entity.User.FirstName,
             LastName = newClient.Entity.User.LastName,
             Email = newClient.Entity.User.Email,
             PhoneNumber = newClient.Entity.PhoneNumber
-        };
+        });
     }
    
-    public async Task<IEnumerable<ClientResponseDto>> FindClient(string? parameter)
+    public async Task<Result<IEnumerable<ClientResponseDto>>> FindClient(string? parameter)
     {
         var query = _context.Clients.AsNoTracking().AsQueryable();
 
@@ -71,7 +72,7 @@ public class UserService: IUserService
             );
         }
 
-        return await query.OrderBy(c => c.User.LastName)
+        var clients = await query.OrderBy(c => c.User.LastName)
             .ThenBy(c => c.User.FirstName)
             .Select(c => new ClientResponseDto
             {
@@ -81,11 +82,13 @@ public class UserService: IUserService
                 Email = c.User.Email,
                 PhoneNumber = c.PhoneNumber
             }).ToListAsync();
+
+        return Result<IEnumerable<ClientResponseDto>>.Success(clients);
     }
 
-    public async Task<ClientResponseDto?> FindClientById(int clientId)
+    public async Task<Result<ClientResponseDto>> FindClientById(int clientId)
     {
-        return await _context.Clients
+        var client = await _context.Clients
             .AsNoTracking()
             .Where(c => c.UserId == clientId)
             .Select(c => new ClientResponseDto
@@ -96,6 +99,10 @@ public class UserService: IUserService
                 Email = c.User.Email,
                 PhoneNumber = c.PhoneNumber
             }).SingleOrDefaultAsync();
+
+        return client == null 
+            ? Result<ClientResponseDto>.Fail(Error.From(ErrorCode.ClientNotFound))
+            : Result<ClientResponseDto>.Success(client);
     }
 
     public async Task<bool> DeleteClient(int clientId)

@@ -1,14 +1,15 @@
 using backend.DTOs.Users;
+using backend.Services.Errors;
 
 namespace backend.Services;
 
 public interface IUserService
 {
-    Task<ClientResponseDto?> CreateClient(ClientCreateDto dto);
+    Task<Result<ClientResponseDto>> CreateClient(ClientCreateDto dto);
 
-    Task<IEnumerable<ClientResponseDto>> FindClient(string? parameter);
+    Task<Result<IEnumerable<ClientResponseDto>>> FindClient(string? parameter);
 
-    Task<ClientResponseDto?> FindClientById(int clientId);
+    Task<Result<ClientResponseDto>> FindClientById(int clientId);
 
     Task<bool> DeleteClient(int clientId);
 

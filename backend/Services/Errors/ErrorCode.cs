@@ -8,6 +8,7 @@ public enum ErrorCode
     AlreadyAssigned,
     OwnAccountDeletion,
     DbOperationFailed,
+    ClientNotFound,
     LocationNotFound,
     EmployeeNotFound
 }
