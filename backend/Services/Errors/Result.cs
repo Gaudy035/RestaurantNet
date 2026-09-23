@@ -15,8 +15,8 @@ public class Result
 
     public static Result Fail(Error error) => new Result(false, error);
 
-    public static Result Fail(ErrorCode code, string? customMessage) => 
-        new Result(false, Error.From(code, customMessage));
+    public static Result Fail(ErrorCode code) => 
+        new Result(false, Error.From(code));
 }
 
 public class Result<T>: Result
@@ -32,6 +32,6 @@ public class Result<T>: Result
 
     public static new Result<T> Fail(Error error) => new Result<T>(false, default, error);
 
-    public static new Result<T> Fail(ErrorCode code, string? customMessage) => 
-        new Result<T>(false, default, Error.From(code, customMessage));
+    public static new Result<T> Fail(ErrorCode code) => 
+        new Result<T>(false, default, Error.From(code));
 }

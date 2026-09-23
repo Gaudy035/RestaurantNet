@@ -13,19 +13,19 @@ public sealed class Error
         StatusCode = statusCode;
     }
 
-    public static Error From(ErrorCode code, string? customMessage = null) => 
+    public static Error From(ErrorCode code) => 
         code switch
         {  
-            ErrorCode.InvalidRefreshToken => new Error(code, customMessage ?? "Invalid refresh token", StatusCodes.Status401Unauthorized),
-            ErrorCode.InvalidCredentials => new Error(code, customMessage ?? "Invalid credentials", StatusCodes.Status401Unauthorized),
-            ErrorCode.EmailAlreadyTaken => new Error(code, customMessage ?? "Email already taken", StatusCodes.Status409Conflict),
-            ErrorCode.AlreadyAssigned => new Error(code, customMessage ?? "Employee already assigned", StatusCodes.Status409Conflict),
-            ErrorCode.OwnAccountDeletion => new Error(code, customMessage ?? "Cannot delete own account", StatusCodes.Status400BadRequest),
-            ErrorCode.DbOperationFailed => new Error(code, customMessage ?? "Database operation failed", StatusCodes.Status500InternalServerError),
-            ErrorCode.ClientNotFound => new Error(code, customMessage ?? "Client not found", StatusCodes.Status404NotFound),
-            ErrorCode.EmployeeNotFound => new Error(code, customMessage ?? "Employee not found", StatusCodes.Status404NotFound),
-            ErrorCode.LocationNotFound => new Error(code, customMessage ?? "Location not found", StatusCodes.Status404NotFound),
-            ErrorCode.AssignmentNotFound => new Error(code, customMessage ?? "Assignment not found", StatusCodes.Status404NotFound),
-            _ => new Error(code, customMessage ?? "Unknown error", StatusCodes.Status500InternalServerError)
+            ErrorCode.InvalidRefreshToken => new Error(code, "Invalid refresh token", StatusCodes.Status401Unauthorized),
+            ErrorCode.InvalidCredentials => new Error(code, "Invalid credentials", StatusCodes.Status401Unauthorized),
+            ErrorCode.EmailAlreadyTaken => new Error(code, "Email already taken", StatusCodes.Status409Conflict),
+            ErrorCode.AlreadyAssigned => new Error(code, "Employee already assigned", StatusCodes.Status409Conflict),
+            ErrorCode.OwnAccountDeletion => new Error(code, "Cannot delete own account", StatusCodes.Status400BadRequest),
+            ErrorCode.DbOperationFailed => new Error(code, "Database operation failed", StatusCodes.Status500InternalServerError),
+            ErrorCode.ClientNotFound => new Error(code, "Client not found", StatusCodes.Status404NotFound),
+            ErrorCode.EmployeeNotFound => new Error(code, "Employee not found", StatusCodes.Status404NotFound),
+            ErrorCode.LocationNotFound => new Error(code, "Location not found", StatusCodes.Status404NotFound),
+            ErrorCode.AssignmentNotFound => new Error(code, "Assignment not found", StatusCodes.Status404NotFound),
+            _ => new Error(code, "Unknown error", StatusCodes.Status500InternalServerError)
         };
 }
