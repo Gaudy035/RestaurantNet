@@ -58,66 +58,46 @@ public class AdminUserController: ControllerBase
     [HttpPost("employees")]
     public async Task<IActionResult> CreateEmployeeAccount([FromBody] EmployeeCreateDto dto)
     {
-        var newEmployee = await _userService.CreateEmployee(dto);
+        var result = await _userService.CreateEmployee(dto);
 
-        if (newEmployee == null)
-        {
-            return BadRequest(new { detail = "Failed to create employee account" });
-        }
-
-        return Ok(newEmployee);
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpGet("employees")]
     public async Task<IActionResult> GetEmployees([FromQuery] string? param)
     {
-        var foundEmployees = await _userService.FindEmployee(param);
+        var result = await _userService.FindEmployee(param);
 
-        return Ok(foundEmployees);
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpGet("employees/{employeeId:int}")]
     public async Task<IActionResult> GetEmployeeById([FromRoute] int employeeId)
     {
-        var employee = await _userService.FindEmployeeById(employeeId);
+        var result = await _userService.FindEmployeeById(employeeId);
 
-        if (employee == null)
-        {
-            return NotFound(new { detail = $"Employee with ID {employeeId} not found" });
-        }
-
-        return Ok(employee);
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpGet("employees/{employeeId:int}/locations")]
     public async Task<IActionResult> GetEmployeeLocations([FromRoute] int employeeId)
     {
-        var locations = await _userService.GetEmployeeLocations(employeeId);
+        var result = await _userService.GetEmployeeLocations(employeeId);
 
-        return Ok(locations);
+        return result.ToActionResult(this);
     }
     
     [Authorize(Roles = "Admin")]
     [HttpDelete("employees/{employeeId:int}")]
     public async Task<IActionResult> DeleteEmployee([FromRoute] int employeeId)
     {
-        var activeAdminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var currentAdminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        if (activeAdminId == employeeId)
-        {
-            return BadRequest(new { detail = "You cannot delete your own account" });
-        }
+        var result = await _userService.DeleteEmployee(employeeId, currentAdminId);
 
-        var success = await _userService.DeleteEmployee(employeeId);
-
-        if (!success)
-        {
-            return NotFound(new { detail = $"Employee with ID {employeeId} doesn't exist." });
-        }
-
-        return NoContent();
+        return result.ToActionResult(this);
     }
 }

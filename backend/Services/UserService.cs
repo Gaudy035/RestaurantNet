@@ -129,14 +129,14 @@ public class UserService: IUserService
         }
     }
 
-    public async Task<EmployeeResponseDto?> CreateEmployee (EmployeeCreateDto dto)
+    public async Task<Result<EmployeeResponseDto>> CreateEmployee (EmployeeCreateDto dto)
     {
         var emailTaken = await _context.Users
             .AnyAsync(u => u.Email == dto.Email);
         
         if (emailTaken)
         {
-            return null;
+            return Result<EmployeeResponseDto>.Fail(Error.From(ErrorCode.EmailAlreadyTaken));
         }
 
         var hashedPass = BCrypt.Net.BCrypt.HashPassword(dto.Password);
@@ -159,20 +159,20 @@ public class UserService: IUserService
         }
         catch (DbUpdateException)
         {
-            return null;
+            return Result<EmployeeResponseDto>.Fail(Error.From(ErrorCode.DbOperationFailed));
         }
 
-        return new EmployeeResponseDto
+        return Result<EmployeeResponseDto>.Success(new EmployeeResponseDto
         {
             UserId = newEmployee.Entity.UserId,
             FirstName = newEmployee.Entity.User.FirstName,
             LastName = newEmployee.Entity.User.LastName,
             Email = newEmployee.Entity.User.Email,
             IsAdmin = newEmployee.Entity.IsAdmin
-        };
+        });
     }
 
-    public async Task<IEnumerable<EmployeeResponseDto>> FindEmployee(string? parameter)
+    public async Task<Result<IEnumerable<EmployeeResponseDto>>> FindEmployee(string? parameter)
     {
         var query = _context.Employees.AsNoTracking().AsQueryable();
         
@@ -186,7 +186,7 @@ public class UserService: IUserService
             );
         }
 
-        return await query.OrderBy(e => e.User.LastName)
+        var employees = await query.OrderBy(e => e.User.LastName)
             .ThenBy(e => e.User.FirstName)
             .Select(e => new EmployeeResponseDto
             {
@@ -196,11 +196,13 @@ public class UserService: IUserService
                 Email = e.User.Email,
                 IsAdmin = e.IsAdmin
             }).ToListAsync();
+        
+        return Result<IEnumerable<EmployeeResponseDto>>.Success(employees);
     }
 
-    public async Task<EmployeeResponseDto?> FindEmployeeById(int employeeId)
+    public async Task<Result<EmployeeResponseDto>> FindEmployeeById(int employeeId)
     {
-        return await _context.Employees
+        var employee = await _context.Employees
             .AsNoTracking()
             .Where(e => e.UserId == employeeId)
             .Select(e => new EmployeeResponseDto
@@ -211,11 +213,15 @@ public class UserService: IUserService
                 Email = e.User.Email,
                 IsAdmin = e.IsAdmin
             }).SingleOrDefaultAsync();
+
+        return employee == null
+            ? Result<EmployeeResponseDto>.Fail(Error.From(ErrorCode.EmployeeNotFound))
+            : Result<EmployeeResponseDto>.Success(employee);
     }
 
-    public async Task<IEnumerable<EmployeeLocationsResponseDto>> GetEmployeeLocations(int employeeId)
+    public async Task<Result<IEnumerable<EmployeeLocationsResponseDto>>> GetEmployeeLocations(int employeeId)
     {
-        return await _context.LocationEmployees
+        var locations = await _context.LocationEmployees
             .AsNoTracking()
             .Where(le => le.UserId == employeeId)
             .OrderBy(le => le.Location.City)
@@ -229,16 +235,23 @@ public class UserService: IUserService
                 UserId = le.UserId,
                 Position = le.Position
             }).ToListAsync();
+
+        return Result<IEnumerable<EmployeeLocationsResponseDto>>.Success(locations);
     }
-    public async Task<bool> DeleteEmployee(int employeeId)
+    public async Task<Result> DeleteEmployee(int employeeId, int currentAdminId)
     {
+        if (employeeId == currentAdminId)
+        {
+            return Result.Fail(Error.From(ErrorCode.OwnAccountDeletion));
+        }
+
         var employee = await _context.Employees
             .Include(e => e.User)
             .FirstOrDefaultAsync(e => e.UserId == employeeId);
 
         if (employee == null)
         {
-            return false;
+            return Result.Fail(Error.From(ErrorCode.EmployeeNotFound));
         }
 
         _context.Users.Remove(employee.User);
@@ -246,11 +259,11 @@ public class UserService: IUserService
         try
         {
             await _context.SaveChangesAsync();
-            return true;
+            return Result.Success();
         }
         catch (DbUpdateException)
         {
-            return false;
+            return Result.Fail(Error.From(ErrorCode.DbOperationFailed));
         }
     }
 }

@@ -13,13 +13,13 @@ public interface IUserService
 
     Task<Result> DeleteClient(int clientId);
 
-    Task<EmployeeResponseDto?> CreateEmployee(EmployeeCreateDto dto);
+    Task<Result<EmployeeResponseDto>> CreateEmployee(EmployeeCreateDto dto);
 
-    Task<IEnumerable<EmployeeResponseDto>> FindEmployee(string? parameter);
+    Task<Result<IEnumerable<EmployeeResponseDto>>> FindEmployee(string? parameter);
 
-    Task<EmployeeResponseDto?> FindEmployeeById(int employeeId);
+    Task<Result<EmployeeResponseDto>> FindEmployeeById(int employeeId);
 
-    Task<IEnumerable<EmployeeLocationsResponseDto>> GetEmployeeLocations(int employeeId);
+    Task<Result<IEnumerable<EmployeeLocationsResponseDto>>> GetEmployeeLocations(int employeeId);
     
-    Task<bool> DeleteEmployee(int employeeId);
+    Task<Result> DeleteEmployee(int employeeId, int currentAdminId);
 }
