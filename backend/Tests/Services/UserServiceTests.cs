@@ -109,14 +109,15 @@ public class UserServiceTests: IDisposable
 
         var clientResult = await _userService.CreateClient(dto);
 
-        Assert.NotNull(clientResult);
-        Assert.True(clientResult.UserId > 0);
-        Assert.Equal(clientResult.Email, dto.Email);
-        Assert.Equal(clientResult.PhoneNumber, dto.PhoneNumber);
+        Assert.True(clientResult.IsSuccess);
+        Assert.NotNull(clientResult.Data);
+        Assert.True(clientResult.Data.UserId > 0);
+        Assert.Equal(clientResult.Data.Email, dto.Email);
+        Assert.Equal(clientResult.Data.PhoneNumber, dto.PhoneNumber);
     }
     
     [Fact]
-    public async Task CreateClient_WithDuplicateEmail_ReturnsNull()
+    public async Task CreateClient_WithDuplicateEmail_ReturnsEmailTakenError()
     {
         var dto = new ClientCreateDto
         {
@@ -131,7 +132,10 @@ public class UserServiceTests: IDisposable
         await _userService.CreateClient(dto);
         var secondClient = await _userService.CreateClient(dto);
 
-        Assert.Null(secondClient);
+        Assert.False(secondClient.IsSuccess);
+        Assert.Null(secondClient.Data);
+        Assert.NotNull(secondClient.Error);
+        Assert.Equal(409, secondClient.Error.StatusCode);
     }
 
     [Fact]
@@ -142,7 +146,9 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindClient(null);
 
-        Assert.Equal(2, result.Count());
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(2, result.Data.Count());
     }
 
     [Fact]
@@ -153,9 +159,11 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindClient("ack");
 
-        Assert.Single(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data);
 
-        var client = result.Single();
+        var client = result.Data.Single();
 
         Assert.Equal("Jack", client.FirstName);
         Assert.Equal("Jackson", client.LastName);
@@ -171,10 +179,12 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindClient("john");
 
-        Assert.Equal(2, result.Count());
-        Assert.Contains(result, c => c.UserId == client1.UserId);
-        Assert.DoesNotContain(result, c => c.UserId == client2.UserId);
-        Assert.Contains(result, c => c.UserId == client3.UserId);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(2, result.Data.Count());
+        Assert.Contains(result.Data, c => c.UserId == client1.UserId);
+        Assert.DoesNotContain(result.Data, c => c.UserId == client2.UserId);
+        Assert.Contains(result.Data, c => c.UserId == client3.UserId);
     }
 
     [Fact]
@@ -185,9 +195,11 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindClient("john doe");
 
-        Assert.Single(result);
-        Assert.Contains(result, c => c.UserId == client1.UserId);
-        Assert.DoesNotContain(result, c => c.UserId == client2.UserId);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data);
+        Assert.Contains(result.Data, c => c.UserId == client1.UserId);
+        Assert.DoesNotContain(result.Data, c => c.UserId == client2.UserId);
     }
 
     [Fact]
@@ -198,7 +210,9 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindClient("someRandomParameter");
 
-        Assert.Empty(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Empty(result.Data);
     }
 
     [Fact]
@@ -208,7 +222,9 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindClient(employee.User.FirstName);
 
-        Assert.Empty(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Empty(result.Data);
     }
 
     [Fact]
@@ -219,22 +235,26 @@ public class UserServiceTests: IDisposable
 
         var result = await _userService.FindClientById(client.UserId);
 
-        Assert.NotNull(result);
-        Assert.Equal(result.UserId, client.UserId);
-        Assert.Equal(result.FirstName, client.User.FirstName);
-        Assert.Equal(result.LastName, client.User.LastName);
-        Assert.Equal(result.Email, client.User.Email);
-        Assert.Equal(result.PhoneNumber, client.PhoneNumber);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(result.Data.UserId, client.UserId);
+        Assert.Equal(result.Data.FirstName, client.User.FirstName);
+        Assert.Equal(result.Data.LastName, client.User.LastName);
+        Assert.Equal(result.Data.Email, client.User.Email);
+        Assert.Equal(result.Data.PhoneNumber, client.PhoneNumber);
     }
 
     [Fact]
-    public async Task FindClientById_WithNoMatch_ReturnsNull()
+    public async Task FindClientById_WithNoMatch_ReturnsClientNotFoundError()
     {
         await SeedClientUser();
 
         var result = await _userService.FindClientById(42);
 
-        Assert.Null(result);
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.Data);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
     }
     
     [Fact]
