@@ -3,6 +3,7 @@ using backend.DTOs.Users;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using backend.Services.Errors;
 
 namespace backend.Controllers.Admin;
 
@@ -21,51 +22,36 @@ public class AdminUserController: ControllerBase
     [HttpPost("clients")]
     public async Task<IActionResult> CreateClientAccount([FromBody] ClientCreateDto dto)
     {
-        var newClient = await _userService.CreateClient(dto);
+        var result = await _userService.CreateClient(dto);
 
-        if (newClient == null)
-        {
-            return BadRequest(new { detail = "Failed to create client account" });
-        }
-
-        return Ok(newClient);
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Admin,Employee")]
     [HttpGet("clients")]
     public async Task<IActionResult> GetClients([FromQuery] string? param)
     {
-        var foundClients = await _userService.FindClient(param);
+        var result = await _userService.FindClient(param);
 
-        return Ok(foundClients);
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Admin,Employee")]
     [HttpGet("clients/{clientId:int}")]
     public async Task<IActionResult> GetClientById([FromRoute] int clientId)
     {
-        var client = await _userService.FindClientById(clientId);
+        var result = await _userService.FindClientById(clientId);
 
-        if (client == null)
-        {
-            return NotFound(new { detail = $"Client with ID {clientId} not found" });
-        }
-
-        return Ok(client);
+        return result.ToActionResult(this);
     }
     
     [Authorize(Roles = "Admin")]
     [HttpDelete("clients/{clientId:int}")]
     public async Task<IActionResult> DeleteClient([FromRoute] int clientId)
     {
-        var success = await _userService.DeleteClient(clientId);
+        var result = await _userService.DeleteClient(clientId);
 
-        if (!success)
-        {
-            return NotFound(new { detail = $"Client with ID {clientId} doesn't exist." });
-        }
-
-        return NoContent();
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Admin")]
