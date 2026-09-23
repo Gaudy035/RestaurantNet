@@ -258,7 +258,7 @@ public class UserServiceTests: IDisposable
     }
     
     [Fact]
-    public async Task DeleteClient_WithCorrectId_DeletesAndReturnsTrue()
+    public async Task DeleteClient_WithCorrectId_DeletesAndReturnsSuccess()
     {
         var client = await SeedClientUser();
 
@@ -270,13 +270,13 @@ public class UserServiceTests: IDisposable
         var countAfter = await _context.Users.CountAsync();
         var countAfter2 = await _context.Clients.CountAsync();
 
-        Assert.True(result);
+        Assert.True(result.IsSuccess);
         Assert.Equal(0, countAfter);
         Assert.Equal(0, countAfter2);
     }
 
     [Fact]
-    public async Task DeleteClient_WithNoMatch_DoesntDeleteAndReturnsFalse()
+    public async Task DeleteClient_WithNoMatch_DoesntDeleteAndReturnsClientNotFoundError()
     {
         await SeedClientUser();
 
@@ -288,13 +288,15 @@ public class UserServiceTests: IDisposable
         var countAfter = await _context.Users.CountAsync();
         var countAfter2 = await _context.Clients.CountAsync();
 
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
         Assert.Equal(countBefore, countAfter);
         Assert.Equal(countBefore, countAfter2);
     }
 
     [Fact]
-    public async Task DeleteClient_WithMatchInEmployees_DoesntDeleteAndReturnsFalse()
+    public async Task DeleteClient_WithMatchInEmployees_DoesntDeleteAndReturnsClientNotFoundError()
     {
         var employee = await SeedEmployeeUser();
 
@@ -305,7 +307,9 @@ public class UserServiceTests: IDisposable
         var result = await _userService.DeleteClient(employee.UserId);
         var countAfter = await _context.Users.CountAsync();
 
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
         Assert.Equal(countBefore, countAfter);
     }
 

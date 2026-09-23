@@ -105,7 +105,7 @@ public class UserService: IUserService
             : Result<ClientResponseDto>.Success(client);
     }
 
-    public async Task<bool> DeleteClient(int clientId)
+    public async Task<Result> DeleteClient(int clientId)
     {
         var client = await _context.Clients
             .Include(c => c.User)
@@ -113,7 +113,7 @@ public class UserService: IUserService
 
         if (client == null)
         {
-            return false;
+            return Result.Fail(Error.From(ErrorCode.ClientNotFound));
         }
 
         _context.Users.Remove(client.User);
@@ -121,11 +121,11 @@ public class UserService: IUserService
         try
         {
             await _context.SaveChangesAsync();
-            return true;
+            return Result.Success();
         }
         catch (DbUpdateException)
         {
-            return false;
+            return Result.Fail(Error.From(ErrorCode.DbOperationFailed));
         }
     }
 

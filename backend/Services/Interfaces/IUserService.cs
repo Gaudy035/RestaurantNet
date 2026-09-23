@@ -11,7 +11,7 @@ public interface IUserService
 
     Task<Result<ClientResponseDto>> FindClientById(int clientId);
 
-    Task<bool> DeleteClient(int clientId);
+    Task<Result> DeleteClient(int clientId);
 
     Task<EmployeeResponseDto?> CreateEmployee(EmployeeCreateDto dto);
 
