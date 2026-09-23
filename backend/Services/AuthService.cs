@@ -23,8 +23,6 @@ public class AuthService: IAuthService
         _configuration = configuration;
     }
 
-    private static readonly string[] roles = ["Admin", "Employee", "Client"];
-
     private string GenerateAccessToken(int userId, string userRole)
     {
         var tokenHandler = new JwtSecurityTokenHandler();

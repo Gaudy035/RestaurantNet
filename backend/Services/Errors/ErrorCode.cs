@@ -5,7 +5,6 @@ public enum ErrorCode
     InvalidRefreshToken,
     InvalidCredentials,
     EmailAlreadyTaken,
-    NotFound,
     AlreadyAssigned,
     OwnAccountDeletion,
     DbOperationFailed,
