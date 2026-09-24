@@ -5,6 +5,7 @@ import { adminApiFetch } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import EmployeeCard from './EmployeeCard';
 import { getErrorMessage } from '@/lib/api-error';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function AdminEmployeesMain({
   employeeData,
@@ -33,7 +34,7 @@ export default function AdminEmployeesMain({
     <div className='flex justify-center flex-col items-center'>
       <p className='text-destructive'>{error ? error : null}</p>
       {loading ? (
-        <p>Loading employee data...</p>
+        <Spinner className='size-8' />
       ) : employees.length > 0 ? (
         <div className='flex flex-col m-8 w-full justify-center items-center gap-4'>
           {employees.map((e) => (

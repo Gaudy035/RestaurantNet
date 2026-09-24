@@ -19,6 +19,7 @@ import Assignment from '@/interfaces/Assignment';
 import Position from '@/types/position';
 import { getErrorMessage } from '@/lib/api-error';
 import { toast } from 'sonner';
+import { Spinner } from '@/components/ui/spinner';
 
 export function AdminEmployeeAssignForm({
   employeeId,
@@ -102,7 +103,7 @@ export function AdminEmployeeAssignForm({
   };
 
   if (locationsLoading || employeeLoading) {
-    return <p>Loading...</p>;
+    return <Spinner className='size-8' />;
   }
 
   if (employeeError || locationsError) {

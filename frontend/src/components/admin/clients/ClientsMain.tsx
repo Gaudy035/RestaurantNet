@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useEmployee } from '@/lib/employee-context';
 import ClientCard from './ClientCard';
 import { getErrorMessage } from '@/lib/api-error';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function AdminClientsMain({
   clientData,
@@ -40,7 +41,7 @@ export default function AdminClientsMain({
     <div className='flex justify-center flex-col items-center'>
       <p className='text-destructive'>{error ? error : null}</p>
       {loading ? (
-        <p>Loading clients data...</p>
+        <Spinner className='size-8' />
       ) : clients.length > 0 ? (
         // Clients found
         <div className='flex flex-col m-8 w-full justify-center items-center gap-4'>

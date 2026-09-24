@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api-error';
 import { toast } from 'sonner';
 import ConfirmDialog from '../../AdminConfirmDialog';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
   const [employeeInfo, setEmployeeInfo] = useState<null | EmployeeData>(null);
@@ -61,7 +62,7 @@ export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
     <div className='flex justify-center flex-col items-center'>
       <p className='text-destructive'>{error ? error : null}</p>
       {loading ? (
-        <p>Loading employee data...</p>
+        <Spinner className='size-8' />
       ) : employeeInfo ? (
         <Card className='flex w-full py-6 px-3'>
           <CardHeader className='flex flex-row justify-between items-center'>

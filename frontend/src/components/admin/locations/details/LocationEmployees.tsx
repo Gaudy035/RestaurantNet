@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api-error';
 import { toast } from 'sonner';
 import ConfirmDialog from '../../AdminConfirmDialog';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function LocationEmployees({
   locationId,
@@ -63,7 +64,7 @@ export default function LocationEmployees({
     <div className='flex justify-center flex-col items-center'>
       <Card className='flex w-full py-4 px-2'>
         {loading ? (
-          'Loading employees...'
+          <Spinner className='size-8' />
         ) : error ? (
           <p className='text-destructive'>{error}</p>
         ) : (

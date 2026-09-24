@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function AdminHome() {
   const employeeContext = useEmployee();
@@ -14,7 +15,7 @@ export default function AdminHome() {
   return (
     <div className='flex flex-1 max-h-2/3 p-12 justify-center items-center'>
       {employeeContext.loading ? (
-        <p>Loading...</p>
+        <Spinner className='size-8' />
       ) : (
         <Card className='w-full max-w-sm'>
           <CardHeader>

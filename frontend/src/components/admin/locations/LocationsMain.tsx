@@ -5,6 +5,7 @@ import { adminApiFetch } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import LocationCard from './LocationCard';
 import { getErrorMessage } from '@/lib/api-error';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function AdminLocationsMain({
   locationData,
@@ -33,7 +34,7 @@ export default function AdminLocationsMain({
     <div className='flex justify-center flex-col items-center'>
       <p className='text-destructive'>{error ? error : null}</p>
       {loading ? (
-        <p>Loading locations data...</p>
+        <Spinner className='size-8' />
       ) : locations.length > 0 ? (
         // Locations found
         <div className='flex flex-col m-8 w-full justify-center items-center gap-4'>
