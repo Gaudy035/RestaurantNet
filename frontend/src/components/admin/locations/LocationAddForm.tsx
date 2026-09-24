@@ -25,7 +25,7 @@ export function AdminLocationAddForm() {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
-    let payload = Object.fromEntries(formData.entries());
+    const payload = Object.fromEntries(formData.entries());
 
     try {
       await adminApiFetch('/admin/locations', {
