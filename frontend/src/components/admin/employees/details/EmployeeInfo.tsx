@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { useEmployee } from '@/lib/employee-context';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api-error';
+import { toast } from 'sonner';
 
 export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
   const [employeeInfo, setEmployeeInfo] = useState<null | EmployeeData>(null);
@@ -48,6 +49,7 @@ export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
       await adminApiFetch(`/admin/users/employees/${userId}`, {
         method: 'DELETE',
       });
+      toast.success('Employee deleted successfully');
       router.push('/admin/employees');
     } catch (e) {
       setError(getErrorMessage(e));

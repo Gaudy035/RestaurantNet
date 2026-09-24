@@ -20,6 +20,7 @@ import { adminApiFetch } from '@/lib/api';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage, isApiError } from '@/lib/api-error';
+import { toast } from 'sonner';
 
 export function AdminClientAddForm() {
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +58,7 @@ export function AdminClientAddForm() {
       });
 
       setError(null);
-      alert('Client account created');
+      toast.success('Client account created');
       router.push('/admin/clients');
     } catch (err) {
       if (isApiError(err) && err.code === 'EmailAlreadyTaken') {

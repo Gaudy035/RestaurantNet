@@ -20,6 +20,7 @@ import { adminApiFetch } from '@/lib/api';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage, isApiError } from '@/lib/api-error';
+import { toast } from 'sonner';
 
 export function AdminEmployeeAddForm() {
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export function AdminEmployeeAddForm() {
       });
 
       setError(null);
-      alert('Employee account created');
+      toast.success('Employee account created');
       router.push('/admin/employees');
     } catch (err) {
       if (isApiError(err) && err.code === 'EmailAlreadyTaken') {

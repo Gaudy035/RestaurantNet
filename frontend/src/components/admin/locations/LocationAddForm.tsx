@@ -15,6 +15,7 @@ import { adminApiFetch } from '@/lib/api';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api-error';
+import { toast } from 'sonner';
 
 export function AdminLocationAddForm() {
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export function AdminLocationAddForm() {
       });
 
       setError(null);
-      alert('Location added');
+      toast.success('Location added successfully');
       router.push('/admin/locations');
     } catch (err) {
       setError(getErrorMessage(err));

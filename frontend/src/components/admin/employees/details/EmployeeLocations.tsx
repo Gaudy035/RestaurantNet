@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api-error';
+import { toast } from 'sonner';
 
 export default function EmployeeLocations({
   employeeId,
@@ -51,6 +52,7 @@ export default function EmployeeLocations({
           (l) => !(l.locationId === locationId && l.position === position),
         ),
       );
+      toast.success('Employee unassigned successfully');
     } catch (e) {
       setError(getErrorMessage(e));
     }

@@ -18,6 +18,7 @@ import LocationData from '@/interfaces/LocationData';
 import Assignment from '@/interfaces/Assignment';
 import Position from '@/types/position';
 import { getErrorMessage } from '@/lib/api-error';
+import { toast } from 'sonner';
 
 export function AdminEmployeeAssignForm({
   employeeId,
@@ -93,7 +94,7 @@ export function AdminEmployeeAssignForm({
       });
 
       setFormError(null);
-      alert('Employee assigned succesfully');
+      toast.success('Employee assigned successfully');
       router.push(`/admin/employees/${employeeId}`);
     } catch (err) {
       setFormError(getErrorMessage(err));

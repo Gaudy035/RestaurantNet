@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api-error';
+import { toast } from 'sonner';
 
 export default function LocationInfo({ locationId }: { locationId: string }) {
   const [loading, setLoading] = useState<boolean>(true);
@@ -36,6 +37,7 @@ export default function LocationInfo({ locationId }: { locationId: string }) {
       await adminApiFetch(`/admin/locations/${locId}`, {
         method: 'DELETE',
       });
+      toast.success('Location deleted successfully');
       router.push('/admin/locations');
     } catch (e) {
       setError(getErrorMessage(e));

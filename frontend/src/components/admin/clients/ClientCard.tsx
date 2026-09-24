@@ -12,6 +12,7 @@ import {
 import { Button } from '../../ui/button';
 import React from 'react';
 import { getErrorMessage } from '@/lib/api-error';
+import { toast } from 'sonner';
 
 export default function ClientCard({
   clientData,
@@ -31,6 +32,7 @@ export default function ClientCard({
         method: 'DELETE',
       });
       handleDelete(userId);
+      toast.success('Client deleted successfully');
     } catch (e) {
       setError(getErrorMessage(e));
     }
