@@ -16,14 +16,17 @@ import {
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import React, { useState } from 'react';
+import { getErrorMessage } from '@/lib/api-error';
 
 export function AdminLoginForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setEmailError(null);
 
     const formData = new FormData(event.currentTarget);
     const payload = Object.fromEntries(formData.entries());
@@ -36,9 +39,8 @@ export function AdminLoginForm() {
 
       router.push('/admin/');
       router.refresh();
-    } catch (err: any) {
-      console.log('API error' + err?.message);
-      setError('Incorrect credentials');
+    } catch (err) {
+      setError(getErrorMessage(err));
     }
   };
 
