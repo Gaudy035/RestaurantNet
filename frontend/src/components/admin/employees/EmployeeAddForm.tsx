@@ -32,7 +32,7 @@ export function AdminEmployeeAddForm() {
     setEmailError(null);
 
     const formData = new FormData(e.currentTarget);
-    let payload = {
+    const payload = {
       ...Object.fromEntries(formData.entries()),
       email: formData.get('email')?.toString().trim().toLowerCase(),
       isAdmin: formData.get('isAdmin') === 'on',

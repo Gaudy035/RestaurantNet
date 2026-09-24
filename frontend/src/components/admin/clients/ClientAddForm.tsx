@@ -35,7 +35,7 @@ export function AdminClientAddForm() {
     setPhoneError(null);
 
     const formData = new FormData(e.currentTarget);
-    let payload = Object.fromEntries(formData.entries());
+    const payload = Object.fromEntries(formData.entries());
     payload.email = payload.email.toString().trim().toLowerCase();
 
     const phoneNumber = payload.phoneNumber
