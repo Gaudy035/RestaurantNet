@@ -1,4 +1,4 @@
-import Position from '@/types/Position';
+import Position from '@/types/position';
 
 interface LocationEmployeeData {
   userId: string;

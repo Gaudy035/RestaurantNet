@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation';
 import EmployeeData from '@/interfaces/EmployeeData';
 import LocationData from '@/interfaces/LocationData';
 import Assignment from '@/interfaces/Assignment';
-import Position from '@/types/Position';
+import Position from '@/types/position';
 
 export function AdminEmployeeAssignForm({
   employeeId,

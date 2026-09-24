@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { useState, useEffect } from 'react';
 import LocationEmployeeData from '@/interfaces/LocationEmployeeData';
-import Position from '@/types/Position';
+import Position from '@/types/position';
 import unassignEmployee from '@/lib/unassign-employee';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

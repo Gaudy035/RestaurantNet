@@ -1,4 +1,4 @@
-import Position from '@/types/Position';
+import Position from '@/types/position';
 
 interface Assignment {
   userId: string;
