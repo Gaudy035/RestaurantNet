@@ -17,6 +17,7 @@ import EmployeeData from '@/interfaces/EmployeeData';
 import LocationData from '@/interfaces/LocationData';
 import Assignment from '@/interfaces/Assignment';
 import Position from '@/types/position';
+import { getErrorMessage } from '@/lib/api-error';
 
 export function AdminEmployeeAssignForm({
   employeeId,
@@ -50,9 +51,9 @@ export function AdminEmployeeAssignForm({
     setLocationsLoading(true);
     setLocationsError(null);
 
-    adminApiFetch('/admin/locations', { method: 'GET' })
+    adminApiFetch<LocationData[]>('/admin/locations', { method: 'GET' })
       .then((res) => setLocations(res))
-      .catch((e: any) => setLocationsError(e?.message))
+      .catch((e) => setLocationsError(getErrorMessage(e)))
       .finally(() => setLocationsLoading(false));
   }, []);
 
@@ -61,12 +62,12 @@ export function AdminEmployeeAssignForm({
     setEmployeeLoading(true);
     setEmployeeError(null);
 
-    adminApiFetch(`/admin/users/employees/${employeeId}`, {
+    adminApiFetch<EmployeeData>(`/admin/users/employees/${employeeId}`, {
       method: 'GET',
       cache: 'no-store',
     })
       .then((res) => setEmployeeData(res))
-      .catch((e: any) => setEmployeeError(e?.message))
+      .catch((e) => setEmployeeError(getErrorMessage(e)))
       .finally(() => setEmployeeLoading(false));
   }, [employeeId]);
 
@@ -94,8 +95,8 @@ export function AdminEmployeeAssignForm({
       setFormError(null);
       alert('Employee assigned succesfully');
       router.push(`/admin/employees/${employeeId}`);
-    } catch (err: any) {
-      setFormError(err?.message ?? 'API error, try again later');
+    } catch (err) {
+      setFormError(getErrorMessage(err));
     }
   };
 

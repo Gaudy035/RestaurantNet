@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useEmployee } from '@/lib/employee-context';
 import { useRouter } from 'next/navigation';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
   const [employeeInfo, setEmployeeInfo] = useState<null | EmployeeData>(null);
@@ -27,12 +28,12 @@ export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
     setLoading(true);
     setError(null);
 
-    adminApiFetch(`/admin/users/employees/${employeeId}`, {
+    adminApiFetch<EmployeeData>(`/admin/users/employees/${employeeId}`, {
       method: 'GET',
       cache: 'no-store',
     })
       .then((res) => setEmployeeInfo(res))
-      .catch((e: any) => setError(e?.message))
+      .catch((e) => setError(getErrorMessage(e)))
       .finally(() => setLoading(false));
   }, [employeeId]);
 
@@ -48,9 +49,8 @@ export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
         method: 'DELETE',
       });
       router.push('/admin/employees');
-    } catch (e: any) {
-      setError(e?.message);
-      console.log(e?.message);
+    } catch (e) {
+      setError(getErrorMessage(e));
     }
   };
 

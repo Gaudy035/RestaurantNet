@@ -8,20 +8,28 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import React from 'react';
 import { adminApiFetch } from '@/lib/api';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getErrorMessage, isApiError } from '@/lib/api-error';
 
 export function AdminEmployeeAddForm() {
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const router = useRouter();
 
   const onSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setEmailError(null);
 
     const formData = new FormData(e.currentTarget);
     let payload = {
@@ -39,8 +47,12 @@ export function AdminEmployeeAddForm() {
       setError(null);
       alert('Employee account created');
       router.push('/admin/employees');
-    } catch (err: any) {
-      setError(err?.message ?? 'API error, try again later');
+    } catch (err) {
+      if (isApiError(err) && err.code === 'EmailAlreadyTaken') {
+        setEmailError(getErrorMessage(err));
+      } else {
+        setError(getErrorMessage(err));
+      }
     }
   };
 
@@ -80,8 +92,11 @@ export function AdminEmployeeAddForm() {
                 type='email'
                 name='email'
                 placeholder='employee@example.com'
+                aria-invalid={emailError !== null}
+                onChange={() => setEmailError(null)}
                 required
               />
+              {emailError ? <FieldError>{emailError}</FieldError> : null}
             </Field>
             <Field>
               <FieldLabel htmlFor='password'>Password</FieldLabel>

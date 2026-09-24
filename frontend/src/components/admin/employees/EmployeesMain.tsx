@@ -4,6 +4,7 @@ import EmployeeData from '@/interfaces/EmployeeData';
 import { adminApiFetch } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import EmployeeCard from './EmployeeCard';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function AdminEmployeesMain({
   employeeData,
@@ -21,9 +22,12 @@ export default function AdminEmployeesMain({
       ? `/admin/users/employees?param=${encodeURIComponent(employeeData)}`
       : '/admin/users/employees';
 
-    adminApiFetch(endpoint, { method: 'GET', cache: 'no-store' })
+    adminApiFetch<EmployeeData[]>(endpoint, {
+      method: 'GET',
+      cache: 'no-store',
+    })
       .then((data) => setEmployees(data))
-      .catch((e: any) => setError(e?.message))
+      .catch((e) => setError(getErrorMessage(e)))
       .finally(() => setLoading(false));
   }, [employeeData]);
 
