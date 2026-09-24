@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function LocationInfo({ locationId }: { locationId: string }) {
   const [loading, setLoading] = useState<boolean>(false);
@@ -22,12 +23,12 @@ export default function LocationInfo({ locationId }: { locationId: string }) {
   useEffect(() => {
     setLoading(true);
 
-    adminApiFetch(`/admin/locations/${locationId}`, {
+    adminApiFetch<LocationData>(`/admin/locations/${locationId}`, {
       method: 'GET',
       cache: 'no-store',
     })
       .then((res) => setLocationInfo(res))
-      .catch((e: any) => setError(e?.message))
+      .catch((e) => setError(getErrorMessage(e)))
       .finally(() => setLoading(false));
   }, [locationId]);
 
@@ -38,9 +39,8 @@ export default function LocationInfo({ locationId }: { locationId: string }) {
         method: 'DELETE',
       });
       router.push('/admin/locations');
-    } catch (e: any) {
-      setError(e?.message);
-      console.log(e?.message);
+    } catch (e) {
+      setError(getErrorMessage(e));
     }
   };
 

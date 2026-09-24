@@ -15,6 +15,7 @@ import unassignEmployee from '@/lib/unassign-employee';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function LocationEmployees({
   locationId,
@@ -30,12 +31,15 @@ export default function LocationEmployees({
   useEffect(() => {
     setLoading(true);
 
-    adminApiFetch(`/admin/locations/${locationId}/employees`, {
-      method: 'GET',
-      cache: 'no-store',
-    })
+    adminApiFetch<LocationEmployeeData[]>(
+      `/admin/locations/${locationId}/employees`,
+      {
+        method: 'GET',
+        cache: 'no-store',
+      },
+    )
       .then((res) => setEmployees(res))
-      .catch((e: any) => setError(e?.message))
+      .catch((e) => setError(getErrorMessage(e)))
       .finally(() => setLoading(false));
   }, [locationId]);
 
@@ -49,9 +53,8 @@ export default function LocationEmployees({
           (e) => !(e.userId === employeeId && e.position === position),
         ),
       );
-    } catch (e: any) {
-      setError(e?.message);
-      console.log(e?.message);
+    } catch (e) {
+      setError(getErrorMessage(e));
     }
   };
 
@@ -60,6 +63,8 @@ export default function LocationEmployees({
       <Card className='flex w-full py-4 px-2'>
         {loading ? (
           'Loading employees...'
+        ) : error ? (
+          <p className='text-destructive'>{error}</p>
         ) : (
           <>
             <CardHeader className='flex flex-row justify-between items-center'>

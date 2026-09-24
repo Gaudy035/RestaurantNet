@@ -14,6 +14,7 @@ import React from 'react';
 import { adminApiFetch } from '@/lib/api';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getErrorMessage } from '@/lib/api-error';
 
 export function AdminLocationAddForm() {
   const [error, setError] = useState<string | null>(null);
@@ -35,8 +36,8 @@ export function AdminLocationAddForm() {
       setError(null);
       alert('Location added');
       router.push('/admin/locations');
-    } catch (err: any) {
-      setError(err?.message ?? 'API error, try again later');
+    } catch (err) {
+      setError(getErrorMessage(err));
     }
   };
 

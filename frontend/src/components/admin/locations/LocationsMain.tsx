@@ -4,6 +4,7 @@ import LocationData from '@/interfaces/LocationData';
 import { adminApiFetch } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import LocationCard from './LocationCard';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function AdminLocationsMain({
   locationData,
@@ -21,9 +22,12 @@ export default function AdminLocationsMain({
       ? `/admin/locations?param=${encodeURIComponent(locationData)}`
       : '/admin/locations';
 
-    adminApiFetch(endpoint, { method: 'GET', cache: 'no-store' })
+    adminApiFetch<LocationData[]>(endpoint, {
+      method: 'GET',
+      cache: 'no-store',
+    })
       .then((data) => setLocations(data))
-      .catch((e: any) => setError(e?.message))
+      .catch((e) => setError(getErrorMessage(e)))
       .finally(() => setLoading(false));
   }, [locationData]);
 
