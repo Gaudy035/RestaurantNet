@@ -12,12 +12,10 @@ export default function AdminEmployeesMain({
   employeeData?: string;
 }) {
   const [employees, setEmployees] = useState<EmployeeData[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-
     const endpoint = employeeData
       ? `/admin/users/employees?param=${encodeURIComponent(employeeData)}`
       : '/admin/users/employees';

@@ -12,12 +12,10 @@ export default function AdminLocationsMain({
   locationData?: string;
 }) {
   const [locations, setLocations] = useState<LocationData[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-
     const endpoint = locationData
       ? `/admin/locations?param=${encodeURIComponent(locationData)}`
       : '/admin/locations';

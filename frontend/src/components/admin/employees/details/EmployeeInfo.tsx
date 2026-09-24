@@ -18,21 +18,21 @@ import { getErrorMessage } from '@/lib/api-error';
 
 export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
   const [employeeInfo, setEmployeeInfo] = useState<null | EmployeeData>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<null | string>(null);
 
   const router = useRouter();
   const currentEmployee = useEmployee();
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-
     adminApiFetch<EmployeeData>(`/admin/users/employees/${employeeId}`, {
       method: 'GET',
       cache: 'no-store',
     })
-      .then((res) => setEmployeeInfo(res))
+      .then((res) => {
+        setError(null);
+        setEmployeeInfo(res);
+      })
       .catch((e) => setError(getErrorMessage(e)))
       .finally(() => setLoading(false));
   }, [employeeId]);

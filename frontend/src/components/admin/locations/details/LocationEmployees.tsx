@@ -23,14 +23,12 @@ export default function LocationEmployees({
   locationId: string;
 }) {
   const [employees, setEmployees] = useState<LocationEmployeeData[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
 
   useEffect(() => {
-    setLoading(true);
-
     adminApiFetch<LocationEmployeeData[]>(
       `/admin/locations/${locationId}/employees`,
       {

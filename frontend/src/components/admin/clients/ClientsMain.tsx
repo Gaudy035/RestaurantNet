@@ -13,7 +13,7 @@ export default function AdminClientsMain({
   clientData?: string;
 }) {
   const [clients, setClients] = useState<ClientData[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const EmployeeContext = useEmployee();
@@ -23,15 +23,15 @@ export default function AdminClientsMain({
   };
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-
     const endpoint = clientData
       ? `/admin/users/clients?param=${encodeURIComponent(clientData)}`
       : '/admin/users/clients';
 
     adminApiFetch<ClientData[]>(endpoint, { method: 'GET', cache: 'no-store' })
-      .then((data) => setClients(data))
+      .then((data) => {
+        setError(null);
+        setClients(data);
+      })
       .catch((e) => setError(getErrorMessage(e)))
       .finally(() => setLoading(false));
   }, [clientData]);

@@ -15,14 +15,12 @@ import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api-error';
 
 export default function LocationInfo({ locationId }: { locationId: string }) {
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [locationInfo, setLocationInfo] = useState<LocationData | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    setLoading(true);
-
     adminApiFetch<LocationData>(`/admin/locations/${locationId}`, {
       method: 'GET',
       cache: 'no-store',
