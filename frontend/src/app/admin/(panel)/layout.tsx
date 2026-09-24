@@ -9,6 +9,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { EmployeeProvider } from '@/lib/employee-context';
+import { Toaster } from 'sonner';
 
 export default function AdminLayout({
   children,
@@ -34,6 +35,7 @@ export default function AdminLayout({
           <main className='flex flex-1 flex-col'>{children}</main>
         </SidebarInset>
       </SidebarProvider>
+      <Toaster richColors closeButton />
     </EmployeeProvider>
   );
 }
