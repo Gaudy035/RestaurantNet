@@ -8,21 +8,31 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import React from 'react';
 import { adminApiFetch } from '@/lib/api';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getErrorMessage, isApiError } from '@/lib/api-error';
 
 export function AdminClientAddForm() {
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const router = useRouter();
   const phoneRegex = /^\+?[1-9]\d{1,14}$/;
 
   const onSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setEmailError(null);
+    setPhoneError(null);
 
     const formData = new FormData(e.currentTarget);
     let payload = Object.fromEntries(formData.entries());
@@ -34,7 +44,7 @@ export function AdminClientAddForm() {
       .replace(/[\s\-\(\)]/g, '');
 
     if (!phoneRegex.test(phoneNumber)) {
-      setError('Invalid phone number');
+      setPhoneError('Invalid phone number');
       return;
     }
 
@@ -49,8 +59,12 @@ export function AdminClientAddForm() {
       setError(null);
       alert('Client account created');
       router.push('/admin/clients');
-    } catch (err: any) {
-      setError(err?.message ?? 'API error, try again later');
+    } catch (err) {
+      if (isApiError(err) && err.code === 'EmailAlreadyTaken') {
+        setEmailError(err.message);
+      } else {
+        setError(getErrorMessage(err));
+      }
     }
   };
 
@@ -90,8 +104,11 @@ export function AdminClientAddForm() {
                 type='email'
                 name='email'
                 placeholder='client@example.com'
+                aria-invalid={emailError !== null}
+                onChange={() => setEmailError(null)}
                 required
               />
+              {emailError ? <FieldError>{emailError}</FieldError> : null}
             </Field>
             <Field>
               <FieldLabel htmlFor='password'>Password</FieldLabel>
@@ -104,10 +121,13 @@ export function AdminClientAddForm() {
                 type='tel'
                 name='phoneNumber'
                 placeholder='XXXXXXXXX'
+                aria-invalid={phoneError !== null}
+                onChange={() => setPhoneError(null)}
                 required
               />
-              <p className='text-destructive'>{error ? error : null}</p>
+              {phoneError ? <FieldError>{phoneError}</FieldError> : null}
             </Field>
+            {error ? <p className='text-destructive'>{error}</p> : null}
             <FieldGroup>
               <Field>
                 <Button type='submit'>Submit</Button>

@@ -5,6 +5,7 @@ import { adminApiFetch } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useEmployee } from '@/lib/employee-context';
 import ClientCard from './ClientCard';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function AdminClientsMain({
   clientData,
@@ -23,14 +24,15 @@ export default function AdminClientsMain({
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
 
     const endpoint = clientData
       ? `/admin/users/clients?param=${encodeURIComponent(clientData)}`
       : '/admin/users/clients';
 
-    adminApiFetch(endpoint, { method: 'GET', cache: 'no-store' })
+    adminApiFetch<ClientData[]>(endpoint, { method: 'GET', cache: 'no-store' })
       .then((data) => setClients(data))
-      .catch((e: any) => setError(e?.message))
+      .catch((e) => setError(getErrorMessage(e)))
       .finally(() => setLoading(false));
   }, [clientData]);
 

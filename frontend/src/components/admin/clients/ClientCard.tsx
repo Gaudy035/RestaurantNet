@@ -11,6 +11,7 @@ import {
 } from '../../ui/card';
 import { Button } from '../../ui/button';
 import React from 'react';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function ClientCard({
   clientData,
@@ -30,9 +31,8 @@ export default function ClientCard({
         method: 'DELETE',
       });
       handleDelete(userId);
-    } catch (e: any) {
-      setError(e?.message);
-      console.log(e?.message);
+    } catch (e) {
+      setError(getErrorMessage(e));
     }
   };
 
