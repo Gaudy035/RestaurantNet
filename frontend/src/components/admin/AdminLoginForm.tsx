@@ -13,7 +13,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import React, { useState } from 'react';
 import { getErrorMessage } from '@/lib/api-error';
@@ -68,8 +73,11 @@ export function AdminLoginForm() {
                   type='email'
                   name='email'
                   placeholder='name@restaurant.com'
+                  aria-invalid={emailError !== null}
+                  onChange={() => setEmailError(null)}
                   required
                 />
+                {emailError ? <FieldError>{emailError}</FieldError> : null}
               </Field>
               <Field>
                 <div className='flex items-center'>
