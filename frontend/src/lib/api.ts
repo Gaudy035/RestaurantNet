@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { ApiError } from './api-error';
 
 const isServer = typeof window === 'undefined';
 
@@ -6,7 +7,7 @@ const BASE_URL = isServer
   ? process.env.API_URL_SERVER
   : process.env.NEXT_PUBLIC_API_URL_CLIENT;
 
-const parseResponseBody = async (response: Response) => {
+const parseResponseBody = async (response: Response): Promise<unknown> => {
   if (response.status === 204) {
     return null;
   }
@@ -17,6 +18,17 @@ const parseResponseBody = async (response: Response) => {
     return JSON.parse(text);
   } catch {
     return text;
+  }
+};
+
+const safeFetch = async (url: string, init: RequestInit): Promise<Response> => {
+  try {
+    return await fetch(url, init);
+  } catch (cause) {
+    throw new ApiError(
+      { status: 0, message: 'Could not reach the server' },
+      { cause: cause },
+    );
   }
 };
 
@@ -42,12 +54,15 @@ const createApiFetch = (surface: 'admin' | 'store') => {
     return refreshPromise;
   };
 
-  return async function apiFetch(endpoint: string, options: RequestInit = {}) {
+  return async function apiFetch<T = unknown>(
+    endpoint: string,
+    options: RequestInit = {},
+  ): Promise<T> {
     const defaultHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
     };
 
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
+    const response = await safeFetch(`${BASE_URL}${endpoint}`, {
       ...options,
       credentials: 'include',
       headers: { ...defaultHeaders, ...options.headers },
@@ -60,7 +75,7 @@ const createApiFetch = (surface: 'admin' | 'store') => {
         } else {
           window.location.href = loginPath;
         }
-        throw new Error('Session expired');
+        throw new ApiError({ status: 401, message: 'Session expired' });
       }
 
       const refreshed = await refresh();
@@ -71,10 +86,10 @@ const createApiFetch = (surface: 'admin' | 'store') => {
         } else {
           window.location.href = loginPath;
         }
-        throw new Error('Session expired');
+        throw new ApiError({ status: 401, message: 'Session expired' });
       }
 
-      const retryResponse = await fetch(`${BASE_URL}${endpoint}`, {
+      const retryResponse = await safeFetch(`${BASE_URL}${endpoint}`, {
         ...options,
         credentials: 'include',
         headers: { ...defaultHeaders, ...options.headers },
@@ -83,19 +98,19 @@ const createApiFetch = (surface: 'admin' | 'store') => {
       const retryData = await parseResponseBody(retryResponse);
 
       if (!retryResponse.ok) {
-        throw new Error(retryData?.message || 'API request failed');
+        throw ApiError.fromResponse(retryResponse, retryData);
       }
 
-      return retryData;
+      return retryData as T;
     }
 
     const data = await parseResponseBody(response);
 
     if (!response.ok) {
-      throw new Error(data?.message || 'API request failed');
+      throw ApiError.fromResponse(response, data);
     }
 
-    return data;
+    return data as T;
   };
 };
 
