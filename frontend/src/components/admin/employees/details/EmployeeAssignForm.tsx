@@ -25,11 +25,11 @@ export function AdminEmployeeAssignForm({
   employeeId: string;
 }) {
   const [employeeData, setEmployeeData] = useState<EmployeeData | null>(null);
-  const [employeeLoading, setEmployeeLoading] = useState<boolean>(false);
+  const [employeeLoading, setEmployeeLoading] = useState<boolean>(true);
   const [employeeError, setEmployeeError] = useState<string | null>(null);
 
   const [locations, setLocations] = useState<LocationData[]>([]);
-  const [locationsLoading, setLocationsLoading] = useState<boolean>(false);
+  const [locationsLoading, setLocationsLoading] = useState<boolean>(true);
   const [locationsError, setLocationsError] = useState<string | null>(null);
 
   const [position, setPosition] = useState<Position | null>(null);
@@ -48,25 +48,25 @@ export function AdminEmployeeAssignForm({
 
   //   Get Locations
   useEffect(() => {
-    setLocationsLoading(true);
-    setLocationsError(null);
-
     adminApiFetch<LocationData[]>('/admin/locations', { method: 'GET' })
-      .then((res) => setLocations(res))
+      .then((res) => {
+        setLocationsError(null);
+        setLocations(res);
+      })
       .catch((e) => setLocationsError(getErrorMessage(e)))
       .finally(() => setLocationsLoading(false));
   }, []);
 
   // Get employee data
   useEffect(() => {
-    setEmployeeLoading(true);
-    setEmployeeError(null);
-
     adminApiFetch<EmployeeData>(`/admin/users/employees/${employeeId}`, {
       method: 'GET',
       cache: 'no-store',
     })
-      .then((res) => setEmployeeData(res))
+      .then((res) => {
+        setEmployeeError(null);
+        setEmployeeData(res);
+      })
       .catch((e) => setEmployeeError(getErrorMessage(e)))
       .finally(() => setEmployeeLoading(false));
   }, [employeeId]);
@@ -80,7 +80,7 @@ export function AdminEmployeeAssignForm({
       return;
     }
 
-    let payload: Assignment = {
+    const payload: Assignment = {
       userId: employeeId,
       locationId: locationId!,
       position: position!,
