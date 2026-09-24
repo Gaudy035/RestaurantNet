@@ -13,6 +13,7 @@ import { Button } from '../../ui/button';
 import React from 'react';
 import { getErrorMessage } from '@/lib/api-error';
 import { toast } from 'sonner';
+import ConfirmDialog from '../AdminConfirmDialog';
 
 export default function ClientCard({
   clientData,
@@ -52,22 +53,21 @@ export default function ClientCard({
         </div>
         {isAdmin ? (
           <CardAction>
-            <Button
+            <ConfirmDialog
+              trigger={
+                <Button
+                  variant='destructive'
+                  className='font-semibold'
+                  size={'lg'}
+                >
+                  Delete
+                </Button>
+              }
               variant='destructive'
-              className='font-semibold'
-              size={'lg'}
-              onClick={() => {
-                if (
-                  window.confirm(
-                    `Delete user: ${clientData.firstName} ${clientData.lastName} (ID: ${clientData.userId})?`,
-                  )
-                ) {
-                  deleteUser(clientData.userId);
-                }
-              }}
-            >
-              Delete
-            </Button>
+              title='Delete client'
+              description={`Delete user: ${clientData.firstName} ${clientData.lastName} (ID: ${clientData.userId})?`}
+              onConfirm={() => deleteUser(clientData.userId)}
+            />
           </CardAction>
         ) : null}
       </CardHeader>

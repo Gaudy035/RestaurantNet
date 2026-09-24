@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api-error';
 import { toast } from 'sonner';
+import ConfirmDialog from '../../AdminConfirmDialog';
 
 export default function LocationInfo({ locationId }: { locationId: string }) {
   const [loading, setLoading] = useState<boolean>(true);
@@ -62,22 +63,21 @@ export default function LocationInfo({ locationId }: { locationId: string }) {
             </div>
 
             <CardAction>
-              <Button
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    variant='destructive'
+                    className='text-lg p-4'
+                    size={'lg'}
+                  >
+                    Delete
+                  </Button>
+                }
                 variant='destructive'
-                className='text-lg p-4'
-                size={'lg'}
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      `Delete location: ${locationInfo.city}, ${locationInfo.address} (ID: ${locationInfo.locationId})?`,
-                    )
-                  ) {
-                    deleteLocation(locationInfo.locationId);
-                  }
-                }}
-              >
-                Delete
-              </Button>
+                title='Delete location'
+                description={`Delete location: ${locationInfo.city}, ${locationInfo.address} (ID: ${locationInfo.locationId})?`}
+                onConfirm={() => deleteLocation(locationInfo.locationId)}
+              />
             </CardAction>
           </CardHeader>
         </Card>

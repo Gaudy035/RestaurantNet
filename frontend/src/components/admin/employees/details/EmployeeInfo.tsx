@@ -16,6 +16,7 @@ import { useEmployee } from '@/lib/employee-context';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api-error';
 import { toast } from 'sonner';
+import ConfirmDialog from '../../AdminConfirmDialog';
 
 export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
   const [employeeInfo, setEmployeeInfo] = useState<null | EmployeeData>(null);
@@ -76,23 +77,22 @@ export default function EmployeeInfo({ employeeId }: { employeeId: string }) {
             </div>
 
             <CardAction>
-              <Button
-                variant={isSelf ? 'outline' : 'destructive'}
-                className='text-lg p-4'
-                size={'lg'}
-                disabled={isSelf}
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      `Delete user: ${employeeInfo.firstName} ${employeeInfo.lastName} (ID: ${employeeInfo.userId})?`,
-                    )
-                  ) {
-                    deleteUser(employeeInfo.userId);
-                  }
-                }}
-              >
-                {isSelf ? 'You' : 'Delete'}
-              </Button>
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    variant={isSelf ? 'outline' : 'destructive'}
+                    className='text-lg p-4'
+                    size={'lg'}
+                    disabled={isSelf}
+                  >
+                    {isSelf ? 'You' : 'Delete'}
+                  </Button>
+                }
+                variant='destructive'
+                title='Delete employee'
+                description={`Delete user: ${employeeInfo.firstName} ${employeeInfo.lastName} (ID: ${employeeInfo.userId})?`}
+                onConfirm={() => deleteUser(employeeInfo.userId)}
+              />
             </CardAction>
           </CardHeader>
         </Card>

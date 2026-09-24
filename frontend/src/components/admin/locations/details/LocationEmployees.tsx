@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api-error';
 import { toast } from 'sonner';
+import ConfirmDialog from '../../AdminConfirmDialog';
 
 export default function LocationEmployees({
   locationId,
@@ -98,21 +99,17 @@ export default function LocationEmployees({
                         </Button>
                         <Badge>{e.position}</Badge>
                       </div>
-                      <Button
-                        variant='link'
-                        className='text-destructive'
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              `Unassign user ${e.firstName} ${e.lastName} (${e.position})`,
-                            )
-                          ) {
-                            handleUnassign(e.userId, e.position);
-                          }
-                        }}
-                      >
-                        Unassign
-                      </Button>
+                      <ConfirmDialog
+                        trigger={
+                          <Button variant='link' className='text-destructive'>
+                            Unassign
+                          </Button>
+                        }
+                        variant='destructive'
+                        title='Unassign employee'
+                        description={`Unassign user ${e.firstName} ${e.lastName} (${e.position})`}
+                        onConfirm={() => handleUnassign(e.userId, e.position)}
+                      />
                     </div>
                   ))}
                 </div>
