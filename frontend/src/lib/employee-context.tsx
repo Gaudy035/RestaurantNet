@@ -15,11 +15,11 @@ export function EmployeeProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    adminApiFetch('/admin/auth/me', {
+    adminApiFetch<EmployeeData>('/admin/auth/me', {
       method: 'GET',
       cache: 'no-store',
     })
-      .then(setEmployeeData)
+      .then((data) => setEmployeeData(data))
       .catch(() => setEmployeeData(null))
       .finally(() => setLoading(false));
   }, []);
