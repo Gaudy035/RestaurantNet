@@ -85,7 +85,7 @@ public class TokenCleanupJobTests: IDisposable
 
         Assert.Equal(3, tokenCountBefore);
 
-        await TokenCleanupJob.TokenCleanupJobCore(_context, NullLogger.Instance);
+        await TokenCleanupJob.TokenCleanupJobCore(_context, NullLogger.Instance, CancellationToken.None);
 
         var tokenCountAfter = await _context.RefreshTokens.CountAsync();
 
@@ -103,7 +103,7 @@ public class TokenCleanupJobTests: IDisposable
 
         Assert.Equal(2, tokenCountBefore);
 
-        await TokenCleanupJob.TokenCleanupJobCore(_context, NullLogger.Instance);
+        await TokenCleanupJob.TokenCleanupJobCore(_context, NullLogger.Instance, CancellationToken.None);
 
         var tokenCountAfter = await _context.RefreshTokens.CountAsync();
 
