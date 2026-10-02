@@ -2,4 +2,6 @@ dev
 .DS_Store
 Thumbs.db
 .vs
+.idea
+*.DotSettings.user
 .env
