@@ -4,7 +4,7 @@ using backend.Services.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace backend.Controllers;
+namespace backend.Controllers.Admin;
 
 [ApiController]
 [Route("admin/locations")]

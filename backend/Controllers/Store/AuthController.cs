@@ -6,7 +6,7 @@ using backend.Services.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace backend.Controllers;
+namespace backend.Controllers.Store;
 
 [ApiController]
 [Route("auth")]
