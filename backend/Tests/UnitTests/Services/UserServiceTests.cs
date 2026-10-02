@@ -26,26 +26,6 @@ public class UserServiceTests: IDisposable
         _connection.Dispose();
     }
 
-    private async Task<Client> SeedClientUser(string firstName = "John", string lastName = "Doe", string email = "john@example.com", string password = "password1234", string phoneNumber = "123 456 789")
-    {
-        var newClient = new Client
-        {
-            PhoneNumber = phoneNumber,
-            User = new User
-            {
-                FirstName = firstName,
-                LastName = lastName,
-                Email = email,
-                Password = BCrypt.Net.BCrypt.HashPassword(password)
-            }
-        };
-
-        _context.Clients.Add(newClient);
-        await _context.SaveChangesAsync();
-
-        return newClient;
-    }
-
     private async Task<Employee> SeedEmployeeUser(string firstName = "Jane", string lastName = "Doe", string email = "jane@example.com", string password = "password1234", bool isAdmin = false)
     {
         var newEmployee = new Employee
@@ -141,8 +121,13 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindClient_WithNoParameter_ReturnsAllClients()
     {
-        await SeedClientUser();
-        await SeedClientUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        await ClientUserSeeder.SeedClientUser(_context);
+        await ClientUserSeeder.SeedClientUser(
+            _context, 
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
 
         var result = await _userService.FindClient(null);
 
@@ -154,8 +139,13 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindClient_WithProperName_ReturnsRightClient()
     {
-        await SeedClientUser();
-        await SeedClientUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        await ClientUserSeeder.SeedClientUser(_context);
+        await ClientUserSeeder.SeedClientUser(
+            _context,
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
 
         var result = await _userService.FindClient("ack");
 
@@ -173,9 +163,19 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindClient_WithMultipleMatches_ReturnsMultipleClients()
     {
-        var client1 = await SeedClientUser();
-        var client2 = await SeedClientUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
-        var client3 = await SeedClientUser(firstName: "John", lastName: "Jackson", email: "john2@example.com");
+        var client1 = await ClientUserSeeder.SeedClientUser(_context);
+        var client2 = await ClientUserSeeder.SeedClientUser(
+            _context,
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
+        var client3 = await ClientUserSeeder.SeedClientUser(
+            _context,
+            firstName: "John",
+            lastName: "Jackson",
+            email: "john2@example.com"
+            );
 
         var result = await _userService.FindClient("john");
 
@@ -190,8 +190,13 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindClient_WithMatchingCombinedNameString_ReturnsRightClient()
     {
-        var client1 = await SeedClientUser();
-        var client2 = await SeedClientUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        var client1 = await ClientUserSeeder.SeedClientUser(_context);
+        var client2 = await ClientUserSeeder.SeedClientUser(
+            _context, 
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
 
         var result = await _userService.FindClient("john doe");
 
@@ -205,8 +210,13 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindClient_WithoutMatches_ReturnsEmpty()
     {
-        await SeedClientUser();
-        await SeedClientUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        await ClientUserSeeder.SeedClientUser(_context);
+        await ClientUserSeeder.SeedClientUser(
+            _context,
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
 
         var result = await _userService.FindClient("someRandomParameter");
 
@@ -230,8 +240,13 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindClientById_WithCorrectId_ReturnsCorrectClientData()
     {
-        var client = await SeedClientUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
-        await SeedClientUser();
+        var client = await ClientUserSeeder.SeedClientUser(
+            _context, 
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
+        await ClientUserSeeder.SeedClientUser(_context);
 
         var result = await _userService.FindClientById(client.UserId);
 
@@ -247,7 +262,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindClientById_WithNoMatch_ReturnsClientNotFoundError()
     {
-        await SeedClientUser();
+        await ClientUserSeeder.SeedClientUser(_context);
 
         var result = await _userService.FindClientById(42);
 
@@ -260,7 +275,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task DeleteClient_WithCorrectId_DeletesAndReturnsSuccess()
     {
-        var client = await SeedClientUser();
+        var client = await ClientUserSeeder.SeedClientUser(_context);
 
         var countBefore = await _context.Clients.CountAsync();
 
@@ -278,7 +293,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task DeleteClient_WithNoMatch_DoesntDeleteAndReturnsClientNotFoundError()
     {
-        await SeedClientUser();
+        await ClientUserSeeder.SeedClientUser(_context);
 
         var countBefore = await _context.Clients.CountAsync();
 
@@ -437,7 +452,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindEmployee_WithMatchInClients_ReturnsEmpty()
     {
-        var client = await SeedClientUser();
+        var client = await ClientUserSeeder.SeedClientUser(_context);
 
         var result = await _userService.FindEmployee(client.User.FirstName);
 
@@ -588,7 +603,7 @@ public class UserServiceTests: IDisposable
      [Fact]
     public async Task DeleteEmployee_WithMatchInClients_DoesntDeleteAndReturnsEmployeeNotFoundError()
     {
-        var client = await SeedClientUser();
+        var client = await ClientUserSeeder.SeedClientUser(_context);
 
         var countBefore = await _context.Users.CountAsync();
 

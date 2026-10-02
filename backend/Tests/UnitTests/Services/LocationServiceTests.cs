@@ -40,26 +40,6 @@ public class LocationServiceTests: IDisposable
         return newLocation;
     }
 
-    private async Task<Client> SeedClientUser(string firstName = "John", string lastName = "Doe", string email = "john@example.com", string password = "password1234", string phoneNumber = "123 456 789")
-    {
-        var newClient = new Client
-        {
-            PhoneNumber = phoneNumber,
-            User = new User
-            {
-                FirstName = firstName,
-                LastName = lastName,
-                Email = email,
-                Password = BCrypt.Net.BCrypt.HashPassword(password)
-            }
-        };
-
-        _context.Clients.Add(newClient);
-        await _context.SaveChangesAsync();
-
-        return newClient;
-    }
-
     private async Task<Employee> SeedEmployeeUser(string firstName = "John", string lastName = "Doe", string email = "jane@example.com", string password = "password1234", bool isAdmin = false)
     {
         var newEmployee = new Employee
@@ -278,7 +258,7 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task AssignEmployee_WithClientId_DoesntAssignAndReturnsEmployeeNotFoundError()
     {
-        var client = await SeedClientUser();
+        var client = await ClientUserSeeder.SeedClientUser(_context);
         var location = await SeedLocation();
 
         var dto = new LocationAssignEmployeeDto

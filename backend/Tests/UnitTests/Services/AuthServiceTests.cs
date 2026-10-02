@@ -20,40 +20,20 @@ public class AuthServiceTests: IDisposable
     {
         (_context, _connection) = TestDbContextFactory.Create();
 
-        var _config = new ConfigurationBuilder()
+        var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Jwt:Key"] = "very-long-jwt-security-key-for-testing-auth-service-minimum=thirty-two-charatcters-long"
             })
             .Build();
 
-        _authService = new AuthService(_context, _config);
+        _authService = new AuthService(_context, config);
     }
 
     public void Dispose()
     {
         _context.Dispose();
         _connection.Dispose();
-    }
-
-    private async Task<Client> SeedClientUser()
-    {
-        var newClient = new Client
-        {
-            PhoneNumber = "123 123 123",
-            User = new User
-            {
-                FirstName = "John",
-                LastName = "Doe",
-                Email = "john@example.com",
-                Password = BCrypt.Net.BCrypt.HashPassword("TestPass1234"),
-            }
-        };
-
-        _context.Clients.Add(newClient);
-        await _context.SaveChangesAsync();
-
-        return newClient;
     }
 
     private async Task<Employee> SeedEmployeeUser(bool isAdmin)
@@ -78,7 +58,7 @@ public class AuthServiceTests: IDisposable
 
     private async Task<RefreshToken> SeedRefreshToken(DateTimeOffset expiration, bool isActive = true)
     {
-        var user = await SeedClientUser();
+        var user = await ClientUserSeeder.SeedClientUser(_context);
 
         var newRefreshToken = new RefreshToken
         {
@@ -98,12 +78,12 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_ClientWithCorrectCredentials_ReturnsTokensAndClientRole()
     {
-        await SeedClientUser();
+        await ClientUserSeeder.SeedClientUser(_context);
 
         var loginDto = new LoginDto
         {
             Email = "john@example.com",
-            Password = "TestPass1234"
+            Password = "password1234"
         };
 
         var result = await _authService.Login(loginDto, "Client");
@@ -194,7 +174,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_WithIncorrectEmail_ReturnsInvalidCredentialsError()
     {
-        await SeedClientUser();
+        await ClientUserSeeder.SeedClientUser(_context);
 
         var loginDto = new LoginDto
         {
@@ -213,7 +193,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_WithIncorrectPassword_ReturnsInvalidCredentialsError()
     {
-        await SeedClientUser();
+        await ClientUserSeeder.SeedClientUser(_context);
 
         var loginDto = new LoginDto
         {
@@ -270,7 +250,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_ClientTryingToLoginFromAdminForm_ReturnsInvalidCredentialsError()
     {
-        await SeedClientUser();
+        await ClientUserSeeder.SeedClientUser(_context);
 
         var loginDto = new LoginDto
         {
@@ -289,12 +269,12 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task RevokeToken_WithCorrectTokenValue_MarksTokenInactiveAndSetsRevokedAt()
     {
-        await SeedClientUser();
+        await ClientUserSeeder.SeedClientUser(_context);
 
         var loginDto = new LoginDto
         {
             Email = "john@example.com",
-            Password = "TestPass1234"
+            Password = "password1234"
         };
 
         var result = await _authService.Login(loginDto, "Client");
@@ -314,12 +294,12 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Refresh_WithCorrectTokenValue_GeneratesNewCorrectTokens()
     {
-        await SeedClientUser();
+        await ClientUserSeeder.SeedClientUser(_context);
 
         var loginDto = new LoginDto
         {
             Email = "john@example.com",
-            Password = "TestPass1234"
+            Password = "password1234"
         };
 
         var loginResponse = await _authService.Login(loginDto, "Client");
@@ -394,7 +374,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task MeClient_WithProperUserId_ReturnsCorrectData()
     {
-        var client = await SeedClientUser();
+        var client = await ClientUserSeeder.SeedClientUser(_context);
 
         var result = await _authService.MeClient(client.UserId);
 
@@ -404,7 +384,7 @@ public class AuthServiceTests: IDisposable
         Assert.Equal("John", result.Data.FirstName);
         Assert.Equal("Doe", result.Data.LastName);
         Assert.Equal("john@example.com", result.Data.Email);
-        Assert.Equal("123 123 123", result.Data.PhoneNumber);
+        Assert.Equal("123 456 789", result.Data.PhoneNumber);
     }
 
     [Fact]
@@ -467,7 +447,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task MeAdmin_WithClientId_ReturnsEmployeeNotFoundError()
     {
-        var client = await SeedClientUser();
+        var client = await ClientUserSeeder.SeedClientUser(_context);
 
         var result = await _authService.MeAdmin(client.UserId);
 
