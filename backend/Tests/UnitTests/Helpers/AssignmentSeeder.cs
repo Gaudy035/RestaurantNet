@@ -4,7 +4,6 @@ using backend.Data.Entities;
 
 public static class AssignmentSeeder
 {
-    
     public static async Task<LocationEmployee> SeedAssignment(
         AppDbContext context,
         int userId,

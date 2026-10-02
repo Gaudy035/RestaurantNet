@@ -5,7 +5,6 @@ namespace UnitTests.Helpers;
 
 public static class LocationSeeder
 {
-    
     public static async Task<Location> SeedLocation(
         AppDbContext context,
         string city = "City1",
