@@ -8,13 +8,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace UnitTests.Services;
 
-public class LocationSericveTests: IDisposable
+public class LocationServiceTests: IDisposable
 {
     private readonly AppDbContext _context;
     private readonly SqliteConnection _connection;
     private readonly LocationService _locationService;
 
-    public LocationSericveTests()
+    public LocationServiceTests()
     {
         (_context, _connection) = TestDbContextFactory.Create();
         _locationService = new LocationService(_context);
