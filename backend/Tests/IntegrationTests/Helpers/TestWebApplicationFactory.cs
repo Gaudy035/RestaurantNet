@@ -3,6 +3,8 @@ using backend.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+using Respawn;
 using Testcontainers.PostgreSql;
 
 namespace IntegrationTests.Helpers;
@@ -15,21 +17,42 @@ public class TestWebApplicationFactory: WebApplicationFactory<Program>, IAsyncLi
             .WithUsername("postgres")
             .WithPassword("postgres")
             .Build();
+    
+    private Respawner _respawner = null!;
 
     public async Task InitializeAsync()
     {
         await _postgreSqlContainer.StartAsync();
         
-        using var scope = Services.CreateScope();
+        using (var scope = Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            await context.Database.MigrateAsync();
+        }
         
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var connection = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString());
+        await connection.OpenAsync(); 
         
-        await context.Database.MigrateAsync();
+        _respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
+            {
+                DbAdapter = DbAdapter.Postgres,
+                SchemasToInclude = ["public"],
+                TablesToIgnore = ["__EFMigrationsHistory"]
+            }
+        );
+    }
+    
+    public async Task ResetDatabaseAsync()
+    {
+        await using var connection = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString());
+        await connection.OpenAsync();
+        await _respawner.ResetAsync(connection);
     }
 
     public new async Task DisposeAsync()
     {
-        await _postgreSqlContainer.StopAsync();
+        await _postgreSqlContainer.DisposeAsync();
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
