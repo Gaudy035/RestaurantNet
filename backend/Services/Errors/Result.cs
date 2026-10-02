@@ -21,13 +21,13 @@ public class Result<T>: Result
 {
     public T? Data { get; }
 
-    protected Result(bool isSuccess, T? data, Error? error): base(isSuccess, error)
+    private Result(bool isSuccess, T? data, Error? error): base(isSuccess, error)
     {
         Data = data;
     }
 
     public static Result<T> Success(T data) => new Result<T>(true, data, null);
     
-    public static new Result<T> Fail(ErrorCode code) => 
+    public new static Result<T> Fail(ErrorCode code) => 
         new Result<T>(false, default, Error.From(code));
 }
