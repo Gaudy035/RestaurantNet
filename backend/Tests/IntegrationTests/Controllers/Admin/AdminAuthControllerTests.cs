@@ -6,7 +6,7 @@ using System.Net;
  
  namespace IntegrationTests.Controllers.Admin;
  
- public class AdminAuthControllerTests: IClassFixture<TestWebApplicationFactory>
+ public class AdminAuthControllerTests: IClassFixture<TestWebApplicationFactory>, IAsyncLifetime
  {
      private readonly TestWebApplicationFactory _factory;
  
@@ -14,6 +14,9 @@ using System.Net;
      {
          _factory = factory;
      }
+     
+     public Task InitializeAsync() => _factory.ResetDatabaseAsync();
+     public Task DisposeAsync() => Task.CompletedTask;
  
      private HttpClient CreateClient()
      {
@@ -32,14 +35,19 @@ using System.Net;
      }
      
      [Fact]
-     public async Task Login_WithValidAdminCredentials_ReturnsNoContentAndSetsCookies()
+     public async Task Login_WithValidEmployeeCredentials_ReturnsNoContentAndSetsCookies()
      {
          var client = CreateClient();
- 
+
+         await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => EmployeeUserSeeder.SeedEmployeeUser(context)
+         );
+         
          var dto = new LoginDto
          {
-             Email = "admin@example.net",
-             Password = "adminpass",
+             Email = "jane@example.com",
+             Password = "password1234",
          };
          
          var response = await client.PostAsJsonAsync("/admin/auth/login", dto);
@@ -57,7 +65,12 @@ using System.Net;
      public async Task Login_WithInvalidAdminCredentials_ReturnsUnauthorized()
      {
          var client = CreateClient();
- 
+
+         await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => EmployeeUserSeeder.SeedEmployeeUser(context)
+         );
+         
          var dto = new LoginDto
          {
              Email = "worngemail@example.net",
@@ -73,11 +86,16 @@ using System.Net;
      public async Task Refresh_WithValidRefreshToken_ReturnsNoContentAndSetsCookies()
      {
          var client = CreateClient();
- 
+
+         await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => EmployeeUserSeeder.SeedEmployeeUser(context)
+         );
+         
          var dto = new LoginDto
          {
-             Email = "admin@example.net",
-             Password = "adminpass",
+             Email = "jane@example.com",
+             Password = "password1234",
          };
          
          var loginResponse = await client.PostAsJsonAsync("/admin/auth/login", dto);
@@ -124,10 +142,15 @@ using System.Net;
      {
          var client = CreateClient();
 
+         await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => EmployeeUserSeeder.SeedEmployeeUser(context)
+         );
+         
          var dto = new LoginDto
          {
-             Email = "admin@example.net",
-             Password = "adminpass",
+             Email = "jane@example.com",
+             Password = "password1234",
          };
          
          var loginResponse = await client.PostAsJsonAsync("/admin/auth/login", dto);
@@ -163,18 +186,23 @@ using System.Net;
      {
          var client = CreateClient();
 
+         await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => EmployeeUserSeeder.SeedEmployeeUser(context)
+         );
+
          var dto = new LoginDto
          {
-             Email = "admin@example.net",
-             Password = "adminpass",
+             Email = "jane@example.com",
+             Password = "password1234",
          };
 
          var loginResponse = await client.PostAsJsonAsync("/admin/auth/login", dto);
 
          Assert.Equal(HttpStatusCode.NoContent, loginResponse.StatusCode);
 
-         var refreshResponse = await client.GetAsync("/admin/auth/me");
+         var meResponse = await client.GetAsync("/admin/auth/me");
          
-         Assert.Equal(HttpStatusCode.OK, refreshResponse.StatusCode);
+         Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
      }
  }
