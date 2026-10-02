@@ -2,7 +2,7 @@ using backend.Data;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Tests.Helpers;
+namespace UnitTests.Helpers;
 
 public static class TestDbContextFactory
 {

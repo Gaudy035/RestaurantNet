@@ -3,12 +3,12 @@ using backend.Data;
 using backend.Data.Entities;
 using backend.DTOs.Auth;
 using backend.Services;
-using backend.Tests.Helpers;
+using UnitTests.Helpers;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace backend.Tests.Services;
+namespace UnitTests.Services;
 
 public class AuthServiceTests: IDisposable
 {

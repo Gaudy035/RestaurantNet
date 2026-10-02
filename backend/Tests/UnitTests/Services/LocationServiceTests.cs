@@ -2,11 +2,11 @@ using backend.Data;
 using backend.Data.Entities;
 using backend.DTOs.Locations;
 using backend.Services;
-using backend.Tests.Helpers;
+using UnitTests.Helpers;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Tests.Services;
+namespace UnitTests.Services;
 
 public class LocationSericveTests: IDisposable
 {

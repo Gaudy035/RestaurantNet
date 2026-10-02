@@ -5,7 +5,7 @@ using backend.Jobs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace backend.Tests.Jobs;
+namespace UnitTests.Jobs;
 
 public class TokenCleanupJobTests: IDisposable
 {
