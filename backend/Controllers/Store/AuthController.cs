@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using backend.DTOs.Auth;
 using backend.DTOs.Users;
-using backend.Services;
+using backend.Services.Interfaces;
 using backend.Services.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
