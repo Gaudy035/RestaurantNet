@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/backend/">
+    <Project Path="backend/Tests/IntegrationTests/IntegrationTests.csproj" />
     <Project Path="backend/Tests/UnitTests/UnitTests.csproj" />
   </Folder>
   <Project Path="backend/backend.csproj" />
