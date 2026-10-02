@@ -1,0 +1,675 @@
+{
+  "info": {
+    "_postman_id": "c8aa34e4-d450-47f3-9f90-b8caf4f3d839",
+    "name": "RestaurantNetAdminAPI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "58608567",
+    "_collection_link": "https://go.postman.co/collection/58608567-c8aa34e4-d450-47f3-9f90-b8caf4f3d839?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Me\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPass}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{adminUrl}}/auth/login",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Refresh\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/auth/me",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Create client\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/auth/refresh",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(null);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/auth/logout",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Clients",
+          "item": [
+            {
+              "name": "Create client",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 200) {\n    const response = pm.response.json();\n    pm.environment.set(\"createdClientId\", response.userId);\n}\n\npm.execution.setNextRequest(\"Get all clients\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Postman\",\n  \"lastName\": \"Client\",\n  \"email\": \"client@postman.com\",\n  \"password\": \"ClientPass\",\n  \"phoneNumber\": \"123 456 789\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{adminUrl}}/users/clients",
+                  "host": [
+                    "{{adminUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "clients"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get all clients",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.execution.setNextRequest(\"Get client by ID\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{adminUrl}}/users/clients",
+                  "host": [
+                    "{{adminUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "clients"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get client by ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.execution.setNextRequest(\"Delete client\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{adminUrl}}/users/clients/{{createdClientId}}",
+                  "host": [
+                    "{{adminUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "clients",
+                    "{{createdClientId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete client",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 204) {\n    pm.environment.unset(\"createdClientId\");\n}\n\npm.execution.setNextRequest(\"Create employee\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{adminUrl}}/users/clients/{{createdClientId}}",
+                  "host": [
+                    "{{adminUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "clients",
+                    "{{createdClientId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Employees",
+          "item": [
+            {
+              "name": "Create employee",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 200) {\n    const response = pm.response.json();\n    pm.environment.set(\"createdEmployeeId\", response.userId);\n}\n\npm.execution.setNextRequest(\"Get all employees\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Postman\",\n  \"lastName\": \"Employee\",\n  \"email\": \"employee@postman.com\",\n  \"password\": \"EmployeePass\",\n  \"isAdmin\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{adminUrl}}/users/employees",
+                  "host": [
+                    "{{adminUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "employees"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get all employees",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.execution.setNextRequest(\"Get employee by ID\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{adminUrl}}/users/employees",
+                  "host": [
+                    "{{adminUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "employees"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get employee by ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.execution.setNextRequest(\"Create location\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{adminUrl}}/users/employees/{{createdEmployeeId}}",
+                  "host": [
+                    "{{adminUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "employees",
+                    "{{createdEmployeeId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete employee",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 204) {\n    pm.environment.unset(\"createdEmployeeId\");\n}\n\npm.execution.setNextRequest(\"Logout\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{adminUrl}}/users/employees/{{createdEmployeeId}}",
+                  "host": [
+                    "{{adminUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "employees",
+                    "{{createdEmployeeId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get employees locations",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.execution.setNextRequest(\"Get locations employees\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{adminUrl}}/users/employees/{{createdEmployeeId}}/locations",
+                  "host": [
+                    "{{adminUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "employees",
+                    "{{createdEmployeeId}}",
+                    "locations"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Locations",
+      "item": [
+        {
+          "name": "Create location",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {\n    const response = pm.response.json();\n    pm.environment.set(\"createdLocationId\", response.locationId);\n}\n\npm.execution.setNextRequest(\"Get all locations\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"city\": \"Postman\",\n  \"address\": \"postman 42\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{adminUrl}}/locations",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "locations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get all locations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Get location by ID\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/locations",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "locations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get location by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Assign employee\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/locations/{{createdLocationId}}",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "locations",
+                "{{createdLocationId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete location",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 204) {\n    pm.environment.unset(\"createdLocationId\");\n}\n\npm.execution.setNextRequest(\"Delete employee\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/locations/{{createdLocationId}}",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "locations",
+                "{{createdLocationId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assign employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Get employees locations\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": {{createdEmployeeId}},\n  \"locationId\": {{createdLocationId}},\n  \"position\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{adminUrl}}/locations/employees",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "locations",
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unassign employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Delete location\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": {{createdEmployeeId}},\n  \"locationId\": {{createdLocationId}},\n  \"position\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{adminUrl}}/locations/employees",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "locations",
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get locations employees",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Unassign employee\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/locations/{{createdLocationId}}/employees",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "locations",
+                "{{createdLocationId}}",
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
