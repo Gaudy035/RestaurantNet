@@ -26,20 +26,6 @@ public class UserServiceTests: IDisposable
         _connection.Dispose();
     }
 
-    private async Task<Location> SeedLocation(string city = "City1", string address = "Address1")
-    {
-        var newLocation = new Location
-        {
-            City = city,
-            Address = address
-        };
-
-        _context.Locations.Add(newLocation);
-        await _context.SaveChangesAsync();
-
-        return newLocation;
-    }
-
     private async Task<LocationEmployee> SeedAssignment(int userId, int locationId, Position position)
     {
         var newAssignment = new LocationEmployee
@@ -510,8 +496,12 @@ public class UserServiceTests: IDisposable
     public async Task GetEmployeeLocations_WithMultipleMatches_ReturnsAllMatches()
     {
         var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
-        var location1 = await SeedLocation();
-        var location2 = await SeedLocation(city: "City 2", address: "Address 2");
+        var location1 = await LocationSeeder.SeedLocation(_context);
+        var location2 = await LocationSeeder.SeedLocation(
+            _context,
+            city: "City 2",
+            address: "Address 2"
+            );
         await SeedAssignment(employee.UserId, location1.LocationId, Position.Server);
         await SeedAssignment(employee.UserId, location1.LocationId, Position.Cashier);
         await SeedAssignment(employee.UserId, location2.LocationId, Position.Driver);
@@ -568,7 +558,7 @@ public class UserServiceTests: IDisposable
             lastName: "Jackson",
             email: "jack@example.com"
             );
-        var location = await SeedLocation();
+        var location = await LocationSeeder.SeedLocation(_context);
         await SeedAssignment(employee1.UserId, location.LocationId, Position.Chef);
         await SeedAssignment(employee1.UserId, location.LocationId, Position.Server);
         await SeedAssignment(employee2.UserId, location.LocationId, Position.Chef);
