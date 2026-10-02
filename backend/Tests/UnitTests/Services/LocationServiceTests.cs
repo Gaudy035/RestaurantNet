@@ -26,21 +26,6 @@ public class LocationServiceTests: IDisposable
         _connection.Dispose();
     }
 
-    private async Task<LocationEmployee> SeedAssignment(int userId, int locationId, Position position)
-    {
-        var newAssignment = new LocationEmployee
-        {
-            UserId = userId,
-            LocationId = locationId,
-            Position = position
-        };
-
-        _context.LocationEmployees.Add(newAssignment);
-        await _context.SaveChangesAsync();
-
-        return newAssignment;
-    }
-
     [Fact]
     public async Task CreateLocation_WithValidData_CreatesLocationAndReturnsItsData()
     {
@@ -186,7 +171,7 @@ public class LocationServiceTests: IDisposable
     {
         var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location = await LocationSeeder.SeedLocation(_context);
-        await SeedAssignment(employee.UserId, location.LocationId, Position.Server);
+        await AssignmentSeeder.SeedAssignment(_context, employee.UserId, location.LocationId, Position.Server);
 
         var employeesBefore = await _context.Employees.CountAsync();
         var assignmentsBefore = await _context.LocationEmployees.CountAsync();
@@ -361,8 +346,8 @@ public class LocationServiceTests: IDisposable
             email: "jane@example.net"
             );
         var location = await LocationSeeder.SeedLocation(_context);
-        await SeedAssignment(employee1.UserId, location.LocationId, Position.Chef);
-        await SeedAssignment(employee2.UserId, location.LocationId, Position.Cashier);
+        await AssignmentSeeder.SeedAssignment(_context, employee1.UserId, location.LocationId, Position.Chef);
+        await AssignmentSeeder.SeedAssignment(_context, employee2.UserId, location.LocationId, Position.Cashier);
 
         var assignmentCount = await _context.LocationEmployees.CountAsync();
         var result = await _locationService.GetAssignedEmployees(location.LocationId);
@@ -404,7 +389,7 @@ public class LocationServiceTests: IDisposable
     {
         var location1 = await LocationSeeder.SeedLocation(_context);
         var employee1 = await EmployeeUserSeeder.SeedEmployeeUser(_context);
-        await SeedAssignment(employee1.UserId, location1.LocationId, Position.Server);
+        await AssignmentSeeder.SeedAssignment(_context, employee1.UserId, location1.LocationId, Position.Server);
 
         var location2 = await LocationSeeder.SeedLocation(
             _context,
@@ -417,7 +402,7 @@ public class LocationServiceTests: IDisposable
             lastName: "Doe",
             email: "jane@example.net"
             );
-        await SeedAssignment(employee2.UserId, location2.LocationId, Position.Server);
+        await AssignmentSeeder.SeedAssignment(_context, employee2.UserId, location2.LocationId, Position.Server);
 
         var countAssigned = await _context.LocationEmployees.CountAsync();
         var result = await _locationService.GetAssignedEmployees(location1.LocationId);
