@@ -2,7 +2,7 @@ using backend.DTOs.Auth;
 using backend.DTOs.Users;
 using backend.Services.Errors;
 
-namespace backend.Services;
+namespace backend.Services.Interfaces;
 
 public interface IAuthService
 {

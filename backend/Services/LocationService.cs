@@ -2,6 +2,7 @@ using backend.Data;
 using backend.Data.Entities;
 using backend.DTOs.Locations;
 using backend.Services.Errors;
+using backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services;

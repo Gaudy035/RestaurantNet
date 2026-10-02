@@ -5,6 +5,7 @@ using backend.Data;
 using backend.Data.Seed;
 using backend.Jobs;
 using backend.Services;
+using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -18,7 +19,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options
 );
 
 builder.Services.AddControllers()
-    // Json serialization
+    // JSON serialization
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;

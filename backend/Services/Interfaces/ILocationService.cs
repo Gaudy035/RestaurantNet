@@ -1,7 +1,7 @@
 using backend.DTOs.Locations;
 using backend.Services.Errors;
 
-namespace backend.Services;
+namespace backend.Services.Interfaces;
 
 public interface ILocationService
 {
