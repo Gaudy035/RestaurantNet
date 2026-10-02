@@ -5,14 +5,14 @@ namespace backend.DTOs.Users;
 
 public class EmployeeLocationsResponseDto
 {
-    public int LocationId { get; set; }
+    public int LocationId { get; init; }
 
-    public string City { get; set; } = string.Empty;
+    public string City { get; init; } = string.Empty;
 
-    public string Address { get; set; } = string.Empty;
+    public string Address { get; init; } = string.Empty;
 
-    public int UserId { get; set; }
+    public int UserId { get; init; }
 
     [EnumDataType(typeof(Position))]
-    public Position Position { get; set; }
+    public Position Position { get; init; }
 }
