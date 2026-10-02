@@ -8,19 +8,19 @@ public class Location
 {
     [Key]
     [Column("location_id")]
-    public int LocationId { get; set; }
+    public int LocationId { get; init; }
 
     [MaxLength(50)]
     [Column("city")]
-    public string City { get; set; } = string.Empty;
+    public string City { get; init; } = string.Empty;
 
     [MaxLength(255)]
     [Column("address")]
-    public string Address { get; set; } = string.Empty;
+    public string Address { get; init; } = string.Empty;
 
-    public ICollection<LocationEmployee> LocationEmployees { get; set; } = new List<LocationEmployee>();
+    public ICollection<LocationEmployee> LocationEmployees { get; init; } = new List<LocationEmployee>();
 
-    public ICollection<Table> Tables { get; set; } = new List<Table>();
+    public ICollection<Table> Tables { get; init; } = new List<Table>();
     
-    public ICollection<Order> Orders { get; set; } = new List<Order>();
+    public ICollection<Order> Orders { get; init; } = new List<Order>();
 }

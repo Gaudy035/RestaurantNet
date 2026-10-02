@@ -8,7 +8,7 @@ public class MenuItem
 {
     [Key]
     [Column("item_id")]
-    public int ItemId { get; set; }
+    public int ItemId { get; init; }
 
     [Required]
     [Column("category_id")]
@@ -17,7 +17,7 @@ public class MenuItem
     [Required]
     [MaxLength(128)]
     [Column("name")]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
 
     [Required]
     [Range(0, double.MaxValue)]
@@ -36,7 +36,7 @@ public class MenuItem
 
     public Category Category { get; set; } = null!;
 
-    public ICollection<ItemIngredient> ItemIngredients { get; set; } = new List<ItemIngredient>();
+    public ICollection<ItemIngredient> ItemIngredients { get; init; } = new List<ItemIngredient>();
 
-    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public ICollection<OrderItem> OrderItems { get; init; } = new List<OrderItem>();
 }

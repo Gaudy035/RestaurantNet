@@ -7,16 +7,16 @@ namespace backend.Data.Entities;
 public class OrderItem
 {
     [Column("order_id")]
-    public int OrderId { get; set; }
+    public int OrderId { get; init; }
 
     [Column("item_id")]
-    public int ItemId { get; set; }
+    public int ItemId { get; init; }
 
     [Required]
     [Column("quantity")]
-    public int Quantity { get; set; }
+    public int Quantity { get; init; }
 
-    public Order Order { get; set; } = null!;
+    public Order Order { get; init; } = null!;
 
-    public MenuItem MenuItem { get; set; } = null!;
+    public MenuItem MenuItem { get; init; } = null!;
 }

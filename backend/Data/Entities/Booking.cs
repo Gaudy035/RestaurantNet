@@ -8,22 +8,22 @@ public class Booking
 {
     [Key]
     [Column("booking_id")]
-    public int BookingId { get; set; }
+    public int BookingId { get; init; }
 
     [Column("table_id")]
-    public int TableId { get; set; }
+    public int TableId { get; init; }
 
     [Column("client_id")]
-    public int? ClientId { get; set; }
+    public int? ClientId { get; init; }
 
     [Required]
     [Column("start_time")]
-    public DateTime StartTime { get; set; }
+    public DateTime StartTime { get; init; }
 
     [Required]
     [Column("duration")]
-    public int Duration { get; set; }
+    public int Duration { get; init; }
 
-    public Table Table { get; set; } = null!;
-    public Client? Client { get; set; }
+    public Table Table { get; init; } = null!;
+    public Client? Client { get; init; }
 }

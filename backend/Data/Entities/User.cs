@@ -8,17 +8,17 @@ public class User
 {
     [Key]
     [Column("user_id")]
-    public int UserId { get; set; }
+    public int UserId { get; init; }
 
     [Required]
     [MaxLength(30)]
     [Column("first_name")]
-    public string FirstName { get; set; } = string.Empty;
+    public string FirstName { get; init; } = string.Empty;
     
     [Required]
     [MaxLength(30)]
     [Column("last_name")]
-    public string LastName { get; set; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
 
     [Required]
     [EmailAddress]
@@ -31,7 +31,7 @@ public class User
     [Column("password")]
     public string Password { get; set; } = string.Empty;
 
-    public Client? Client { get; set; }
+    public Client? Client { get; init; }
 
-    public Employee? Employee { get; set; }
+    public Employee? Employee { get; init; }
 }

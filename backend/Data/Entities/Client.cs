@@ -8,7 +8,7 @@ public class Client
 {
     [Key]   
     [Column("user_id")]
-    public int UserId { get; set; }
+    public int UserId { get; init; }
 
     [Required]
     [MaxLength(20)]
@@ -16,9 +16,9 @@ public class Client
     [Column("phone_number")]
     public string PhoneNumber { get; set; } = string.Empty;
 
-    public User User { get; set; } = null!;
+    public User User { get; init; } = null!;
 
-    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public ICollection<Booking> Bookings { get; init; } = new List<Booking>();
 
-    public ICollection<Order> Orders { get; set; } = new List<Order>();
+    public ICollection<Order> Orders { get; init; } = new List<Order>();
 }

@@ -8,12 +8,12 @@ public class Category
 {
     [Key]
     [Column("category_id")]
-    public int CategoryId { get; set; }
+    public int CategoryId { get; init; }
 
     [Required]
     [MaxLength(50)]
     [Column("name")]
-    public string CategoryName { get; set; } = string.Empty;
+    public string CategoryName { get; init; } = string.Empty;
 
-    public ICollection<MenuItem> MenuItems { get; set; } = new List<MenuItem>();
+    public ICollection<MenuItem> MenuItems { get; init; } = new List<MenuItem>();
 }

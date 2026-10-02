@@ -9,12 +9,12 @@ public class Employee
 {
     [Key]
     [Column("user_id")]
-    public int UserId { get; set; }
+    public int UserId { get; init; }
 
     [Column("is_admin")]
     public bool IsAdmin { get; set; }
 
-    public User User { get; set; } = null!;
+    public User User { get; init; } = null!;
 
-    public ICollection<LocationEmployee> LocationEmployees { get; set; } = new List<LocationEmployee>();
+    public ICollection<LocationEmployee> LocationEmployees { get; init; } = new List<LocationEmployee>();
 }

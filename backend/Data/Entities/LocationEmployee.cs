@@ -15,15 +15,15 @@ public enum Position
 public class LocationEmployee
 {
     [Column("location_id")]
-    public int LocationId { get; set; }
+    public int LocationId { get; init; }
 
     [Column("user_id")]
-    public int UserId { get; set; }
+    public int UserId { get; init; }
 
     [Column("position")]
-    public Position Position { get; set; }
+    public Position Position { get; init; }
 
-    public Location Location { get; set; } = null!;
+    public Location Location { get; init; } = null!;
     
-    public Employee Employee { get; set; } = null!;
+    public Employee Employee { get; init; } = null!;
 }

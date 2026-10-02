@@ -31,31 +31,31 @@ public class Order
 {
     [Key]
     [Column("order_id")]
-    public int OrderId { get; set; }
+    public int OrderId { get; init; }
 
     [Required]
     [Column("location_id")]
-    public int LocationId { get; set; }
+    public int LocationId { get; init; }
 
     [Column("client_id")]
-    public int? ClientId { get; set; }
+    public int? ClientId { get; init; }
 
     [Required]
     [Column("order_time")]
-    public DateTime OrderTime { get; set; }
+    public DateTime OrderTime { get; init; }
 
     [Required]
     [Range(0, double.MaxValue)]
     [Column("price")]
-    public double Price { get; set; }
+    public double Price { get; init; }
 
     [MaxLength(20)]
     [Column("phone_number")]
-    public string PhoneNumber { get; set; } = string.Empty;
+    public string PhoneNumber { get; init; } = string.Empty;
 
     [Required]
     [Column("payment_method")]
-    public PaymentMethod PaymentMethod { get; set; }
+    public PaymentMethod PaymentMethod { get; init; }
 
     [Column("is_paid")]
     public bool IsPaid { get; set; }
@@ -66,13 +66,13 @@ public class Order
 
     [Required]
     [Column("order_type")]
-    public OrderType OrderType {get; set;}
+    public OrderType OrderType {get; init;}
 
-    public Location Location { get; set; } = null!;
+    public Location Location { get; init; } = null!;
 
-    public Client? Client { get; set; }
+    public Client? Client { get; init; }
 
-    public Delivery? Delivery { get; set; }
+    public Delivery? Delivery { get; init; }
 
-    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public ICollection<OrderItem> OrderItems { get; init; } = new List<OrderItem>();
 }

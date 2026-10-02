@@ -8,17 +8,17 @@ public class Delivery
 {
     [Key]
     [Column("order_id")]
-    public int OrderId { get; set; }
+    public int OrderId { get; init; }
 
     [Required]
     [MaxLength(50)]
     [Column("city")]
-    public string City { get; set; } = string.Empty;
+    public string City { get; init; } = string.Empty;
 
     [Required]
     [MaxLength(255)]
     [Column("address")]
-    public string Address { get; set; } = string.Empty;
+    public string Address { get; init; } = string.Empty;
 
-    public Order Order { get; set; } = null!;
+    public Order Order { get; init; } = null!;
 }

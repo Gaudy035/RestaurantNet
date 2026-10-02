@@ -8,16 +8,16 @@ public class Table
 {
     [Key]
     [Column("table_id")]
-    public int TableId { get; set; }
+    public int TableId { get; init; }
 
     [Required]
     [Column("location_id")]
-    public int LocationId { get; set; }
+    public int LocationId { get; init; }
 
     [Required]
     [Column("seats")]
-    public int Seats { get; set; }
+    public int Seats { get; init; }
 
-    public Location Location { get; set; } = null!;
-    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public Location Location { get; init; } = null!;
+    public ICollection<Booking> Bookings { get; init; } = new List<Booking>();
 }
