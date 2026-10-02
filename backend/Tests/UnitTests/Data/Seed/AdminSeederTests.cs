@@ -1,12 +1,12 @@
 using backend.Data;
 using backend.Data.Entities;
 using backend.Data.Seed;
-using backend.Tests.Helpers;
+using UnitTests.Helpers;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace backend.Tests.Data.Seed;
+namespace UnitTests.Data.Seed;
 
 public class AdminSeederTests: IDisposable
 {
