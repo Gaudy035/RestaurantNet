@@ -23,7 +23,7 @@ public class AuthServiceTests: IDisposable
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Jwt:Key"] = "very-long-jwt-security-key-for-testing-auth-service-minimum=thirty-two-charatcters-long"
+                ["Jwt:Key"] = "very-long-jwt-security-key-for-testing-auth-service-minimum=thirty-two-characters-long"
             })
             .Build();
 
@@ -34,26 +34,6 @@ public class AuthServiceTests: IDisposable
     {
         _context.Dispose();
         _connection.Dispose();
-    }
-
-    private async Task<Employee> SeedEmployeeUser(bool isAdmin)
-    {
-        var newEmployee = new Employee
-        {
-            IsAdmin = isAdmin,
-            User = new User
-            {
-                FirstName = "Jane",
-                LastName = "Doe",
-                Email = "jane@example.com",
-                Password = BCrypt.Net.BCrypt.HashPassword("TestPass5678"),
-            }
-        };
-
-        _context.Employees.Add(newEmployee);
-        await _context.SaveChangesAsync();
-
-        return newEmployee;
     }
 
     private async Task<RefreshToken> SeedRefreshToken(DateTimeOffset expiration, bool isActive = true)
@@ -110,7 +90,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_AdminEmployeeWithCorrectCredentials_ReturnsTokensAndAdminRole()
     {
-        await SeedEmployeeUser(true);
+        await EmployeeUserSeeder.SeedEmployeeUser(_context, isAdmin: true);
 
         var loginDto = new LoginDto
         {
@@ -142,7 +122,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_NotAdminEmployeeWithCorrectCredentials_ReturnsTokensAndEmployeeRole()
     {
-        await SeedEmployeeUser(false);
+        await EmployeeUserSeeder.SeedEmployeeUser(_context, isAdmin: false);
 
         var loginDto = new LoginDto
         {
@@ -212,7 +192,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_EmployeeTryingToLoginFromClientForm_ReturnsInvalidCredentialsError()
     {
-        await SeedEmployeeUser(false);
+        await EmployeeUserSeeder.SeedEmployeeUser(_context);
 
         var loginDto = new LoginDto
         {
@@ -231,7 +211,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_AdminTryingToLoginFromClientForm_ReturnsInvalidCredentialsError()
     {
-        await SeedEmployeeUser(true);
+        await EmployeeUserSeeder.SeedEmployeeUser(_context, isAdmin: true);
 
         var loginDto = new LoginDto
         {
@@ -390,7 +370,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task MeClient_WithEmployeeUser_ReturnsClientNotFoundError()
     {
-        var employee = await SeedEmployeeUser(false);
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
 
         var result = await _authService.MeClient(employee.UserId);
 
@@ -415,7 +395,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task MeAdmin_WithCorrectIdOfAdmin_ReturnsCorrectData()
     {
-        var admin = await SeedEmployeeUser(true);
+        var admin = await EmployeeUserSeeder.SeedEmployeeUser(_context, isAdmin: true);
 
         var result = await _authService.MeAdmin(admin.UserId);
 
@@ -431,7 +411,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task MeAdmin_WithCorrectIdOfNonAdmin_ReturnsCorrectData()
     {
-        var admin = await SeedEmployeeUser(false);
+        var admin = await EmployeeUserSeeder.SeedEmployeeUser(_context);
 
         var result = await _authService.MeAdmin(admin.UserId);
 

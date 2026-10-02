@@ -40,26 +40,6 @@ public class LocationServiceTests: IDisposable
         return newLocation;
     }
 
-    private async Task<Employee> SeedEmployeeUser(string firstName = "John", string lastName = "Doe", string email = "jane@example.com", string password = "password1234", bool isAdmin = false)
-    {
-        var newEmployee = new Employee
-        {
-            IsAdmin = isAdmin,
-            User = new User
-            {
-                FirstName = firstName,
-                LastName = lastName,
-                Email = email,
-                Password = BCrypt.Net.BCrypt.HashPassword(password)
-            }
-        };
-
-        _context.Employees.Add(newEmployee);
-        await _context.SaveChangesAsync();
-
-        return newEmployee;
-    }
-
     private async Task<LocationEmployee> SeedAssignment(int userId, int locationId, Position position)
     {
         var newAssignment = new LocationEmployee
@@ -206,7 +186,7 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task DeleteLocation_WithCorrectId_DeletesEmployeeAsignmentsButKeepsEmployees()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location = await SeedLocation();
         await SeedAssignment(employee.UserId, location.LocationId, Position.Server);
 
@@ -232,7 +212,7 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task AssignEmployee_WithCorrectData_AssignsEmployeeAndReturnsSuccess()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location = await SeedLocation();
 
         var dto = new LocationAssignEmployeeDto
@@ -301,7 +281,7 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task AssignEmployee_WithNonExistentLocation_DoesntAssignAndReturnsLocationNotFoundError()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
 
         var dto = new LocationAssignEmployeeDto
         {
@@ -322,7 +302,7 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task AssignEmployee_WithDuplicateData_DoesntAssignAndReturnsAlreadyAssignedError()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location = await SeedLocation();
 
         var dto = new LocationAssignEmployeeDto
@@ -346,7 +326,7 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task AssignEmployee_WithSameIdsAndDifferentPosition_AssignsAndReturnsTrue()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location = await SeedLocation();
 
         var dto1 = new LocationAssignEmployeeDto
@@ -375,8 +355,13 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task GetAssignedEmployees_WithMatchingEmployees_ReturnsAllMatches()
     {
-        var employee1 = await SeedEmployeeUser();
-        var employee2 = await SeedEmployeeUser(firstName: "Jane", lastName: "Doe", email: "jane@example.net");
+        var employee1 = await EmployeeUserSeeder.SeedEmployeeUser(_context);
+        var employee2 = await EmployeeUserSeeder.SeedEmployeeUser(
+            _context,
+            firstName: "Jane",
+            lastName: "Doe",
+            email: "jane@example.net"
+            );
         var location = await SeedLocation();
         await SeedAssignment(employee1.UserId, location.LocationId, Position.Chef);
         await SeedAssignment(employee2.UserId, location.LocationId, Position.Cashier);
@@ -420,11 +405,16 @@ public class LocationServiceTests: IDisposable
     public async Task GetAssignedEmployees_WithMatches_ReturnsOnlyThoseAtRightLocation()
     {
         var location1 = await SeedLocation();
-        var employee1 = await SeedEmployeeUser();
+        var employee1 = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         await SeedAssignment(employee1.UserId, location1.LocationId, Position.Server);
 
         var location2 = await SeedLocation(city: "City2", address: "Address2");
-        var employee2 = await SeedEmployeeUser(firstName: "Jane", lastName: "Doe", email: "jane@example.net");
+        var employee2 = await EmployeeUserSeeder.SeedEmployeeUser(
+            _context,
+            firstName: "Jane",
+            lastName: "Doe",
+            email: "jane@example.net"
+            );
         await SeedAssignment(employee2.UserId, location2.LocationId, Position.Server);
 
         var countAssigned = await _context.LocationEmployees.CountAsync();
@@ -439,7 +429,7 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task UnassignEmployee_AfterRemoving_DoesntRemoveLocationOrEmployee()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location = await SeedLocation();
 
         var dto = new LocationAssignEmployeeDto
@@ -469,7 +459,7 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task UnassignEmployee_WithCorrectData_RemovesAssignmentAndReturnsSuccess()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location = await SeedLocation();
 
         var dto = new LocationAssignEmployeeDto
@@ -493,7 +483,7 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task UnassignEmployee_WithIncorrectLocationId_DoesntRemoveAndReturnsAssignmentNotFoundError()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location = await SeedLocation();
 
         var dto1 = new LocationAssignEmployeeDto
@@ -525,7 +515,7 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task UnassignEmployee_WithIncorrectUserId_DoesntRemoveAndReturnsAssignmentNotFoundError()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location = await SeedLocation();
 
         var dto1 = new LocationAssignEmployeeDto
@@ -557,7 +547,7 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task UnassignEmployee_WithIncorrectPosition_DoesntRemoveAndReturnsAssignmentNotFoundError()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location = await SeedLocation();
 
         var dto1 = new LocationAssignEmployeeDto
@@ -589,7 +579,7 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task UnassignEmployee_WithMultipleIdMatches_OnlyDeletesWithMatchingPosition()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location = await SeedLocation();
 
         var dto1 = new LocationAssignEmployeeDto

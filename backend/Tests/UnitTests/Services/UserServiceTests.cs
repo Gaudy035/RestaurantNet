@@ -26,26 +26,6 @@ public class UserServiceTests: IDisposable
         _connection.Dispose();
     }
 
-    private async Task<Employee> SeedEmployeeUser(string firstName = "Jane", string lastName = "Doe", string email = "jane@example.com", string password = "password1234", bool isAdmin = false)
-    {
-        var newEmployee = new Employee
-        {
-            IsAdmin = isAdmin,
-            User = new User
-            {
-                FirstName = firstName,
-                LastName = lastName,
-                Email = email,
-                Password = BCrypt.Net.BCrypt.HashPassword(password)
-            }
-        };
-
-        _context.Employees.Add(newEmployee);
-        await _context.SaveChangesAsync();
-
-        return newEmployee;
-    }
-
     private async Task<Location> SeedLocation(string city = "City1", string address = "Address1")
     {
         var newLocation = new Location
@@ -228,7 +208,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindClient_WithMatchInEmployees_ReturnsEmpty()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
 
         var result = await _userService.FindClient(employee.User.FirstName);
 
@@ -313,7 +293,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task DeleteClient_WithMatchInEmployees_DoesntDeleteAndReturnsClientNotFoundError()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
 
         var countBefore = await _context.Users.CountAsync();
 
@@ -375,8 +355,13 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindEmployee_WithNoParameter_ReturnsAllEmployees()
     {
-        await SeedEmployeeUser();
-        await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        await EmployeeUserSeeder.SeedEmployeeUser(_context);
+        await EmployeeUserSeeder.SeedEmployeeUser(
+            _context,
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
         
         var result = await _userService.FindEmployee(null);
 
@@ -388,8 +373,13 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindEmployee_WithProperName_ReturnsRightEmployee()
     {
-        await SeedEmployeeUser();
-        await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        await EmployeeUserSeeder.SeedEmployeeUser(_context);
+        await EmployeeUserSeeder.SeedEmployeeUser(
+            _context,
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
 
         var result = await _userService.FindEmployee("ack");
 
@@ -407,9 +397,19 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindEmployee_WithMultipleMatches_ReturnsAllMatchingEmployees()
     {
-        var employee1 = await SeedEmployeeUser();
-        var employee2 = await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
-        var employee3 = await SeedEmployeeUser(firstName: "John", lastName: "Doe", email: "john@example.com");
+        var employee1 = await EmployeeUserSeeder.SeedEmployeeUser(_context);
+        var employee2 = await EmployeeUserSeeder.SeedEmployeeUser(
+            _context,
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
+        var employee3 = await EmployeeUserSeeder.SeedEmployeeUser(
+            _context,
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@example.com"
+            );
 
         var result = await _userService.FindEmployee("doe");
 
@@ -424,8 +424,13 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindEmployee_WithMatchingCombinedNameString_ReturnsRightEmployee()
     {
-        var employee1 = await SeedEmployeeUser();
-        var employee2 = await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        var employee1 = await EmployeeUserSeeder.SeedEmployeeUser(_context);
+        var employee2 = await EmployeeUserSeeder.SeedEmployeeUser(
+            _context,
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
 
         var result = await _userService.FindEmployee("jane doe");
 
@@ -439,8 +444,13 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindEmployee_WithoutMatches_ReturnsEmpty()
     {
-        await SeedEmployeeUser();
-        await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        await EmployeeUserSeeder.SeedEmployeeUser(_context);
+        await EmployeeUserSeeder.SeedEmployeeUser(
+            _context,
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
 
         var result = await _userService.FindEmployee("someRandomParameter");
 
@@ -464,8 +474,13 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindEmployeeById_WithCorrectId_ReturnsCorrectEmployeeData()
     {
-        var employee = await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
-        await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(
+            _context,
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
+        await EmployeeUserSeeder.SeedEmployeeUser(_context);
 
         var result = await _userService.FindEmployeeById(employee.UserId);
 
@@ -481,7 +496,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task FindEmployeeById_WithNoMatch_ReturnsEmployeeNotFoundError()
     {
-        await SeedEmployeeUser();
+        await EmployeeUserSeeder.SeedEmployeeUser(_context);
 
         var result = await _userService.FindEmployeeById(42);
 
@@ -494,7 +509,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task GetEmployeeLocations_WithMultipleMatches_ReturnsAllMatches()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location1 = await SeedLocation();
         var location2 = await SeedLocation(city: "City 2", address: "Address 2");
         await SeedAssignment(employee.UserId, location1.LocationId, Position.Server);
@@ -534,7 +549,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task GetEmployeeLocations_WithNoMatches_ReturnsEmptyList()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
 
         var result = await _userService.GetEmployeeLocations(employee.UserId);
 
@@ -546,8 +561,13 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task GetEmployeeLocations_WithMatches_ReturnsOnlyThoseWithRightEmployee()
     {
-        var employee1 = await SeedEmployeeUser();
-        var employee2 = await SeedEmployeeUser(firstName: "Jack", lastName: "Jackson", email: "jack@example.com");
+        var employee1 = await EmployeeUserSeeder.SeedEmployeeUser(_context);
+        var employee2 = await EmployeeUserSeeder.SeedEmployeeUser(
+            _context,
+            firstName: "Jack",
+            lastName: "Jackson",
+            email: "jack@example.com"
+            );
         var location = await SeedLocation();
         await SeedAssignment(employee1.UserId, location.LocationId, Position.Chef);
         await SeedAssignment(employee1.UserId, location.LocationId, Position.Server);
@@ -565,7 +585,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task DeleteEmployee_WithCorrectId_DeletesAndReturnsSuccess()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
 
         var countBefore = await _context.Employees.CountAsync();
 
@@ -583,7 +603,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task DeleteEmployee_WithNoMatch_DoesntDeleteAndReturnsEmployeeNotFoundError()
     {
-        var employee = await SeedEmployeeUser();
+        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
 
         var countBefore = await _context.Employees.CountAsync();
 
