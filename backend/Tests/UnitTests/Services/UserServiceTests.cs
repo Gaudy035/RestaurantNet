@@ -578,7 +578,7 @@ public class UserServiceTests: IDisposable
     [Fact]
     public async Task DeleteEmployee_WithNoMatch_DoesntDeleteAndReturnsEmployeeNotFoundError()
     {
-        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
+        await EmployeeUserSeeder.SeedEmployeeUser(_context);
 
         var countBefore = await _context.Employees.CountAsync();
 

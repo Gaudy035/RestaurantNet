@@ -57,8 +57,8 @@ public class LocationServiceTests: IDisposable
     [Fact]
     public async Task GetLocations_WithNoParam_ReturnsAllLocations()
     {
-        var location1 = await LocationSeeder.SeedLocation(_context);
-        var location2 = await LocationSeeder.SeedLocation(
+        await LocationSeeder.SeedLocation(_context);
+        await LocationSeeder.SeedLocation(
             _context,
             city: "City2",
             address: "Address2"
@@ -69,20 +69,20 @@ public class LocationServiceTests: IDisposable
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Data);
         Assert.Equal(2, result.Data.Count());
-        Assert.Contains(result.Data, l => l.City == "City1" && l.Address == "Address1");
-        Assert.Contains(result.Data, l => l.City == "City2" && l.Address == "Address2");
+        Assert.Contains(result.Data, l => l is { City: "City1", Address: "Address1" });
+        Assert.Contains(result.Data, l => l is { City: "City2", Address: "Address2" });
     }
 
     [Fact]
     public async Task GetLocation_WithCorrectParam_ReturnsAllMatches()
     {
-        var location1 = await LocationSeeder.SeedLocation(_context);
-        var location2 = await LocationSeeder.SeedLocation(
+        await LocationSeeder.SeedLocation(_context);
+        await LocationSeeder.SeedLocation(
             _context,
             city: "City2",
             address: "Address2"
             );
-        var location3 = await LocationSeeder.SeedLocation(
+        await LocationSeeder.SeedLocation(
             _context,
             city: "City3",
             address: "Address2"
@@ -93,9 +93,9 @@ public class LocationServiceTests: IDisposable
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Data);
         Assert.Equal(2, result.Data.Count());
-        Assert.Contains(result.Data, l => l.City == "City2" && l.Address == "Address2");
-        Assert.Contains(result.Data, l => l.City == "City3" && l.Address == "Address2");
-        Assert.DoesNotContain(result.Data, l => l.City == "City1" && l.Address == "Address1");
+        Assert.Contains(result.Data, l => l is { City: "City2", Address: "Address2" });
+        Assert.Contains(result.Data, l => l is { City: "City3", Address: "Address2" });
+        Assert.DoesNotContain(result.Data, l => l is { City: "City1", Address: "Address1" });
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public class LocationServiceTests: IDisposable
     {
         await LocationSeeder.SeedLocation(_context);
 
-        var result = await _locationService.GetLocations("NonExistantAddress");
+        var result = await _locationService.GetLocations("NonExistentAddress");
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Data);
@@ -167,7 +167,7 @@ public class LocationServiceTests: IDisposable
     }
 
     [Fact]
-    public async Task DeleteLocation_WithCorrectId_DeletesEmployeeAsignmentsButKeepsEmployees()
+    public async Task DeleteLocation_WithCorrectId_DeletesEmployeeAssignmentsButKeepsEmployees()
     {
         var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
         var location = await LocationSeeder.SeedLocation(_context);

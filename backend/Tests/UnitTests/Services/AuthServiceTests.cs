@@ -263,7 +263,7 @@ public class AuthServiceTests: IDisposable
             .FirstOrDefaultAsync(rt => rt.TokenValue == result.Data!.RefreshToken);
         
         Assert.True(token!.IsActive);
-        Assert.Null(token!.RevokedAt);
+        Assert.Null(token.RevokedAt);
         
         await _authService.RevokeToken(result.Data!.RefreshToken);
 
@@ -323,7 +323,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Refresh_WithExpiredToken_ReturnsInvalidRefreshTokenErrorAndSetsRevoked()
     {
-        var testRefreshToken = await SeedRefreshToken(DateTimeOffset.UtcNow.AddDays(-1), true);
+        var testRefreshToken = await SeedRefreshToken(DateTimeOffset.UtcNow.AddDays(-1), isActive: true);
 
         var result = await _authService.Refresh(testRefreshToken.TokenValue);
 
@@ -335,13 +335,13 @@ public class AuthServiceTests: IDisposable
         Assert.NotNull(result.Error);
         Assert.Equal(401, result.Error.StatusCode);
         Assert.False(testRefreshTokenRefetch!.IsActive);
-        Assert.NotNull(testRefreshTokenRefetch!.RevokedAt);
+        Assert.NotNull(testRefreshTokenRefetch.RevokedAt);
     }
 
     [Fact]
     public async Task Refresh_WithIncorrectRefreshTokenValue_ReturnsInvalidRefreshTokenError()
     {
-        await SeedRefreshToken(DateTimeOffset.UtcNow.AddDays(7), true);
+        await SeedRefreshToken(DateTimeOffset.UtcNow.AddDays(7), isActive: true);
 
         var result = await _authService.Refresh("IncorrectTokenValue");
 

@@ -13,7 +13,9 @@ public class TokenCleanupJobTests: IDisposable
 
     public TokenCleanupJobTests()
     {
-        // These tests uses EfCore in memory database instead of SQLite, because SQLite is running into an issue with query found in clenaup job that wouldn't occur in postgres prod enviornment
+        // These tests use EfCore in memory database instead of SQLite,
+        // because SQLite is running into an issue with query found in cleanup job
+        // that wouldn't occur in Postgres prod environment
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
@@ -46,7 +48,11 @@ public class TokenCleanupJobTests: IDisposable
         return newClient;
     }
 
-    private async Task<RefreshToken> SeedRefreshToken(Client testUser, DateTimeOffset expiration, DateTimeOffset? revocation = null)
+    private async Task SeedRefreshToken(
+        Client testUser,
+        DateTimeOffset expiration,
+        DateTimeOffset? revocation = null
+        )
     {
         var randomBytes = new Byte[64];
         RandomNumberGenerator.Fill(randomBytes);
@@ -59,14 +65,12 @@ public class TokenCleanupJobTests: IDisposable
             Role = "Client",
             ExpiresAt = expiration,
             RevokedAt = revocation,
-            IsActive = revocation != null ? false : true,
+            IsActive = revocation == null,
             User = testUser.User
         };
 
         _context.RefreshTokens.Add(newRefreshToken);
         await _context.SaveChangesAsync();
-
-        return newRefreshToken;
     }
 
     [Fact]
