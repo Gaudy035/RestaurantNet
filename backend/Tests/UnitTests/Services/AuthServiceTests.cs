@@ -95,7 +95,7 @@ public class AuthServiceTests: IDisposable
         var loginDto = new LoginDto
         {
             Email = "jane@example.com",
-            Password = "TestPass5678"
+            Password = "password1234"
         };
 
         var result = await _authService.Login(loginDto, "Admin");
@@ -127,7 +127,7 @@ public class AuthServiceTests: IDisposable
         var loginDto = new LoginDto
         {
             Email = "jane@example.com",
-            Password = "TestPass5678"
+            Password = "password1234"
         };
 
         var result = await _authService.Login(loginDto, "Admin");
