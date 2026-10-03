@@ -59,6 +59,36 @@ public class AuthController: ControllerBase
         });
     }
 
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] ClientCreateDto dto)
+    {
+        var createClientResponse = await _userService.CreateClient(dto);
+
+        if (!createClientResponse.IsSuccess)
+        {
+            return createClientResponse.ToActionResult(this);
+        }
+
+        var loginDto = new LoginDto
+        {
+            Email = dto.Email,
+            Password = dto.Password
+        };
+
+        var loginResponse = await _authService.Login(loginDto, "Client");
+
+        if (!loginResponse.IsSuccess)
+        {
+            return loginResponse.ToActionResult(this);
+        }
+
+        var tokens = loginResponse.Data!;
+
+        CreateTokenCookies(tokens.AccessToken, tokens.RefreshToken);
+
+        return NoContent();
+    }
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
@@ -105,36 +135,6 @@ public class AuthController: ControllerBase
         
         CreateTokenCookies(tokens.AccessToken, tokens.RefreshToken);
         
-        return NoContent();
-    }
-
-    [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] ClientCreateDto dto)
-    {
-        var createClientResponse = await _userService.CreateClient(dto);
-
-        if (!createClientResponse.IsSuccess)
-        {
-            return createClientResponse.ToActionResult(this);
-        }
-
-        var loginDto = new LoginDto
-        {
-            Email = dto.Email,
-            Password = dto.Password
-        };
-
-        var loginResponse = await _authService.Login(loginDto, "Client");
-
-        if (!loginResponse.IsSuccess)
-        {
-            return loginResponse.ToActionResult(this);
-        }
-
-        var tokens = loginResponse.Data!;
-
-        CreateTokenCookies(tokens.AccessToken, tokens.RefreshToken);
-
         return NoContent();
     }
 
