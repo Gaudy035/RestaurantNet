@@ -40,4 +40,17 @@ public class CategoryService: ICategoryService
             CategoryName = newCategory.CategoryName
         });
     }
+
+    public async Task<Result<IEnumerable<CategoryResponseDto>>> GetCategories()
+    {
+        var categories = await _context.Categories.AsNoTracking()
+            .Select(c => new CategoryResponseDto
+                {
+                    CategoryId = c.CategoryId,
+                    CategoryName = c.CategoryName
+                }
+            ).ToListAsync();
+        
+        return Result<IEnumerable<CategoryResponseDto>>.Success(categories);
+    }
 }
