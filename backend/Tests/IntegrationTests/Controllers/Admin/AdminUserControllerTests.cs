@@ -266,4 +266,70 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
     }
+    
+    [Fact]
+    public async Task DeleteClient_WithAdminEmployeeUserLoggedIn_ReturnsNoContent()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var clientUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedClientUser(context)
+        );
+        
+        var result = await client.DeleteAsync($"admin/users/clients/{clientUser.UserId}");
+        
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteClient_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+
+        var clientUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedClientUser(context)
+        );
+        
+        var result = await client.DeleteAsync($"admin/users/clients/{clientUser.UserId}");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteClient_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+        
+        var clientUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedClientUser(context, email: "secondclient@example.com")
+        );
+        
+        var result = await client.DeleteAsync($"admin/users/clients/{clientUser.UserId}");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteClient_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var clientUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedClientUser(context)
+        );
+        
+        var result = await client.DeleteAsync($"admin/users/clients/{clientUser.UserId}");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
 }
