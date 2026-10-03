@@ -211,7 +211,7 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
     }
     
     [Fact]
-    public async Task GetClientById_WithLoggedInNonAdminEmployeeUser_ReturnsOk()
+    public async Task GetClientById_WithLoggedInNonAdminEmployeeUserAndCorrectId_ReturnsOk()
     {
         var client = CreateClient();
         
@@ -228,7 +228,7 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
     }
 
     [Fact]
-    public async Task GetClientById_WithLoggedInAdminEmployeeUser_ReturnsOk()
+    public async Task GetClientById_WithLoggedInAdminEmployeeUserAndCorrectId_ReturnsOk()
     {
         var client = CreateClient();
         
@@ -242,6 +242,18 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         var result = await client.GetAsync($"admin/users/clients/{clientUser.UserId}");
         
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetClientById_WithLoggedInEmployeeUserAndIncorrectId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+        
+        var result = await client.GetAsync("admin/users/clients/42");
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
     }
 
     [Fact]
@@ -267,7 +279,7 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
     }
     
     [Fact]
-    public async Task DeleteClient_WithAdminEmployeeUserLoggedIn_ReturnsNoContent()
+    public async Task DeleteClient_WithAdminEmployeeUserLoggedInAndCorrectId_ReturnsNoContent()
     {
         var client = CreateClient();
         
@@ -281,6 +293,18 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         var result = await client.DeleteAsync($"admin/users/clients/{clientUser.UserId}");
         
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+    } 
+    
+    [Fact]
+    public async Task DeleteClient_WithAdminEmployeeUserLoggedInAndIncorrectId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+        
+        var result = await client.DeleteAsync("admin/users/clients/42");
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
     }
 
     [Fact]
@@ -487,7 +511,7 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
     }
     
     [Fact]
-    public async Task GetEmployeeById_WithAdminEmployeeUserLoggedIn_ReturnsOk()
+    public async Task GetEmployeeById_WithAdminEmployeeUserLoggedInAndCorrectId_ReturnsOk()
     {
         var client = CreateClient();
         
@@ -501,6 +525,18 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         var result = await client.GetAsync($"admin/users/employees/{employeeUser.UserId}");
         
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetEmployeeById_WithAdminEmployeeUserLoggedInAndIncorrectId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var result = await client.GetAsync("admin/users/employees/42");
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
     }
     
     [Fact]
@@ -555,7 +591,7 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
     /*Location/employees tests here after locations endpoints testing*/
 
     [Fact]
-    public async Task DeleteEmployee_WithAdminEmployeeUserLoggedIn_ReturnsNoContent()
+    public async Task DeleteEmployee_WithAdminEmployeeUserLoggedInAndCorrectId_ReturnsNoContent()
     {
         var client = CreateClient();
         
@@ -569,6 +605,18 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         var result = await client.DeleteAsync($"admin/users/employees/{employeeUser.UserId}");
         
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteEmployee_WithAdminEmployeeUserLoggedInAndIncorrectId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var result = await client.DeleteAsync("admin/users/employees/42");
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
     }
     
     [Fact]
