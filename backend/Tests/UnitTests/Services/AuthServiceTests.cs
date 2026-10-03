@@ -38,7 +38,7 @@ public class AuthServiceTests: IDisposable
 
     private async Task<RefreshToken> SeedRefreshToken(DateTimeOffset expiration, bool isActive = true)
     {
-        var user = await ClientUserSeeder.SeedClientUser(_context);
+        var user = await UserSeeder.SeedClientUser(_context);
 
         var newRefreshToken = new RefreshToken
         {
@@ -58,7 +58,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_ClientWithCorrectCredentials_ReturnsTokensAndClientRole()
     {
-        await ClientUserSeeder.SeedClientUser(_context);
+        await UserSeeder.SeedClientUser(_context);
 
         var loginDto = new LoginDto
         {
@@ -90,7 +90,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_AdminEmployeeWithCorrectCredentials_ReturnsTokensAndAdminRole()
     {
-        await EmployeeUserSeeder.SeedEmployeeUser(_context, isAdmin: true);
+        await UserSeeder.SeedEmployeeUser(_context, isAdmin: true);
 
         var loginDto = new LoginDto
         {
@@ -122,7 +122,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_NotAdminEmployeeWithCorrectCredentials_ReturnsTokensAndEmployeeRole()
     {
-        await EmployeeUserSeeder.SeedEmployeeUser(_context, isAdmin: false);
+        await UserSeeder.SeedEmployeeUser(_context, isAdmin: false);
 
         var loginDto = new LoginDto
         {
@@ -154,7 +154,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_WithIncorrectEmail_ReturnsInvalidCredentialsError()
     {
-        await ClientUserSeeder.SeedClientUser(_context);
+        await UserSeeder.SeedClientUser(_context);
 
         var loginDto = new LoginDto
         {
@@ -173,7 +173,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_WithIncorrectPassword_ReturnsInvalidCredentialsError()
     {
-        await ClientUserSeeder.SeedClientUser(_context);
+        await UserSeeder.SeedClientUser(_context);
 
         var loginDto = new LoginDto
         {
@@ -192,7 +192,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_EmployeeTryingToLoginFromClientForm_ReturnsInvalidCredentialsError()
     {
-        await EmployeeUserSeeder.SeedEmployeeUser(_context);
+        await UserSeeder.SeedEmployeeUser(_context);
 
         var loginDto = new LoginDto
         {
@@ -211,7 +211,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_AdminTryingToLoginFromClientForm_ReturnsInvalidCredentialsError()
     {
-        await EmployeeUserSeeder.SeedEmployeeUser(_context, isAdmin: true);
+        await UserSeeder.SeedEmployeeUser(_context, isAdmin: true);
 
         var loginDto = new LoginDto
         {
@@ -230,7 +230,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Login_ClientTryingToLoginFromAdminForm_ReturnsInvalidCredentialsError()
     {
-        await ClientUserSeeder.SeedClientUser(_context);
+        await UserSeeder.SeedClientUser(_context);
 
         var loginDto = new LoginDto
         {
@@ -249,7 +249,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task RevokeToken_WithCorrectTokenValue_MarksTokenInactiveAndSetsRevokedAt()
     {
-        await ClientUserSeeder.SeedClientUser(_context);
+        await UserSeeder.SeedClientUser(_context);
 
         var loginDto = new LoginDto
         {
@@ -274,7 +274,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task Refresh_WithCorrectTokenValue_GeneratesNewCorrectTokens()
     {
-        await ClientUserSeeder.SeedClientUser(_context);
+        await UserSeeder.SeedClientUser(_context);
 
         var loginDto = new LoginDto
         {
@@ -354,7 +354,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task MeClient_WithProperUserId_ReturnsCorrectData()
     {
-        var client = await ClientUserSeeder.SeedClientUser(_context);
+        var client = await UserSeeder.SeedClientUser(_context);
 
         var result = await _authService.MeClient(client.UserId);
 
@@ -370,7 +370,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task MeClient_WithEmployeeUser_ReturnsClientNotFoundError()
     {
-        var employee = await EmployeeUserSeeder.SeedEmployeeUser(_context);
+        var employee = await UserSeeder.SeedEmployeeUser(_context);
 
         var result = await _authService.MeClient(employee.UserId);
 
@@ -395,7 +395,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task MeAdmin_WithCorrectIdOfAdmin_ReturnsCorrectData()
     {
-        var admin = await EmployeeUserSeeder.SeedEmployeeUser(_context, isAdmin: true);
+        var admin = await UserSeeder.SeedEmployeeUser(_context, isAdmin: true);
 
         var result = await _authService.MeAdmin(admin.UserId);
 
@@ -411,7 +411,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task MeAdmin_WithCorrectIdOfNonAdmin_ReturnsCorrectData()
     {
-        var admin = await EmployeeUserSeeder.SeedEmployeeUser(_context);
+        var admin = await UserSeeder.SeedEmployeeUser(_context);
 
         var result = await _authService.MeAdmin(admin.UserId);
 
@@ -427,7 +427,7 @@ public class AuthServiceTests: IDisposable
     [Fact]
     public async Task MeAdmin_WithClientId_ReturnsEmployeeNotFoundError()
     {
-        var client = await ClientUserSeeder.SeedClientUser(_context);
+        var client = await UserSeeder.SeedClientUser(_context);
 
         var result = await _authService.MeAdmin(client.UserId);
 
