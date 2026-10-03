@@ -6,4 +6,6 @@ namespace backend.Services.Interfaces;
 public interface ICategoryService
 {
     Task<Result<CategoryResponseDto>> CreateCategory(CategoryCreateDto dto);
+    
+    Task<Result<IEnumerable<CategoryResponseDto>>> GetCategories();
 }
