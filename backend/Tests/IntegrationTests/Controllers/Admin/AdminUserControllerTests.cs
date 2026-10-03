@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using backend.Data.Entities;
 using backend.DTOs.Auth;
 using backend.DTOs.Users;
 using IntegrationTests.Helpers;
@@ -44,12 +43,12 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
             Password = "password1234"
         };
         
-        var response = await client.PostAsJsonAsync("/admin/auth/login", dto);
+        await client.PostAsJsonAsync("/admin/auth/login", dto);
     }
     
     private async Task ClientLogin(HttpClient client)
     {
-        var clientUser = await DatabaseHelper.ExecuteAsync(
+        await DatabaseHelper.ExecuteAsync(
             _factory,
             context => UserSeeder.SeedClientUser(context)
         );
@@ -331,5 +330,113 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         var result = await client.DeleteAsync($"admin/users/clients/{clientUser.UserId}");
         
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task CreateEmployeeAccount_WithAdminEmployeeUserLoggedIn_ReturnsOk()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var dto = new EmployeeCreateDto
+        {
+            FirstName = "Employee",
+            LastName = "User",
+            Email = "employee@example.com",
+            Password = "password",
+            IsAdmin = false
+        };
+        
+        var response = await client.PostAsJsonAsync($"admin/users/employees", dto);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }    
+    
+    [Fact]
+    public async Task CreateEmployeeAccount_WithAdminEmployeeUserLoggedInAndDuplicateEmail_ReturnsConflict()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedClientUser(context, email: "employee@example.com")
+        );
+        
+        var dto = new EmployeeCreateDto
+        {
+            FirstName = "Employee",
+            LastName = "User",
+            Email = "employee@example.com",
+            Password = "password",
+            IsAdmin = false
+        };
+        
+        var response = await client.PostAsJsonAsync($"admin/users/employees", dto);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }    
+    
+    [Fact]
+    public async Task CreateEmployeeAccount_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+
+        var dto = new EmployeeCreateDto
+        {
+            FirstName = "Employee",
+            LastName = "User",
+            Email = "employee@example.com",
+            Password = "password",
+            IsAdmin = false
+        };
+        
+        var response = await client.PostAsJsonAsync($"admin/users/employees", dto);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }    
+    
+    [Fact]
+    public async Task CreateEmployeeAccount_WithClientLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+
+        var dto = new EmployeeCreateDto
+        {
+            FirstName = "Employee",
+            LastName = "User",
+            Email = "employee@example.com",
+            Password = "password",
+            IsAdmin = false
+        };
+        
+        var response = await client.PostAsJsonAsync($"admin/users/employees", dto);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }    
+    
+    [Fact]
+    public async Task CreateEmployeeAccount_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        var dto = new EmployeeCreateDto
+        {
+            FirstName = "Employee",
+            LastName = "User",
+            Email = "employee@example.com",
+            Password = "password",
+            IsAdmin = false
+        };
+        
+        var response = await client.PostAsJsonAsync($"admin/users/employees", dto);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }
