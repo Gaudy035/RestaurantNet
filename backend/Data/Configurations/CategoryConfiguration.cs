@@ -8,6 +8,8 @@ public class CategoryConfiguration: IEntityTypeConfiguration<Category>
 {
     public void Configure(EntityTypeBuilder<Category> builder)
     {
+        builder.HasIndex(c => c.CategoryName).IsUnique();
+        
         builder.HasMany(c => c.MenuItems)
             .WithOne(mu => mu.Category)
             .HasForeignKey(mu => mu.CategoryId)
