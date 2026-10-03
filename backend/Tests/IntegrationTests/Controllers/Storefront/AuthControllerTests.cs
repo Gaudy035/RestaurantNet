@@ -54,6 +54,23 @@ public class AuthControllerTests: IClassFixture<TestWebApplicationFactory>, IAsy
         
         return response;
     }
+    
+    private async Task<HttpResponseMessage> EmployeeLogin(HttpClient client, bool isAdmin = false)
+    {
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, isAdmin: isAdmin)
+        );
+         
+        var dto = new LoginDto
+        {
+            Email = "jane@example.com",
+            Password = "password1234",
+        };
+         
+        var response = await client.PostAsJsonAsync("/admin/auth/login", dto);
+        return response;
+    }
 
     [Fact]
     public async Task Register_WithProperData_ReturnsNoContentAndSetsCookies()
@@ -169,7 +186,7 @@ public class AuthControllerTests: IClassFixture<TestWebApplicationFactory>, IAsy
     }
     
     [Fact]
-    public async Task Refresh_WithLoggedInUser_ReturnsNoContentAndSetsCookies()
+    public async Task Refresh_WithLoggedClientInUser_ReturnsNoContentAndSetsCookies()
     {
         var client = CreateClient();
         
@@ -200,6 +217,18 @@ public class AuthControllerTests: IClassFixture<TestWebApplicationFactory>, IAsy
         Assert.NotEqual(oldAccessToken, newAccessToken);
         Assert.NotEqual(oldRefreshToken, newRefreshToken);
     }
+
+    [Fact]
+    public async Task Refresh_WithEmployeeUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+        
+        var response = await client.PostAsync("auth/refresh", null);
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
     
     [Fact]
     public async Task Refresh_WithMissingRefreshToken_ReturnsUnauthorized()
@@ -212,16 +241,36 @@ public class AuthControllerTests: IClassFixture<TestWebApplicationFactory>, IAsy
     }
     
     [Fact]
-    public async Task Me_WithLoggedInUser_ReturnsOk()
+    public async Task Me_WithLoggedInClientUser_ReturnsOk()
     {
         var client = CreateClient();
 
-        var loginResponse = await ClientLogin(client);
+        await ClientLogin(client);
 
-        Assert.Equal(HttpStatusCode.NoContent, loginResponse.StatusCode);
-
-        var meResponse = await client.GetAsync("/auth/me");
+        var response = await client.GetAsync("/auth/me");
          
-        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Me_WithLoggedInEmployeeUser_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+        
+        var response = await client.GetAsync("/auth/me");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Me_WithNoLoggedInUser_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var response = await client.GetAsync("auth/me");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }
