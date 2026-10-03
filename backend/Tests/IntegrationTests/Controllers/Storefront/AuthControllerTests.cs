@@ -186,7 +186,7 @@ public class AuthControllerTests: IClassFixture<TestWebApplicationFactory>, IAsy
     }
     
     [Fact]
-    public async Task Refresh_WithLoggedClientInUser_ReturnsNoContentAndSetsCookies()
+    public async Task Refresh_WithValidRefreshToken_ReturnsNoContentAndSetsCookies()
     {
         var client = CreateClient();
         
