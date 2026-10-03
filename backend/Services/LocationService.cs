@@ -18,6 +18,14 @@ public class LocationService : ILocationService
 
     public async Task<Result<LocationResponseDto>> CreateLocation(LocationCreateDto dto)
     {
+        var locationExists = await _context.Locations.AsNoTracking()
+            .AnyAsync(l => l.City == dto.City && l.Address == dto.Address);
+
+        if (locationExists)
+        {
+            return Result<LocationResponseDto>.Fail(ErrorCode.LocationAlreadyExists);
+        }
+        
         var newLocation = new Location
         {
             City = dto.City,

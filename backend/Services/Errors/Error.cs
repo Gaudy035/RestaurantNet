@@ -25,6 +25,7 @@ public sealed class Error
             ErrorCode.ClientNotFound => new Error(code, "Client not found", StatusCodes.Status404NotFound),
             ErrorCode.EmployeeNotFound => new Error(code, "Employee not found", StatusCodes.Status404NotFound),
             ErrorCode.LocationNotFound => new Error(code, "Location not found", StatusCodes.Status404NotFound),
+            ErrorCode.LocationAlreadyExists => new Error(code, "Location already exists", StatusCodes.Status409Conflict),
             ErrorCode.AssignmentNotFound => new Error(code, "Assignment not found", StatusCodes.Status404NotFound),
             _ => new Error(code, "Unknown error", StatusCodes.Status500InternalServerError)
         };
