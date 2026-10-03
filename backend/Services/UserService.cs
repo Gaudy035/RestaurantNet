@@ -222,6 +222,14 @@ public class UserService: IUserService
 
     public async Task<Result<IEnumerable<EmployeeLocationsResponseDto>>> GetEmployeeLocations(int employeeId)
     {
+        var employeeExists = await _context.Employees.AsNoTracking()
+            .AnyAsync(e => e.UserId == employeeId);
+
+        if (!employeeExists)
+        {
+            return Result<IEnumerable<EmployeeLocationsResponseDto>>.Fail(ErrorCode.EmployeeNotFound);
+        }
+        
         var locations = await _context.LocationEmployees
             .AsNoTracking()
             .Where(le => le.UserId == employeeId)
