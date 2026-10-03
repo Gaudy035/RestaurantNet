@@ -439,4 +439,119 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
+    
+    [Fact]
+    public async Task GetEmployees_WithAdminEmployeeUserLoggedIn_ReturnsOk()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+        
+        var result = await client.GetAsync($"admin/users/employees");
+        
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetEmployees_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+        
+        var result = await client.GetAsync($"admin/users/employees");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetEmployees_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+        
+        var result = await client.GetAsync($"admin/users/employees");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetEmployees_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var result = await client.GetAsync($"admin/users/employees");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetEmployeeById_WithAdminEmployeeUserLoggedIn_ReturnsOk()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var employeeUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.net")
+        );
+        
+        var result = await client.GetAsync($"admin/users/employees/{employeeUser.UserId}");
+        
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetEmployeeById_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+
+        var employeeUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.net")
+        );
+        
+        var result = await client.GetAsync($"admin/users/employees/{employeeUser.UserId}");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetEmployeeById_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+
+        var employeeUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context)
+        );
+        
+        var result = await client.GetAsync($"admin/users/employees/{employeeUser.UserId}");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetEmployeeById_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var employeeUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context)
+        );
+        
+        var result = await client.GetAsync($"admin/users/employees/{employeeUser.UserId}");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+    
+    /*Location/employees tests here after locations endpoints testing*/
+    
 }
