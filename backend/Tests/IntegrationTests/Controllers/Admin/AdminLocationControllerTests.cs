@@ -557,4 +557,310 @@ public class AdminLocationControllerTests:IClassFixture<TestWebApplicationFactor
         
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
     }
+
+    [Fact]
+    public async Task UnassignEmployee_WithAdminEmployeeUserLoggedInAndCorrectIds_ReturnsNoContent()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+        
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedAssignment(
+                context,
+                userId: employee.UserId,
+                locationId: location.LocationId,
+                position: Position.Cashier
+            )
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+        
+        var request = new HttpRequestMessage(HttpMethod.Delete, "/admin/locations/employees")
+        {
+            Content = JsonContent.Create(dto)
+        };
+        
+        var result = await client.SendAsync(request);
+        
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UnassignEmployee_WithAdminEmployeeUserLoggedInAndIncorrectLocationId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+        
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedAssignment(
+                context,
+                userId: employee.UserId,
+                locationId: location.LocationId,
+                position: Position.Cashier
+            )
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = 42,
+            Position = Position.Cashier
+        };
+        
+        var request = new HttpRequestMessage(HttpMethod.Delete, "/admin/locations/employees")
+        {
+            Content = JsonContent.Create(dto)
+        };
+        
+        var result = await client.SendAsync(request);
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UnassignEmployee_WithAdminEmployeeUserLoggedInAndIncorrectUserId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+        
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedAssignment(
+                context,
+                userId: employee.UserId,
+                locationId: location.LocationId,
+                position: Position.Cashier
+            )
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = 42,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+        
+        var request = new HttpRequestMessage(HttpMethod.Delete, "/admin/locations/employees")
+        {
+            Content = JsonContent.Create(dto)
+        };
+        
+        var result = await client.SendAsync(request);
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UnassignEmployee_WithAdminEmployeeUserLoggedInAndIncorrectPosition_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+        
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedAssignment(
+                context,
+                userId: employee.UserId,
+                locationId: location.LocationId,
+                position: Position.Cashier
+            )
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Server
+        };
+        
+        var request = new HttpRequestMessage(HttpMethod.Delete, "/admin/locations/employees")
+        {
+            Content = JsonContent.Create(dto)
+        };
+        
+        var result = await client.SendAsync(request);
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UnassignEmployee_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+        
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedAssignment(
+                context,
+                userId: employee.UserId,
+                locationId: location.LocationId,
+                position: Position.Cashier
+            )
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+        
+        var request = new HttpRequestMessage(HttpMethod.Delete, "/admin/locations/employees")
+        {
+            Content = JsonContent.Create(dto)
+        };
+        
+        var result = await client.SendAsync(request);
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UnassignEmployee_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+
+        await ClientLogin(client);
+        
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedAssignment(
+                context,
+                userId: employee.UserId,
+                locationId: location.LocationId,
+                position: Position.Cashier
+            )
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+        
+        var request = new HttpRequestMessage(HttpMethod.Delete, "/admin/locations/employees")
+        {
+            Content = JsonContent.Create(dto)
+        };
+        
+        var result = await client.SendAsync(request);
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UnassignEmployee_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedAssignment(
+                context,
+                userId: employee.UserId,
+                locationId: location.LocationId,
+                position: Position.Cashier
+            )
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            UserId = employee.UserId,
+            LocationId = location.LocationId,
+            Position = Position.Cashier
+        };
+        
+        var request = new HttpRequestMessage(HttpMethod.Delete, "/admin/locations/employees")
+        {
+            Content = JsonContent.Create(dto)
+        };
+        
+        var result = await client.SendAsync(request);
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
 }
