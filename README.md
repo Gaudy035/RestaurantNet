@@ -38,7 +38,7 @@ The following are modeled in the database but not yet exposed in the UI or API:
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/)
 - [Bun](https://bun.sh/) (or Node.js)
-- [Docker](https://www.docker.com/) (optional, for the full stack)
+- [Docker](https://www.docker.com/) — required for the full stack and for running integration tests
 
 ## Getting started
 
@@ -110,6 +110,8 @@ Run from the project root
 ```sh
 dotnet test
 ```
+
+Integration tests spin up a PostgreSQL container via Testcontainers, so make sure Docker is running before running the test suite.
 
 ## Project structure
 
