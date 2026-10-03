@@ -553,5 +553,70 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
     }
     
     /*Location/employees tests here after locations endpoints testing*/
+
+    [Fact]
+    public async Task DeleteEmployee_WithAdminEmployeeUserLoggedIn_ReturnsNoContent()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var employeeUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.net")
+        );
+
+        var result = await client.DeleteAsync($"admin/users/employees/{employeeUser.UserId}");
+        
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+    }
     
+    [Fact]
+    public async Task DeleteEmployee_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+
+        var employeeUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.net")
+        );
+
+        var result = await client.DeleteAsync($"admin/users/employees/{employeeUser.UserId}");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteEmployee_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+
+        var employeeUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.net")
+        );
+
+        var result = await client.DeleteAsync($"admin/users/employees/{employeeUser.UserId}");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteEmployee_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var employeeUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.net")
+        );
+
+        var result = await client.DeleteAsync($"admin/users/employees/{employeeUser.UserId}");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
 }
