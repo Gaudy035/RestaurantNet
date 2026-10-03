@@ -1,0 +1,28 @@
+using backend.DTOs.MenuItems;
+using backend.Services.Errors;
+using backend.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace backend.Controllers.Admin;
+
+[ApiController]
+[Route("/admin/menuitems")]
+public class AdminMenuItemController: ControllerBase
+{
+    private readonly IMenuItemService _menuItemService;
+
+    public AdminMenuItemController(IMenuItemService menuItemService)
+    {
+        _menuItemService = menuItemService;
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("")]
+    public async Task<IActionResult> CreateMenuItem([FromBody] MenuItemCreateDto dto)
+    {
+        var result = await _menuItemService.CreateMenuItem(dto);
+
+        return result.ToActionResult(this);
+    }
+}
