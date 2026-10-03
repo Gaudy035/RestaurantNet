@@ -45,6 +45,24 @@ public class LocationServiceTests: IDisposable
     }
 
     [Fact]
+    public async Task CreateLocation_WithDuplicateData_ReturnsLocationAlreadyExistsError()
+    {
+        await LocationSeeder.SeedLocation(_context);
+
+        var newLocationDto = new LocationCreateDto
+        {
+            City = "City1",
+            Address = "Address1"
+        };
+        
+        var result = await _locationService.CreateLocation(newLocationDto);
+        
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(409, result.Error.StatusCode);
+    }
+
+    [Fact]
     public async Task GetLocations_WhenNoLocationsExist_ReturnEmpty()
     {
         var result = await _locationService.GetLocations(null);
