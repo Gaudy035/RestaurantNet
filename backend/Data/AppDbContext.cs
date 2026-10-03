@@ -16,6 +16,7 @@ public class AppDbContext: DbContext
     public DbSet<Table> Tables => Set<Table>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+    public DbSet<Category> Categories => Set<Category>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<ItemIngredient> ItemIngredients => Set<ItemIngredient>();
     public DbSet<Order> Orders => Set<Order>();

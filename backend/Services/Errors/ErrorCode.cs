@@ -12,5 +12,6 @@ public enum ErrorCode
     LocationNotFound,
     LocationAlreadyExists,
     EmployeeNotFound,
-    AssignmentNotFound
+    AssignmentNotFound,
+    CategoryNotFound,
 }

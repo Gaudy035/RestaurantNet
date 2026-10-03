@@ -1,0 +1,43 @@
+using backend.Data;
+using backend.Data.Entities;
+using backend.DTOs.Categories;
+using backend.Services.Errors;
+using backend.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
+namespace backend.Services;
+
+public class CategoryService: ICategoryService
+{
+    private readonly AppDbContext _context;
+    
+    public CategoryService(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<Result<CategoryResponseDto>> CreateCategory(CategoryCreateDto dto)
+    {
+        var newCategory = new Category
+        {
+            CategoryName = dto.CategoryName
+        };
+
+        _context.Categories.Add(newCategory);
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Result<CategoryResponseDto>.Fail(ErrorCode.DbOperationFailed);
+        }
+
+        return Result<CategoryResponseDto>.Success(new CategoryResponseDto
+        {
+            CategoryId = newCategory.CategoryId,
+            CategoryName = newCategory.CategoryName
+        });
+    }
+}
