@@ -46,6 +46,24 @@ using System.Net;
          return response;
      }
      
+     private async Task<HttpResponseMessage> ClientLogin(HttpClient client)
+     {
+         var clientUser = await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => UserSeeder.SeedClientUser(context)
+         );
+
+         var dto = new LoginDto
+         {
+             Email = "john@example.com",
+             Password = "password1234"
+         };
+        
+         var response = await client.PostAsJsonAsync("auth/login", dto);
+        
+         return response;
+     }
+     
      private static string GetCookieValue(IEnumerable<string> cookies, string name)
      {
          var cookie = cookies.Single(x => x.StartsWith($"{name}="));
@@ -143,6 +161,18 @@ using System.Net;
          
          Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
      }
+
+     [Fact]
+     public async Task Refresh_WithClientUserLoggedIn_ReturnsUnauthorized()
+     {
+         var client = CreateClient();
+         
+         await ClientLogin(client);
+         
+         var response = await client.PostAsync("/admin/auth/refresh", null);
+         
+         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+     }
      
      [Fact]
      public async Task Logout_WithLoggedInUser_ReturnsNoContentAndClearsCookies()
@@ -178,7 +208,7 @@ using System.Net;
      }
 
      [Fact]
-     public async Task Me_WithLoggedInUser_ReturnsOk()
+     public async Task Me_WithLoggedInEmployeeUser_ReturnsOk()
      {
          var client = CreateClient();
 
@@ -189,5 +219,17 @@ using System.Net;
          var meResponse = await client.GetAsync("/admin/auth/me");
          
          Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
+     }
+     
+     [Fact]
+     public async Task Me_WithLoggedInClientUser_ReturnsForbidden()
+     {
+         var client = CreateClient();
+         
+         await ClientLogin(client);
+         
+         var response = await client.GetAsync("/admin/auth/me");
+         
+         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
      }
  }
