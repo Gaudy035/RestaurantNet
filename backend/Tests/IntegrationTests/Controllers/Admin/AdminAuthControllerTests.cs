@@ -2,6 +2,7 @@ using System.Net;
  using System.Net.Http.Json;
  using backend.DTOs.Auth;
  using IntegrationTests.Helpers;
+ using Microsoft.AspNetCore.Http;
  using Microsoft.AspNetCore.Mvc.Testing;
  
  namespace IntegrationTests.Controllers.Admin;
@@ -26,6 +27,23 @@ using System.Net;
                  HandleCookies = true,
                  AllowAutoRedirect = false
              });
+     }
+
+     private async Task<HttpResponseMessage> EmployeeLogin(HttpClient client, bool isAdmin = false)
+     {
+         await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => UserSeeder.SeedEmployeeUser(context, isAdmin: isAdmin)
+         );
+         
+         var dto = new LoginDto
+         {
+             Email = "jane@example.com",
+             Password = "password1234",
+         };
+         
+         var response = await client.PostAsJsonAsync("/admin/auth/login", dto);
+         return response;
      }
      
      private static string GetCookieValue(IEnumerable<string> cookies, string name)
@@ -87,18 +105,7 @@ using System.Net;
      {
          var client = CreateClient();
 
-         await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => UserSeeder.SeedEmployeeUser(context)
-         );
-         
-         var dto = new LoginDto
-         {
-             Email = "jane@example.com",
-             Password = "password1234",
-         };
-         
-         var loginResponse = await client.PostAsJsonAsync("/admin/auth/login", dto);
+         var loginResponse = await EmployeeLogin(client);
          
          Assert.Equal(HttpStatusCode.NoContent, loginResponse.StatusCode);
          Assert.True(loginResponse.Headers.TryGetValues("Set-Cookie", out var cookies));
@@ -142,18 +149,7 @@ using System.Net;
      {
          var client = CreateClient();
 
-         await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => UserSeeder.SeedEmployeeUser(context)
-         );
-         
-         var dto = new LoginDto
-         {
-             Email = "jane@example.com",
-             Password = "password1234",
-         };
-         
-         var loginResponse = await client.PostAsJsonAsync("/admin/auth/login", dto);
+         var loginResponse = await EmployeeLogin(client);
          
          Assert.Equal(HttpStatusCode.NoContent, loginResponse.StatusCode);
          Assert.True(loginResponse.Headers.TryGetValues("Set-Cookie", out var cookies));
@@ -186,18 +182,7 @@ using System.Net;
      {
          var client = CreateClient();
 
-         await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => UserSeeder.SeedEmployeeUser(context)
-         );
-
-         var dto = new LoginDto
-         {
-             Email = "jane@example.com",
-             Password = "password1234",
-         };
-
-         var loginResponse = await client.PostAsJsonAsync("/admin/auth/login", dto);
+         var loginResponse = await EmployeeLogin(client);
 
          Assert.Equal(HttpStatusCode.NoContent, loginResponse.StatusCode);
 
