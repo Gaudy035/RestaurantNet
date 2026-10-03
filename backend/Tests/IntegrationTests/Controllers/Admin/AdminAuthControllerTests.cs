@@ -41,7 +41,7 @@ using System.Net;
 
          await DatabaseHelper.ExecuteAsync(
              _factory,
-             context => EmployeeUserSeeder.SeedEmployeeUser(context)
+             context => UserSeeder.SeedEmployeeUser(context)
          );
          
          var dto = new LoginDto
@@ -68,7 +68,7 @@ using System.Net;
 
          await DatabaseHelper.ExecuteAsync(
              _factory,
-             context => EmployeeUserSeeder.SeedEmployeeUser(context)
+             context => UserSeeder.SeedEmployeeUser(context)
          );
          
          var dto = new LoginDto
@@ -89,7 +89,7 @@ using System.Net;
 
          await DatabaseHelper.ExecuteAsync(
              _factory,
-             context => EmployeeUserSeeder.SeedEmployeeUser(context)
+             context => UserSeeder.SeedEmployeeUser(context)
          );
          
          var dto = new LoginDto
@@ -144,7 +144,7 @@ using System.Net;
 
          await DatabaseHelper.ExecuteAsync(
              _factory,
-             context => EmployeeUserSeeder.SeedEmployeeUser(context)
+             context => UserSeeder.SeedEmployeeUser(context)
          );
          
          var dto = new LoginDto
@@ -188,7 +188,7 @@ using System.Net;
 
          await DatabaseHelper.ExecuteAsync(
              _factory,
-             context => EmployeeUserSeeder.SeedEmployeeUser(context)
+             context => UserSeeder.SeedEmployeeUser(context)
          );
 
          var dto = new LoginDto

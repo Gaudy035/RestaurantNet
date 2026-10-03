@@ -3,7 +3,7 @@ using backend.Data.Entities;
 
 namespace IntegrationTests.Helpers;
 
-public static class EmployeeUserSeeder
+public static class UserSeeder
 {
     public static async Task<Employee> SeedEmployeeUser(
         AppDbContext context,
@@ -30,5 +30,31 @@ public static class EmployeeUserSeeder
         await context.SaveChangesAsync();
 
         return newEmployee;
+    }
+    public static async Task<Client> SeedClientUser(
+        AppDbContext context,
+        string firstName = "John",
+        string lastName = "Doe",
+        string email = "john@example.com",
+        string password = "password1234",
+        string phoneNumber = "321 654 987"
+    )
+    {
+        var newClient = new Client
+        {
+            PhoneNumber = phoneNumber,
+            User = new User
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                Password = BCrypt.Net.BCrypt.HashPassword(password)
+            }
+        };
+
+        context.Clients.Add(newClient);
+        await context.SaveChangesAsync();
+        
+        return newClient;
     }
 }
