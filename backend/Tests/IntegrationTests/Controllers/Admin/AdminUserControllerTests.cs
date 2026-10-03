@@ -47,6 +47,22 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         var response = await client.PostAsJsonAsync("/admin/auth/login", dto);
     }
     
+    private async Task ClientLogin(HttpClient client)
+    {
+        var clientUser = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedClientUser(context)
+        );
+
+        var dto = new LoginDto
+        {
+            Email = "john@example.com",
+            Password = "password1234"
+        };
+        
+        await client.PostAsJsonAsync("auth/login", dto);
+    }
+    
     [Fact]
     public async Task CreateClientAccount_WithLoggedInNonAdminEmployeeUser_ReturnsOk()
     {
@@ -85,6 +101,68 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         
         var response = await client.PostAsJsonAsync("/admin/users/clients", createClientDto);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    } 
+    
+    [Fact]
+    public async Task CreateClientAccount_WithLoggedInEmployeeUserAndDuplicateEmail_ReturnsConflict()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedClientUser(context)
+        );
+        
+        var createClientDto = new ClientCreateDto
+        {
+            FirstName = "ClientFirstName",
+            LastName = "ClientLastName",
+            Email = "john@example.com",
+            Password = "password4321",
+            PhoneNumber = "123 456 789"
+        };
+        
+        var response = await client.PostAsJsonAsync("/admin/users/clients", createClientDto);
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+    [Fact]
+    public async Task CreateClientAccount_NoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var createClientDto = new ClientCreateDto
+        {
+            FirstName = "ClientFirstName",
+            LastName = "ClientLastName",
+            Email = "john@example.com",
+            Password = "password4321",
+            PhoneNumber = "123 456 789"
+        };
+        
+        var response = await client.PostAsJsonAsync("/admin/users/clients", createClientDto);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    } 
+    
+    [Fact]
+    public async Task CreateClientAccount_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+        
+        var createClientDto = new ClientCreateDto
+        {
+            FirstName = "ClientFirstName",
+            LastName = "ClientLastName",
+            Email = "john@example.com",
+            Password = "password4321",
+            PhoneNumber = "123 456 789"
+        };
+        
+        var response = await client.PostAsJsonAsync("/admin/users/clients", createClientDto);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]
@@ -109,6 +187,28 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         var result = await client.GetAsync("admin/users/clients");
         
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetClients_WithLoggedInClientUser_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+        
+        var result = await client.GetAsync("admin/users/clients");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetClients_WithNoLoggedInUser_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var result = await client.GetAsync("admin/users/clients");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
     }
     
     [Fact]
@@ -143,5 +243,27 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         var result = await client.GetAsync($"admin/users/clients/{clientUser.UserId}");
         
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetClientById_WithLoggedInClientUser_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+        
+        var result = await client.GetAsync("admin/users/clients");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetClientById_WithNoLoggedInUser_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var result = await client.GetAsync("admin/users/clients");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
     }
 }
