@@ -14,4 +14,5 @@ public enum ErrorCode
     EmployeeNotFound,
     AssignmentNotFound,
     CategoryNotFound,
+    CategoryAlreadyExists,
 }
