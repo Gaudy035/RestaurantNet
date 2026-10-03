@@ -251,7 +251,7 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         
         await EmployeeLogin(client, true);
         
-        var result = await client.GetAsync("admin/users/clients/42");
+        var result = await client.GetAsync($"admin/users/clients/{int.MaxValue}");
         
         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
     }
@@ -302,7 +302,7 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         
         await EmployeeLogin(client, true);
         
-        var result = await client.DeleteAsync("admin/users/clients/42");
+        var result = await client.DeleteAsync($"admin/users/clients/{int.MaxValue}");
         
         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
     }
@@ -534,7 +534,7 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         
         await EmployeeLogin(client, true);
 
-        var result = await client.GetAsync("admin/users/employees/42");
+        var result = await client.GetAsync($"admin/users/employees/{int.MaxValue}");
         
         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
     }
@@ -587,9 +587,85 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
     }
-    
-    /*Location/employees tests here after locations endpoints testing*/
 
+    [Fact]
+    public async Task GetEmployeeLocations_WithAdminEmployeeUserLoggedInAndCorrectId_ReturnsOk()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+        
+        var result = await client.GetAsync($"admin/users/employees/{employee.UserId}/locations");
+        
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetEmployeeLocations_WithAdminEmployeeUserLoggedInAndIncorrectId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+        
+        var result = await client.GetAsync($"admin/users/employees/{int.MaxValue}/locations");
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetEmployeeLocations_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+        
+        var result = await client.GetAsync($"admin/users/employees/{employee.UserId}/locations");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetEmployeeLocations_WithClientLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+        
+        var result = await client.GetAsync($"admin/users/employees/{employee.UserId}/locations");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetEmployeeLocations_WithNoLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+        
+        var result = await client.GetAsync($"admin/users/employees/{employee.UserId}/locations");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+    
     [Fact]
     public async Task DeleteEmployee_WithAdminEmployeeUserLoggedInAndCorrectId_ReturnsNoContent()
     {
@@ -614,7 +690,7 @@ public class AdminUserControllerTests: IClassFixture<TestWebApplicationFactory>,
         
         await EmployeeLogin(client, true);
 
-        var result = await client.DeleteAsync("admin/users/employees/42");
+        var result = await client.DeleteAsync($"admin/users/employees/{int.MaxValue}");
         
         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
     }
