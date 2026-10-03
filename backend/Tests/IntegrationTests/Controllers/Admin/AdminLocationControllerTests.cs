@@ -265,4 +265,82 @@ public class AdminLocationControllerTests:IClassFixture<TestWebApplicationFactor
         
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
     }
+    
+    [Fact]
+    public async Task DeleteLocation_WithAdminEmployeeUserLoggedInAndCorrectId_ReturnsNoContent()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+        
+        var result = await client.DeleteAsync($"/admin/locations/{location.LocationId}");
+        
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteLocation_WithAdminEmployeeUserLoggedInAndIncorrectId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+        
+        var result = await client.DeleteAsync($"/admin/locations/42");
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteLocation_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+        
+        var result = await client.DeleteAsync($"/admin/locations/{location.LocationId}");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteLocation_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+        
+        var result = await client.DeleteAsync($"/admin/locations/{location.LocationId}");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteLocation_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+        
+        var result = await client.DeleteAsync($"/admin/locations/{location.LocationId}");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
 }
