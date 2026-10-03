@@ -27,11 +27,11 @@ public class MenuItemServiceTests: IDisposable
     [Fact]
     public async Task CreateMenuItem_WithValidData_ReturnsMenuItem()
     {
-        var category = MenuSeeder.SeedCategory(_context);
+        var category = await MenuSeeder.SeedCategory(_context);
 
         var dto = new MenuItemCreateDto
         {
-            CategoryId = category.Id,
+            CategoryId = category.CategoryId,
             Name = "Test",
             ImageUrl = "TestUrl",
             IsAvailable = true,
