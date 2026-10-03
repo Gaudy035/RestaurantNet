@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using backend.Data.Entities;
 using backend.DTOs.Auth;
 using backend.DTOs.Locations;
 using IntegrationTests.Helpers;
@@ -201,7 +202,7 @@ public class AdminLocationControllerTests:IClassFixture<TestWebApplicationFactor
     }
     
     [Fact]
-    public async Task FindLocationById_WithAdminEmployeeUserLoggedIn_ReturnsOk()
+    public async Task FindLocationById_WithAdminEmployeeUserLoggedInAndCorrectId_ReturnsOk()
     {
         var client = CreateClient();
         
@@ -215,6 +216,18 @@ public class AdminLocationControllerTests:IClassFixture<TestWebApplicationFactor
         var result = await client.GetAsync($"/admin/locations/{location.LocationId}");
         
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task FindLocationById_WithAdminEmployeeUserLoggedInAndIncorrectId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+        
+        var result = await client.GetAsync("/admin/locations/42");
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
     }
     
     [Fact]
@@ -340,6 +353,207 @@ public class AdminLocationControllerTests:IClassFixture<TestWebApplicationFactor
         );
         
         var result = await client.DeleteAsync($"/admin/locations/{location.LocationId}");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task AssignEmployee_WithAdminEmployeeUserLoggedInAndCorrectIds_ReturnsNoContent()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            LocationId = location.LocationId,
+            UserId = employee.UserId,
+            Position = Position.Cashier
+        };
+        
+        var result = await client.PostAsJsonAsync("/admin/locations/employees", dto);
+        
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task AssignEmployee_WithAdminEmployeeUserLoggedInAndIncorrectLocationId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            LocationId = 42,
+            UserId = employee.UserId,
+            Position = Position.Cashier
+        };
+        
+        var result = await client.PostAsJsonAsync("/admin/locations/employees", dto);
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task AssignEmployee_WithAdminEmployeeUserLoggedInAndIncorrectUserId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            LocationId = location.LocationId,
+            UserId = 42,
+            Position = Position.Cashier
+        };
+        
+        var result = await client.PostAsJsonAsync("/admin/locations/employees", dto);
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task AssignEmployee_WithAdminEmployeeUserLoggedInAndDuplicateData_ReturnsConflict()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedAssignment(
+                context,
+                userId: employee.UserId,
+                locationId: location.LocationId,
+                position: Position.Cashier
+                )
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            LocationId = location.LocationId,
+            UserId = employee.UserId,
+            Position = Position.Cashier
+        };
+        
+        var result = await client.PostAsJsonAsync("/admin/locations/employees", dto);
+        
+        Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task AssignEmployee_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            LocationId = location.LocationId,
+            UserId = employee.UserId,
+            Position = Position.Cashier
+        };
+        
+        var result = await client.PostAsJsonAsync("/admin/locations/employees", dto);
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task AssignEmployee_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            LocationId = location.LocationId,
+            UserId = employee.UserId,
+            Position = Position.Cashier
+        };
+        
+        var result = await client.PostAsJsonAsync("/admin/locations/employees", dto);
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task AssignEmployee_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var employee = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, email: "secondemployee@example.com")
+        );
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var dto = new LocationAssignEmployeeDto
+        {
+            LocationId = location.LocationId,
+            UserId = employee.UserId,
+            Position = Position.Cashier
+        };
+        
+        var result = await client.PostAsJsonAsync("/admin/locations/employees", dto);
         
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
     }
