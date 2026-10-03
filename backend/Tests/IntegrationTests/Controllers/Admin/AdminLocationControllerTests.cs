@@ -153,4 +153,116 @@ public class AdminLocationControllerTests:IClassFixture<TestWebApplicationFactor
         
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
     }
+    
+    [Fact]
+    public async Task GetLocations_WithAdminEmployeeUserLoggedIn_ReturnsOk()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+        
+        var result = await client.GetAsync("/admin/locations/");
+        
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetLocations_WithNonAdminEmployeeUserLoggedIn_ReturnsOk()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+        
+        var result = await client.GetAsync("/admin/locations/");
+        
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetLocations_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+        
+        var result = await client.GetAsync("/admin/locations/");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetLocations_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var result = await client.GetAsync("/admin/locations/");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task FindLocationById_WithAdminEmployeeUserLoggedIn_ReturnsOk()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+        
+        var result = await client.GetAsync($"/admin/locations/{location.LocationId}");
+        
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task FindLocationById_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+        
+        var result = await client.GetAsync($"/admin/locations/{location.LocationId}");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task FindLocationById_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+        
+        var result = await client.GetAsync($"/admin/locations/{location.LocationId}");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task FindLocationById_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+        
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+        
+        var result = await client.GetAsync($"/admin/locations/{location.LocationId}");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
 }
