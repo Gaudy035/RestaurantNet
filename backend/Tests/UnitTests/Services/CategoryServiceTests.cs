@@ -25,7 +25,7 @@ public class CategoryServiceTests: IDisposable
     }
 
     [Fact]
-    public async Task AddCategory_CreatesCategoryAndReturnIt()
+    public async Task CreateCategory_CreatesCategoryAndReturnsIt()
     {
         var dto = new CategoryCreateDto
         {
@@ -37,6 +37,23 @@ public class CategoryServiceTests: IDisposable
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Data);
         Assert.Equal(dto.CategoryName, result.Data.CategoryName);
+    }
+
+    [Fact]
+    public async Task CreateCategory_WithDuplicateName_ReturnsCategoryAlreadyExistsError()
+    {
+        await MenuSeeder.SeedCategory(_context);
+
+        var dto = new CategoryCreateDto
+        {
+            CategoryName = "TestCategory"
+        };
+        
+        var result = await _categoryService.CreateCategory(dto);
+        
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(409, result.Error.StatusCode);
     }
     
     [Fact]

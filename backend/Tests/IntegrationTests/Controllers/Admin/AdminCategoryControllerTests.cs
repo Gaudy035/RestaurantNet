@@ -78,6 +78,28 @@ using System.Net;
          
          Assert.Equal(HttpStatusCode.OK, result.StatusCode);
      }
+     
+     [Fact]
+     public async Task CreateCategory_WithAdminEmployeeUserLoggedInAndDuplicateName_ReturnsConflict()
+     {
+         var client = CreateClient();
+         
+         await EmployeeLogin(client, true);
+
+         await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => MenuSeeder.SeedCategory(context)
+         );
+         
+         var dto = new CategoryCreateDto
+         {
+             CategoryName = "TestCategory"
+         };
+         
+         var result = await client.PostAsJsonAsync("/admin/categories", dto);
+         
+         Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
+     }
  
      [Fact]
      public async Task CreateCategory_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()

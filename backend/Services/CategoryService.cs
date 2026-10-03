@@ -18,6 +18,14 @@ public class CategoryService: ICategoryService
 
     public async Task<Result<CategoryResponseDto>> CreateCategory(CategoryCreateDto dto)
     {
+        var categoryExists = await _context.Categories.AsNoTracking()
+            .AnyAsync(c => c.CategoryName == dto.CategoryName);
+
+        if (categoryExists)
+        {
+            return Result<CategoryResponseDto>.Fail(ErrorCode.CategoryAlreadyExists);
+        }
+        
         var newCategory = new Category
         {
             CategoryName = dto.CategoryName

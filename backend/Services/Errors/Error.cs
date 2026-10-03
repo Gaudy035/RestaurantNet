@@ -28,6 +28,7 @@ public sealed class Error
             ErrorCode.LocationAlreadyExists => new Error(code, "Location already exists", StatusCodes.Status409Conflict),
             ErrorCode.AssignmentNotFound => new Error(code, "Assignment not found", StatusCodes.Status404NotFound),
             ErrorCode.CategoryNotFound => new Error(code, "Category not found", StatusCodes.Status404NotFound),
+            ErrorCode.CategoryAlreadyExists => new Error(code, "Category already exists", StatusCodes.Status409Conflict),
             _ => new Error(code, "Unknown error", StatusCodes.Status500InternalServerError)
         };
 }
