@@ -164,4 +164,33 @@ public class MenuItemServiceTests: IDisposable
         Assert.NotNull(result.Data);
         Assert.Empty(result.Data);
     }
+    
+    [Fact]
+    public async Task GetMenuItemById_WithCorrectId_ReturnsMenuItem()
+    {
+        var category = await MenuSeeder.SeedCategory(_context);
+
+        var menuItem = await MenuSeeder.SeedMenuItem(_context, category.CategoryId);
+
+        var result = await _menuItemService.GetMenuItemById(menuItem.ItemId);
+        
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(menuItem.ItemId,  result.Data.ItemId);
+        Assert.Equal(menuItem.CategoryId, result.Data.CategoryId);
+        Assert.Equal(menuItem.Name, result.Data.Name);
+        Assert.Equal(menuItem.ImageUrl, result.Data.ImageUrl);
+        Assert.Equal(menuItem.IsAvailable, result.Data.IsAvailable);
+        Assert.Equal(menuItem.IsPinned, result.Data.IsPinned);
+    }
+    
+    [Fact]
+    public async Task GetMenuItemById_WithInvalidId_ReturnsMenuItemNotFoundError()
+    {
+        var result = await _menuItemService.GetMenuItemById(int.MaxValue);
+        
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
+    }
 }

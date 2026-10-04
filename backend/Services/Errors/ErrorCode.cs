@@ -15,5 +15,6 @@ public enum ErrorCode
     AssignmentNotFound,
     CategoryNotFound,
     CategoryAlreadyExists,
-    CategoryContainsItems
+    CategoryContainsItems,
+    MenuItemNotFound,
 }

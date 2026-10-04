@@ -87,4 +87,26 @@ public class MenuItemService: IMenuItemService
         
         return Result<IEnumerable<MenuItemResponseDto>>.Success(foundItems);
     }
+
+    public async Task<Result<MenuItemResponseDto>> GetMenuItemById(int itemId)
+    {
+        var menuItem = await _context.MenuItems.AsNoTracking()
+            .FirstOrDefaultAsync(mi => mi.ItemId == itemId);
+
+        if (menuItem == null)
+        {
+            return Result<MenuItemResponseDto>.Fail(ErrorCode.MenuItemNotFound);
+        }
+
+        return Result<MenuItemResponseDto>.Success(new MenuItemResponseDto
+        {
+            ItemId = menuItem.ItemId,
+            CategoryId = menuItem.CategoryId,
+            Name = menuItem.Name,
+            Price = menuItem.Price,
+            ImageUrl = menuItem.ImageUrl,
+            IsAvailable = menuItem.IsAvailable,
+            IsPinned = menuItem.IsPinned
+        });
+    }
 }

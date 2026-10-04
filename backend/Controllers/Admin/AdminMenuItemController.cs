@@ -36,4 +36,13 @@ public class AdminMenuItemController: ControllerBase
         
         return result.ToActionResult(this);
     }
+    
+    [Authorize(Roles = "Admin,Employee")]
+    [HttpGet("{itemId:int}")]
+    public async Task<IActionResult> GetMenuItemById(int itemId)
+    {
+        var result = await _menuItemService.GetMenuItemById(itemId);
+
+        return result.ToActionResult(this);
+    }
 }
