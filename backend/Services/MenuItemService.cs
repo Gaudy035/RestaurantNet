@@ -109,4 +109,62 @@ public class MenuItemService: IMenuItemService
             IsPinned = menuItem.IsPinned
         });
     }
+
+    public async Task<Result<MenuItemResponseDto>> UpdateMenuItem(int itemId, MenuItemUpdateDto dto)
+    {
+        if (dto.IsEmpty)
+        {
+            return Result<MenuItemResponseDto>.Fail(ErrorCode.UpdateBodyEmpty);
+        }
+        
+        var menuItem = await _context.MenuItems.FindAsync(itemId);
+
+        if (menuItem == null)
+        {
+            return Result<MenuItemResponseDto>.Fail(ErrorCode.MenuItemNotFound);
+        }
+        
+        var categoryId = dto.CategoryId;
+
+        if (categoryId.HasValue)
+        {
+            var categoryExists = await _context.Categories.AsNoTracking()
+                .AnyAsync(c => c.CategoryId == categoryId.Value);
+
+            if (!categoryExists)
+            {
+                return Result<MenuItemResponseDto>.Fail(ErrorCode.CategoryNotFound);
+            }
+        }
+
+        if (categoryId.HasValue) menuItem.CategoryId = categoryId.Value;
+        if (dto.Price != null) menuItem.Price = dto.Price!.Value;
+        if (dto.IsAvailable != null) menuItem.IsAvailable = dto.IsAvailable!.Value;
+        if (dto.IsPinned != null) menuItem.IsPinned = dto.IsPinned!.Value;
+        if (dto.ImageUrl != null)
+        {
+            menuItem.ImageUrl = string.IsNullOrWhiteSpace(dto.ImageUrl) ? null : dto.ImageUrl;
+        }
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Result<MenuItemResponseDto>.Fail(ErrorCode.DbOperationFailed);
+        }
+
+        return Result<MenuItemResponseDto>.Success(new MenuItemResponseDto
+            {
+                ItemId = menuItem.ItemId,
+                CategoryId = menuItem.CategoryId,
+                Name = menuItem.Name,
+                Price = menuItem.Price,
+                ImageUrl = menuItem.ImageUrl,
+                IsAvailable = menuItem.IsAvailable,
+                IsPinned = menuItem.IsPinned
+            }
+        );
+    }
 }

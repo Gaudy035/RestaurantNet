@@ -31,6 +31,7 @@ public sealed class Error
             ErrorCode.CategoryAlreadyExists => new Error(code, "Category already exists", StatusCodes.Status409Conflict),
             ErrorCode.CategoryContainsItems => new Error(code, "Category contains items", StatusCodes.Status409Conflict),
             ErrorCode.MenuItemNotFound => new Error(code, "Menu item not found", StatusCodes.Status404NotFound),
+            ErrorCode.UpdateBodyEmpty => new Error(code, "Update body empty", StatusCodes.Status400BadRequest),
             _ => new Error(code, "Unknown error", StatusCodes.Status500InternalServerError)
         };
 }

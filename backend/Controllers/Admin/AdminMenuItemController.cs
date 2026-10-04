@@ -45,4 +45,13 @@ public class AdminMenuItemController: ControllerBase
 
         return result.ToActionResult(this);
     }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPatch("{itemId:int}")]
+    public async Task<IActionResult> UpdateMenuItem(int itemId, [FromBody] MenuItemUpdateDto dto)
+    {
+        var result = await _menuItemService.UpdateMenuItem(itemId, dto);
+        
+        return result.ToActionResult(this);
+    }
 }

@@ -17,4 +17,5 @@ public enum ErrorCode
     CategoryAlreadyExists,
     CategoryContainsItems,
     MenuItemNotFound,
+    UpdateBodyEmpty
 }
