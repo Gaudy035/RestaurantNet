@@ -36,10 +36,10 @@ public class AdminCategoryController: ControllerBase
     }
 
     [Authorize(Roles = "Admin,Employee")]
-    [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetCategoryById([FromRoute] int id)
+    [HttpGet("{categoryId:int}")]
+    public async Task<IActionResult> GetCategoryById([FromRoute] int categoryId)
     {
-        var result = await _categoryService.GetCategoryById(id);
+        var result = await _categoryService.GetCategoryById(categoryId);
         
         return result.ToActionResult(this);
     }

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace backend.Controllers.Admin;
 
 [ApiController]
-[Route("/admin/menuitems")]
+[Route("admin/menuitems")]
 public class AdminMenuItemController: ControllerBase
 {
     private readonly IMenuItemService _menuItemService;
