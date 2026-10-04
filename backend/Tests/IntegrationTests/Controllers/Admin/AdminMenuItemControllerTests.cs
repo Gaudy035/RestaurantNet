@@ -260,7 +260,7 @@ public class AdminMenuItemControllerTests: IClassFixture<TestWebApplicationFacto
             context => MenuSeeder.SeedCategory(context)
         );
 
-        var menuItem = await DatabaseHelper.ExecuteAsync(
+        await DatabaseHelper.ExecuteAsync(
             _factory,
             context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
         );
@@ -280,7 +280,7 @@ public class AdminMenuItemControllerTests: IClassFixture<TestWebApplicationFacto
             context => MenuSeeder.SeedCategory(context)
         );
 
-        var menuItem = await DatabaseHelper.ExecuteAsync(
+        await DatabaseHelper.ExecuteAsync(
             _factory,
             context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
         );
