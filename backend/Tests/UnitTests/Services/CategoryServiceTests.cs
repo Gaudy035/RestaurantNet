@@ -80,4 +80,27 @@ public class CategoryServiceTests: IDisposable
         Assert.NotNull(result.Data);
         Assert.Empty(result.Data);
     }
+
+    [Fact]
+    public async Task GetCategoryById_WithValidId_ReturnsCategory()
+    {
+        var category = await MenuSeeder.SeedCategory(_context);
+        
+        var result = await _categoryService.GetCategoryById(category.CategoryId);
+        
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(category.CategoryId, result.Data.CategoryId);
+        Assert.Equal(category.CategoryName, result.Data.CategoryName);
+    }
+
+    [Fact]
+    public async Task GetCategoryById_WithInvalidId_ReturnsCategoryNotFoundError()
+    {
+        var result = await _categoryService.GetCategoryById(int.MaxValue);
+        
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
+    }
 }

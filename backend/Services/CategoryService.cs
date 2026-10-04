@@ -61,4 +61,21 @@ public class CategoryService: ICategoryService
         
         return Result<IEnumerable<CategoryResponseDto>>.Success(categories);
     }
+
+    public async Task<Result<CategoryResponseDto>> GetCategoryById(int categoryId)
+    {
+        var category = await _context.Categories.AsNoTracking()
+            .FirstOrDefaultAsync(c => c.CategoryId == categoryId);
+
+        if (category == null)
+        {
+            return Result<CategoryResponseDto>.Fail(ErrorCode.CategoryNotFound);
+        }
+
+        return Result<CategoryResponseDto>.Success(new CategoryResponseDto
+        {
+            CategoryId = category.CategoryId,
+            CategoryName = category.CategoryName
+        });
+    }
 }

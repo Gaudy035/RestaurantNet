@@ -195,4 +195,82 @@ using System.Net;
          
          Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
      }
+     
+     [Fact]
+     public async Task GetCategoryById_WithAdminEmployeeUserLoggedInAndValidId_ReturnsOk()
+     {
+         var client = CreateClient();
+         
+         await EmployeeLogin(client, true);
+
+         var category = await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => MenuSeeder.SeedCategory(context)
+         );
+         
+         var result = await client.GetAsync($"/admin/categories/{category.CategoryId}");
+         
+         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+     }
+     
+     [Fact]
+     public async Task GetCategoryById_WithNonAdminEmployeeUserLoggedInAndValidId_ReturnsOk()
+     {
+         var client = CreateClient();
+         
+         await EmployeeLogin(client);
+
+         var category = await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => MenuSeeder.SeedCategory(context)
+         );
+         
+         var result = await client.GetAsync($"/admin/categories/{category.CategoryId}");
+         
+         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+     }
+
+     [Fact]
+     public async Task GetCategoryById_WithValidUserLoggedInAndInvalidId_ReturnsNotFound()
+     {
+         var client = CreateClient();
+         
+         await EmployeeLogin(client, true);
+         
+         var result = await client.GetAsync($"/admin/categories/{int.MaxValue}");
+         
+         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+     }
+     
+     [Fact]
+     public async Task GetCategoryById_WithClientUserLoggedIn_ReturnsForbidden()
+     {
+         var client = CreateClient();
+         
+         await ClientLogin(client);
+
+         var category = await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => MenuSeeder.SeedCategory(context)
+         );
+         
+         var result = await client.GetAsync($"/admin/categories/{category.CategoryId}");
+         
+         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+     }
+     
+     [Fact]
+     public async Task GetCategoryById_WithNoUserLoggedIn_ReturnsUnauthorized()
+     {
+         var client = CreateClient();
+         
+         var category = await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => MenuSeeder.SeedCategory(context)
+         );
+         
+         var result = await client.GetAsync($"/admin/categories/{category.CategoryId}");
+         
+         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+     }
  }

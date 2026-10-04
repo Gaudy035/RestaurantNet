@@ -8,4 +8,6 @@ public interface ICategoryService
     Task<Result<CategoryResponseDto>> CreateCategory(CategoryCreateDto dto);
     
     Task<Result<IEnumerable<CategoryResponseDto>>> GetCategories();
+    
+    Task<Result<CategoryResponseDto>> GetCategoryById(int categoryId);
 }
