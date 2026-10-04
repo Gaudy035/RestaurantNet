@@ -85,6 +85,15 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
                   "pm.execution.setNextRequest(\"Create client\");"
                 ]
               }
@@ -647,7 +656,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.execution.setNextRequest(\"Unassign employee\");"
+                  "pm.execution.setNextRequest(\"Create category\");"
                 ]
               }
             }
@@ -664,6 +673,164 @@
                 "locations",
                 "{{createdLocationId}}",
                 "employees"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Create category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200){\n    const response = pm.response.json();\n    pm.environment.set(\"createdCategoryId\", response.categoryId);\n}\n\npm.execution.setNextRequest(\"Get all categories\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryName\": \"PostmanCategory\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{adminUrl}}/categories",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get all categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Get category by ID\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/categories",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get category by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Get category items\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/categories/{{createdCategoryId}}",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "categories",
+                "{{createdCategoryId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get category items",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Delete category\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/categories/{{createdCategoryId}}/items",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "categories",
+                "{{createdCategoryId}}",
+                "items"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Unassign employee\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/categories/{{createdCategoryId}}",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "categories",
+                "{{createdCategoryId}}"
               ]
             }
           },
