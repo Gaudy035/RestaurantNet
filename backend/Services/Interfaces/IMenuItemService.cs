@@ -10,4 +10,6 @@ public interface IMenuItemService
     Task<Result<IEnumerable<MenuItemResponseDto>>> GetMenuItems(bool isAdmin, string? param);
     
     Task<Result<MenuItemResponseDto>> GetMenuItemById(int itemId);
+    
+    Task<Result<MenuItemResponseDto>> UpdateMenuItem(int itemId, MenuItemUpdateDto dto);
 }

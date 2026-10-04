@@ -387,4 +387,162 @@ public class AdminMenuItemControllerTests: IClassFixture<TestWebApplicationFacto
         
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
     }
+    
+    [Fact]
+    public async Task UpdateMenuItem_WithAdminEmployeeUserLoggedInAndValidData_ReturnsOk()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var category1 = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context, "Category1")
+        );
+        var category2 = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context, "Category2")
+        );
+
+        var menuItem = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category1.CategoryId)
+        );
+
+        var dto = new MenuItemUpdateDto
+        {
+            CategoryId = category1.CategoryId,
+            Price = 42
+        };
+        
+        var result = await client.PatchAsJsonAsync($"/admin/menuitems/{menuItem.ItemId}", dto);
+        
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdateMenuItem_WithAdminEmployeeUserLoggedInAndInvalidId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context, "Category")
+        );
+
+        var dto = new MenuItemUpdateDto
+        {
+            CategoryId = category.CategoryId,
+            Price = 42
+        };
+        
+        var result = await client.PatchAsJsonAsync($"/admin/menuitems/{int.MaxValue}", dto);
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdateMenuItem_WithAdminEmployeeUserLoggedInAndEmptyDto_ReturnsBadRequest()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context, "Category")
+        );
+
+        var menuItem = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
+        );
+
+        var dto = new MenuItemUpdateDto { };
+        
+        var result = await client.PatchAsJsonAsync($"/admin/menuitems/{menuItem.ItemId}", dto);
+        
+        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdateMenuItem_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context, "Category")
+        );
+
+        var menuItem = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
+        );
+
+        var dto = new MenuItemUpdateDto
+        {
+            Price = 42
+        };
+        
+        var result = await client.PatchAsJsonAsync($"/admin/menuitems/{menuItem.ItemId}", dto);
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdateMenuItem_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context, "Category")
+        );
+
+        var menuItem = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
+        );
+
+        var dto = new MenuItemUpdateDto
+        {
+            Price = 42
+        };
+        
+        var result = await client.PatchAsJsonAsync($"/admin/menuitems/{menuItem.ItemId}", dto);
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdateMenuItem_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context, "Category")
+        );
+
+        var menuItem = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
+        );
+
+        var dto = new MenuItemUpdateDto
+        {
+            Price = 42
+        };
+        
+        var result = await client.PatchAsJsonAsync($"/admin/menuitems/{menuItem.ItemId}", dto);
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
 }

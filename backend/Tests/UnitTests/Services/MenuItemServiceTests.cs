@@ -1,7 +1,9 @@
 using backend.Data;
+using backend.Data.Entities;
 using backend.DTOs.MenuItems;
 using backend.Services;
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using UnitTests.Helpers;
 
 namespace UnitTests.Services;
@@ -192,5 +194,110 @@ public class MenuItemServiceTests: IDisposable
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.Error);
         Assert.Equal(404, result.Error.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdateMenuItem_WithValidData_ReturnsUpdatedMenuItem()
+    {
+        var category1 = await MenuSeeder.SeedCategory(_context, "Category1");
+        var category2 = await MenuSeeder.SeedCategory(_context, "Category2");
+        
+        var menuItem = await MenuSeeder.SeedMenuItem(_context, category1.CategoryId);
+
+        var before = new MenuItem
+        {
+            ItemId = menuItem.ItemId,
+            CategoryId = menuItem.CategoryId,
+            Name = menuItem.Name,
+            Price = menuItem.Price,
+            ImageUrl = menuItem.ImageUrl,
+            IsAvailable = menuItem.IsAvailable,
+            IsPinned = menuItem.IsPinned,
+        };
+        
+        var dto = new MenuItemUpdateDto
+        {
+            CategoryId = category2.CategoryId,
+            Price = 20.50,
+            IsAvailable = false
+        };
+        
+        var result = await _menuItemService.UpdateMenuItem(menuItem.ItemId, dto);
+        
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        
+        Assert.Equal(before.ItemId, result.Data.ItemId);
+        Assert.Equal(category2.CategoryId, result.Data.CategoryId);
+        Assert.Equal(20.50, result.Data.Price);
+        Assert.False(result.Data.IsAvailable);
+        Assert.Equal(before.Name, result.Data.Name);
+        Assert.Equal(before.ImageUrl, result.Data.ImageUrl);
+        Assert.Equal(before.IsPinned, result.Data.IsPinned);
+        
+        _context.ChangeTracker.Clear();
+        var refetch =  await _context.MenuItems.AsNoTracking()
+            .FirstOrDefaultAsync(mi => mi.ItemId == menuItem.ItemId);
+        
+        Assert.Equal(category2.CategoryId, refetch.CategoryId);
+        Assert.Equal(20.50, refetch.Price);
+        Assert.False(refetch.IsAvailable);
+        Assert.Equal(before.Name, refetch.Name);
+        Assert.Equal(before.ImageUrl, refetch.ImageUrl);
+        Assert.Equal(before.IsPinned, refetch.IsPinned);
+    }
+
+    [Fact]
+    public async Task UpdateMenuItem_WithInvalidId_ReturnsMenuItemNotFoundError()
+    {
+        var category = await MenuSeeder.SeedCategory(_context);
+        
+        var dto = new MenuItemUpdateDto
+        {
+            CategoryId = category.CategoryId,
+            Price = 20.50,
+            IsAvailable = false
+        };
+        
+        var result = await _menuItemService.UpdateMenuItem(int.MaxValue, dto);
+        
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateMenuItem_WithInvalidCategoryId_ReturnsCategoryNotFoundError()
+    {
+        var category = await MenuSeeder.SeedCategory(_context);
+
+        var menuItem = await MenuSeeder.SeedMenuItem(_context, category.CategoryId);
+
+        var dto = new MenuItemUpdateDto
+        {
+            CategoryId = int.MaxValue,
+        };
+        
+        var result = await _menuItemService.UpdateMenuItem(menuItem.ItemId, dto);
+        
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateMenuItem_WithEmptyDto_ReturnsUpdateBodyEmptyError()
+    {
+        var category = await MenuSeeder.SeedCategory(_context);
+        
+        var menuItem = await MenuSeeder.SeedMenuItem(_context, category.CategoryId);
+        
+        var dto = new MenuItemUpdateDto { };
+
+        var result = await _menuItemService.UpdateMenuItem(menuItem.ItemId, dto);
+        
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(400, result.Error.StatusCode);
     }
 }
