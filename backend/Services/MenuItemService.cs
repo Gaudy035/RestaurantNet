@@ -58,4 +58,33 @@ public class MenuItemService: IMenuItemService
             IsPinned = newMenuItem.IsPinned
         });
     }
+
+    public async Task<Result<IEnumerable<MenuItemResponseDto>>> GetMenuItems(bool isAdmin, string? param)
+    {
+        var query = _context.MenuItems.AsNoTracking().AsQueryable();
+
+        if (!isAdmin)
+        {
+            query = query.Where(mi => mi.IsAvailable);
+        }
+
+        if (!string.IsNullOrWhiteSpace(param))
+        {
+            var par = $"%{param.ToLower()}%";
+            query = query.Where(mi => EF.Functions.Like(mi.Name.ToLower(), par));
+        }
+
+        var foundItems = await query.Select(mi => new MenuItemResponseDto
+        {
+            ItemId = mi.ItemId,
+            CategoryId = mi.CategoryId,
+            Name = mi.Name,
+            Price = mi.Price,
+            ImageUrl = mi.ImageUrl,
+            IsAvailable = mi.IsAvailable,
+            IsPinned = mi.IsPinned
+        }).ToListAsync();
+        
+        return Result<IEnumerable<MenuItemResponseDto>>.Success(foundItems);
+    }
 }

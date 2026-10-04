@@ -25,4 +25,15 @@ public class AdminMenuItemController: ControllerBase
 
         return result.ToActionResult(this);
     }
+
+    [Authorize(Roles = "Admin,Employee")]
+    [HttpGet()]
+    public async Task<IActionResult> GetMenuItems([FromQuery] string? param)
+    {
+        var isAdmin = User.IsInRole("Admin");
+        
+        var result = await _menuItemService.GetMenuItems(isAdmin, param);
+        
+        return result.ToActionResult(this);
+    }
 }

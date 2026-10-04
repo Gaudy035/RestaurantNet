@@ -70,4 +70,98 @@ public class MenuItemServiceTests: IDisposable
         Assert.NotNull(result.Error);
         Assert.Equal(404, result.Error.StatusCode);
     }
+
+    [Fact]
+    public async Task GetMenuItems_WithAdmin_ReturnsAllMenuItems()
+    {
+        var category = await MenuSeeder.SeedCategory(_context);
+        
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "Item1", isAvailable:true);
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "Item2", isAvailable:false);
+
+        var result = await _menuItemService.GetMenuItems(isAdmin: true, param: null);
+        
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(2, result.Data.Count());
+    }
+
+    [Fact]
+    public async Task GetMenuItems_WithNonAdmin_ReturnsAvailableMenuItems()
+    {
+        var category = await MenuSeeder.SeedCategory(_context);
+        
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "Item1", isAvailable:true);
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "Item2", isAvailable:false);
+
+        var result = await _menuItemService.GetMenuItems(isAdmin: false, param: null);
+        
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data);
+    }
+
+    [Fact]
+    public async Task GetMenuItems_WithNoItems_ReturnsEmptyList()
+    {
+        var result = await _menuItemService.GetMenuItems(isAdmin: true, param: null);
+        
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Empty(result.Data);
+    }
+
+    [Fact]
+    public async Task GetMenuItems_WithAdminAndParam_ReturnsMatchingMenuItems()
+    {
+        var category = await MenuSeeder.SeedCategory(_context);
+        
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "ShouldBeFound", isAvailable:true);
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "ShouldAlsoBeFound", isAvailable:false);
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "ShouldNot", isAvailable:true);
+
+        var result = await _menuItemService.GetMenuItems(isAdmin: true, param: "befo");
+        
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(2, result.Data.Count());
+        Assert.Contains(result.Data, x => x.Name == "ShouldBeFound");
+        Assert.Contains(result.Data, x => x.Name == "ShouldAlsoBeFound");
+        Assert.DoesNotContain(result.Data, x => x.Name == "ShouldNot");
+    }
+    
+    [Fact]
+    public async Task GetMenuItems_WithNonAdminAndParam_ReturnsMatchingAvailableMenuItems()
+    {
+        var category = await MenuSeeder.SeedCategory(_context);
+        
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "ShouldBeFound", isAvailable:true);
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "ShouldAlsoBeFound", isAvailable:false);
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "ShouldNot", isAvailable:true);
+
+        var result = await _menuItemService.GetMenuItems(isAdmin: false, param: "befo");
+        
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data);
+        Assert.Contains(result.Data, x => x.Name == "ShouldBeFound");
+        Assert.DoesNotContain(result.Data, x => x.Name == "ShouldAlsoBeFound");
+        Assert.DoesNotContain(result.Data, x => x.Name == "ShouldNot");
+    }
+
+    [Fact]
+    public async Task GetMenuItems_WithParamAndNoMatches_ReturnsEmptyList()
+    {
+        var category = await MenuSeeder.SeedCategory(_context);
+        
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "Item1", isAvailable:true);
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "Item2", isAvailable:false);
+        await MenuSeeder.SeedMenuItem(_context, categoryId: category.CategoryId, name: "Item3", isAvailable:true);
+        
+        var result = await _menuItemService.GetMenuItems(isAdmin: true, param: "RandomParam");
+        
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Empty(result.Data);
+    }
 }
