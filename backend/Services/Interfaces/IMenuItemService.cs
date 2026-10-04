@@ -8,4 +8,6 @@ public interface IMenuItemService
     Task<Result<MenuItemResponseDto>> CreateMenuItem(MenuItemCreateDto dto);
     
     Task<Result<IEnumerable<MenuItemResponseDto>>> GetMenuItems(bool isAdmin, string? param);
+    
+    Task<Result<MenuItemResponseDto>> GetMenuItemById(int itemId);
 }

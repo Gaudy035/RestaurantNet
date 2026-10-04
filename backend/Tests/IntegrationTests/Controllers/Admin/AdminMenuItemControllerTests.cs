@@ -289,4 +289,102 @@ public class AdminMenuItemControllerTests: IClassFixture<TestWebApplicationFacto
         
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
     }
+
+    [Fact]
+    public async Task GetMenuItemById_WithAdminEmployeeUserLoggedInAndValidId_ReturnsOk()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var menuItem = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
+        );
+        
+        var result = await client.GetAsync($"/admin/menuitems/{menuItem.ItemId}");
+        
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetMenuItemById_WithNonAdminEmployeeUserLoggedInAndValidId_ReturnsOk()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var menuItem = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
+        );
+        
+        var result = await client.GetAsync($"/admin/menuitems/{menuItem.ItemId}");
+        
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetMenuItemById_WithValidUserLoggedInAndInvalidId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+        
+        await EmployeeLogin(client, true);
+        
+        var result = await client.GetAsync($"/admin/menuitems/{int.MinValue}");
+        
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetMenuItemById_WithClientLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+        
+        await ClientLogin(client);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var menuItem = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
+        );
+        
+        var result = await client.GetAsync($"/admin/menuitems/{menuItem.ItemId}");
+        
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetMenuItemById_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var menuItem = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
+        );
+        
+        var result = await client.GetAsync($"/admin/menuitems/{menuItem.ItemId}");
+        
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
 }
