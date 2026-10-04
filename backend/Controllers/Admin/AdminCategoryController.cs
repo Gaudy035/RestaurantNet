@@ -52,4 +52,13 @@ public class AdminCategoryController: ControllerBase
         
         return result.ToActionResult(this);
     }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{categoryId:int}")]
+    public async Task<IActionResult> DeleteCategory([FromRoute] int categoryId)
+    {
+        var result = await _categoryService.DeleteCategory(categoryId);
+        
+        return result.ToActionResult(this);
+    }
 }
