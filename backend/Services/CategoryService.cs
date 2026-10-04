@@ -1,6 +1,7 @@
 using backend.Data;
 using backend.Data.Entities;
 using backend.DTOs.Categories;
+using backend.DTOs.MenuItems;
 using backend.Services.Errors;
 using backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -77,5 +78,31 @@ public class CategoryService: ICategoryService
             CategoryId = category.CategoryId,
             CategoryName = category.CategoryName
         });
+    }
+
+    public async Task<Result<IEnumerable<MenuItemResponseDto>>> GetCategoryItems(int categoryId)
+    {
+        var categoryExists = await _context.Categories.AsNoTracking()
+            .AnyAsync(c => c.CategoryId == categoryId);
+
+        if (!categoryExists)
+        {
+            return Result<IEnumerable<MenuItemResponseDto>>.Fail(ErrorCode.CategoryNotFound);
+        }
+
+        var foundItems = await _context.MenuItems.AsNoTracking()
+            .Where(mi => mi.CategoryId == categoryId && mi.IsAvailable)
+            .Select(mi => new MenuItemResponseDto
+            {
+                ItemId = mi.ItemId,
+                CategoryId = mi.CategoryId,
+                Name = mi.Name,
+                ImageUrl = mi.ImageUrl,
+                Price = mi.Price,
+                IsAvailable = mi.IsAvailable,
+                IsPinned = mi.IsPinned
+            }).ToListAsync();
+        
+        return Result<IEnumerable<MenuItemResponseDto>>.Success(foundItems);
     }
 }
