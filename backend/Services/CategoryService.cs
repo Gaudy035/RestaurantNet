@@ -105,4 +105,35 @@ public class CategoryService: ICategoryService
         
         return Result<IEnumerable<MenuItemResponseDto>>.Success(foundItems);
     }
+
+    public async Task<Result> DeleteCategory(int categoryId)
+    {
+        var category = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == categoryId);
+
+        if (category == null)
+        {
+            return Result.Fail(ErrorCode.CategoryNotFound);
+        }
+        
+        var containsItems = await _context.MenuItems.AsNoTracking()
+            .AnyAsync(mi => mi.CategoryId == categoryId);
+
+        if (containsItems)
+        {
+            return Result.Fail(ErrorCode.CategoryContainsItems);
+        }
+        
+        _context.Categories.Remove(category);
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Result.Fail(ErrorCode.DbOperationFailed);
+        }
+        
+        return Result.Success();
+    }
 }

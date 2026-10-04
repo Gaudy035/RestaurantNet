@@ -351,4 +351,104 @@ using System.Net;
          
          Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
      }
+     
+     [Fact]
+     public async Task DeleteCategory_WithAdminEmployeeUserLoggedInAndValidIdAndNoItems_ReturnsNoContent()
+     {
+         var client = CreateClient();
+         
+         await EmployeeLogin(client, true);
+
+         var category = await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => MenuSeeder.SeedCategory(context)
+         );
+         
+         var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
+         
+         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+     }
+     
+     [Fact]
+     public async Task DeleteCategory_WithAdminEmployeeUserLoggedInAndInvalidId_ReturnsNotFound()
+     {
+         var client = CreateClient();
+         
+         await EmployeeLogin(client, true);
+         
+         var result = await client.DeleteAsync($"/admin/categories/{int.MaxValue}");
+         
+         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+     }
+     
+     [Fact]
+     public async Task DeleteCategory_WithAdminEmployeeUserLoggedInAndValidIdAndAssignedItems_ReturnsConflict()
+     {
+         var client = CreateClient();
+         
+         await EmployeeLogin(client, true);
+         
+         var category = await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => MenuSeeder.SeedCategory(context)
+         );
+
+         await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
+         );
+         
+         var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
+         
+         Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
+     }
+     
+     [Fact]
+     public async Task DeleteCategory_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+     {
+         var client = CreateClient();
+         
+         await EmployeeLogin(client);
+
+         var category = await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => MenuSeeder.SeedCategory(context)
+         );
+         
+         var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
+         
+         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+     }
+     
+     [Fact]
+     public async Task DeleteCategory_WithClientUserLoggedIn_ReturnsForbidden()
+     {
+         var client = CreateClient();
+         
+         await ClientLogin(client);
+
+         var category = await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => MenuSeeder.SeedCategory(context)
+         );
+         
+         var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
+         
+         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+     }
+     
+     [Fact]
+     public async Task DeleteCategory_WithNoUserLoggedIn_ReturnsUnauthorized()
+     {
+         var client = CreateClient();
+         
+         var category = await DatabaseHelper.ExecuteAsync(
+             _factory,
+             context => MenuSeeder.SeedCategory(context)
+         );
+         
+         var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
+         
+         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+     }
  }

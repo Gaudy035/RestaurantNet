@@ -146,4 +146,39 @@ public class CategoryServiceTests: IDisposable
         Assert.NotNull(result.Error);
         Assert.Equal(404, result.Error.StatusCode);
     }
+
+    [Fact]
+    public async Task DeleteCategory_WithNoItemsAndValidId_ReturnsSuccess()
+    {
+        var category = await MenuSeeder.SeedCategory(_context);
+        
+        var result = await _categoryService.DeleteCategory(category.CategoryId);
+        
+        Assert.True(result.IsSuccess);
+    }
+    
+    [Fact]
+    public async Task DeleteCategory_WithInvalidId_ReturnsCategoryNotFoundError()
+    {
+        var result = await _categoryService.DeleteCategory(int.MaxValue);
+        
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(404, result.Error.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteCategory_WithAssignedItems_ReturnsCategoryContainItemsError()
+    {
+        var category = await MenuSeeder.SeedCategory(_context);
+        
+        await MenuSeeder.SeedMenuItem(_context, category.CategoryId);
+        
+        var result = await _categoryService.DeleteCategory(category.CategoryId);
+        
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(409, result.Error.StatusCode);
+    }
+    
 }
