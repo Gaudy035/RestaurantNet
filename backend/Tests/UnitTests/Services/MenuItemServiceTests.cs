@@ -52,7 +52,7 @@ public class MenuItemServiceTests: IDisposable
     }
 
     [Fact]
-    public async Task UpdateMenuItem_WithIncorrectCategoryId_ReturnsCategoryNotFoundError()
+    public async Task CreateMenuItem_WithIncorrectCategoryId_ReturnsCategoryNotFoundError()
     {
         var dto = new MenuItemCreateDto
         {
