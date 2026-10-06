@@ -80,7 +80,7 @@ public class CategoryService: ICategoryService
         });
     }
 
-    public async Task<Result<IEnumerable<MenuItemResponseDto>>> GetCategoryItems(int categoryId)
+    public async Task<Result<IEnumerable<MenuItemResponseDto>>> GetCategoryItems(int categoryId, bool isAdmin)
     {
         var categoryExists = await _context.Categories.AsNoTracking()
             .AnyAsync(c => c.CategoryId == categoryId);
@@ -90,7 +90,14 @@ public class CategoryService: ICategoryService
             return Result<IEnumerable<MenuItemResponseDto>>.Fail(ErrorCode.CategoryNotFound);
         }
 
-        var foundItems = await _context.MenuItems.AsNoTracking()
+        var query = _context.MenuItems.AsNoTracking();
+
+        if (!isAdmin)
+        {
+            query = query.Where(mi => mi.IsAvailable);
+        }
+
+        var foundItems = await query
             .Where(mi => mi.CategoryId == categoryId && mi.IsAvailable)
             .Select(mi => new MenuItemResponseDto
             {

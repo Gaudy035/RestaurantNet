@@ -12,7 +12,7 @@ public interface ICategoryService
     
     Task<Result<CategoryResponseDto>> GetCategoryById(int categoryId);
     
-    Task<Result<IEnumerable<MenuItemResponseDto>>> GetCategoryItems(int categoryId);
+    Task<Result<IEnumerable<MenuItemResponseDto>>> GetCategoryItems(int categoryId, bool isAdmin);
     
     Task<Result> DeleteCategory(int categoryId);
 }

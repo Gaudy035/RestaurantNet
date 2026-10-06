@@ -105,7 +105,7 @@ public class CategoryServiceTests: IDisposable
     }
 
     [Fact]
-    public async Task GetCategoryItems_WithValidId_ReturnsAvailableCategoryItems()
+    public async Task GetCategoryItems_WithValidIdAndAdmin_ReturnsAllCategoryItems()
     {
         var category1 = await MenuSeeder.SeedCategory(_context);
         var category2 = await MenuSeeder.SeedCategory(_context, "Category2");
@@ -115,7 +115,29 @@ public class CategoryServiceTests: IDisposable
         var item3 = await MenuSeeder.SeedMenuItem(_context, categoryId: category1.CategoryId, name: "Item3", isAvailable: false);
         var item4 = await MenuSeeder.SeedMenuItem(_context, categoryId: category2.CategoryId, name: "Item4", isAvailable: true);
         
-        var result = await _categoryService.GetCategoryItems(category1.CategoryId);
+        var result = await _categoryService.GetCategoryItems(category1.CategoryId, false);
+        
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(3, result.Data.Count());
+        Assert.Contains(result.Data, x => x.Name == "Item1");
+        Assert.Contains(result.Data, x => x.Name == "Item2");
+        Assert.Contains(result.Data, x => x.Name == "Item3");
+        Assert.DoesNotContain(result.Data, x => x.Name == "Item4");
+    }
+
+    [Fact]
+    public async Task GetCategoryItems_WithValidIdAndNonAdmin_ReturnsAvailableCategoryItems()
+    {
+        var category1 = await MenuSeeder.SeedCategory(_context);
+        var category2 = await MenuSeeder.SeedCategory(_context, "Category2");
+        
+        var item1 = await MenuSeeder.SeedMenuItem(_context, categoryId: category1.CategoryId, name: "Item1", isAvailable: true);
+        var item2 = await MenuSeeder.SeedMenuItem(_context, categoryId: category1.CategoryId, name: "Item2", isAvailable: true);
+        var item3 = await MenuSeeder.SeedMenuItem(_context, categoryId: category1.CategoryId, name: "Item3", isAvailable: false);
+        var item4 = await MenuSeeder.SeedMenuItem(_context, categoryId: category2.CategoryId, name: "Item4", isAvailable: true);
+        
+        var result = await _categoryService.GetCategoryItems(category1.CategoryId, false);
         
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Data);
@@ -123,6 +145,7 @@ public class CategoryServiceTests: IDisposable
         Assert.Contains(result.Data, x => x.Name == "Item1");
         Assert.Contains(result.Data, x => x.Name == "Item2");
         Assert.DoesNotContain(result.Data, x => x.Name == "Item3");
+        Assert.DoesNotContain(result.Data, x => x.Name == "Item4");
     }
 
     [Fact]
@@ -130,7 +153,7 @@ public class CategoryServiceTests: IDisposable
     {
         var category = await MenuSeeder.SeedCategory(_context);
         
-        var result = await _categoryService.GetCategoryItems(category.CategoryId);
+        var result = await _categoryService.GetCategoryItems(category.CategoryId, true);
         
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Data);
@@ -140,7 +163,7 @@ public class CategoryServiceTests: IDisposable
     [Fact]
     public async Task GetCategoryItems_WithInvalidId_ReturnsCategoryNotFoundError()
     {
-        var result = await _categoryService.GetCategoryItems(int.MaxValue);
+        var result = await _categoryService.GetCategoryItems(int.MaxValue, true);
         
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.Error);
