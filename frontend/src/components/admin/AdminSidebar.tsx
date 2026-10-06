@@ -25,6 +25,10 @@ const data = {
       url: '#',
       items: [
         {
+          title: 'Categories',
+          url: '/admin/categories',
+        },
+        {
           title: 'Clients',
           url: '/admin/clients',
         },
