@@ -756,7 +756,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.execution.setNextRequest(\"Get category items\");"
+                  "pm.execution.setNextRequest(\"Create menu item\");"
                 ]
               }
             }
@@ -785,7 +785,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.execution.setNextRequest(\"Delete category\");"
+                  "pm.execution.setNextRequest(\"Update menu item\");"
                 ]
               }
             }
@@ -831,6 +831,143 @@
               "path": [
                 "categories",
                 "{{createdCategoryId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Menu items",
+      "item": [
+        {
+          "name": "Create menu item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200){\n    const response = pm.response.json();\n    pm.environment.set(\"createdMenuItemId\", response.itemId);\n}\n\npm.execution.setNextRequest(\"Get menu items\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"PostmanTestItem\",\n  \"categoryId\": \"{{createdCategoryId}}\",\n  \"price\": 25,\n  \"isAvailable\": true,\n  \"isPinned\": true,\n  \"imageUrl\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{adminUrl}}/menuitems",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "menuitems"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get menu items",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Get menu item by ID\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/menuitems",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "menuitems"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get menu item by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Get category items\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{adminUrl}}/menuitems/{{createdMenuItemId}}",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "menuitems",
+                "{{createdMenuItemId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update menu item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.execution.setNextRequest(\"Delete category\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": {{itemTestCategory}},\n  \"isAvailable\": false,\n  \"isPinned\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{adminUrl}}/menuitems/{{createdMenuItemId}}",
+              "host": [
+                "{{adminUrl}}"
+              ],
+              "path": [
+                "menuitems",
+                "{{createdMenuItemId}}"
               ]
             }
           },
