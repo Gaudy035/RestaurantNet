@@ -15,7 +15,7 @@ export default async function AdminMenuItemsPage(
                 <div className='flex justify-end items-center gap-2'>
                     <AdminMenuItemsSearchBar val={param} />
                     <Link
-                        href='/admin/locations/add'
+                        href='/admin/menuitems/add'
                         className={cn(
                             buttonVariants({ variant: 'default', size: 'default' }),
                         )}
