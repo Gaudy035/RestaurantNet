@@ -98,7 +98,7 @@ public class CategoryService: ICategoryService
         }
 
         var foundItems = await query
-            .Where(mi => mi.CategoryId == categoryId && mi.IsAvailable)
+            .Where(mi => mi.CategoryId == categoryId)
             .Select(mi => new MenuItemResponseDto
             {
                 ItemId = mi.ItemId,

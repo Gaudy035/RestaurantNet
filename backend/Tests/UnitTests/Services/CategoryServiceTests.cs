@@ -115,7 +115,7 @@ public class CategoryServiceTests: IDisposable
         var item3 = await MenuSeeder.SeedMenuItem(_context, categoryId: category1.CategoryId, name: "Item3", isAvailable: false);
         var item4 = await MenuSeeder.SeedMenuItem(_context, categoryId: category2.CategoryId, name: "Item4", isAvailable: true);
         
-        var result = await _categoryService.GetCategoryItems(category1.CategoryId, false);
+        var result = await _categoryService.GetCategoryItems(category1.CategoryId, true);
         
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Data);
