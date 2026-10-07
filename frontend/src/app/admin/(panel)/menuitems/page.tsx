@@ -2,6 +2,7 @@ import Link from "next/link";
 import {cn} from "@/lib/utils";
 import {buttonVariants} from "@/components/ui/button";
 import AdminMenuItemsSearchBar from "@/components/admin/menuItems/MenuItemsSearchBar";
+import AdminMenuItemsMain from "@/components/admin/menuItems/MenuItemsMain";
 
 export default async function AdminMenuItemsPage(
     { searchParams }: { searchParams: Promise<{ param?: string }>})
@@ -23,8 +24,7 @@ export default async function AdminMenuItemsPage(
                     </Link>
                 </div>
             </div>
-            {/*<AdminLocationsMain locationData={param} />*/}
-            {/*  Main here  */}
+            <AdminMenuItemsMain itemData={param} />
         </div>
     );
 }
