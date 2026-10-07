@@ -42,7 +42,7 @@ export default function MenuItemInfo({ itemId }: { itemId: string }){
                 setCategoryData(data);
                 setCategoryError(null);
             })
-            .catch((error) => setCategoryError(getErrorMessage(error)))
+            .catch((error) => itemData && setCategoryError(getErrorMessage(error)))
             .finally(() => setCategoryLoading(false));
     }, [itemData])
 
