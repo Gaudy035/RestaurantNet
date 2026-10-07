@@ -10,8 +10,10 @@ import {Card, CardAction,CardHeader, CardTitle} from "@/components/ui/card";
 import ConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import {Button} from "@/components/ui/button";
 import {useEmployee} from "@/lib/employee-context";
+import {useRouter} from "next/navigation";
 
 export default function CategoryInfo({ categoryId }: { categoryId: string }) {
+    const router = useRouter();
     const [categoryInfo, setCategoryInfo] = useState<Category>();
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -29,11 +31,13 @@ export default function CategoryInfo({ categoryId }: { categoryId: string }) {
     }, [categoryId]);
 
     const deleteCategory = async () => {
+        setError(null);
         try {
             await adminApiFetch(`/admin/categories/${categoryId}`, {
                 method: 'DELETE',
             });
             toast.success(`Category deleted successfully.`);
+            router.push("/admin/categories/");
         } catch (error){
             if (isApiError(error)) {
                 toast.error(getErrorMessage(error));
