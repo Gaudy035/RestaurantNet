@@ -29,6 +29,10 @@ const data = {
           url: '/admin/categories',
         },
         {
+          title: 'Menu items',
+          url: '/admin/menuitems',
+        },
+        {
           title: 'Clients',
           url: '/admin/clients',
         },
