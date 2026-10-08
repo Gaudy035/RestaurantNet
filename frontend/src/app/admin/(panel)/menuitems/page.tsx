@@ -3,6 +3,7 @@ import {cn} from "@/lib/utils";
 import {buttonVariants} from "@/components/ui/button";
 import AdminMenuItemsSearchBar from "@/components/admin/menuItems/MenuItemsSearchBar";
 import AdminMenuItemsMain from "@/components/admin/menuItems/MenuItemsMain";
+import MenuItemAddButton from "@/components/admin/menuItems/MenuItemAddButton";
 
 export default async function AdminMenuItemsPage(
     { searchParams }: { searchParams: Promise<{ param?: string }>})
@@ -14,14 +15,7 @@ export default async function AdminMenuItemsPage(
                 <h1 className='text-2xl'>Menu items</h1>
                 <div className='flex justify-end items-center gap-2'>
                     <AdminMenuItemsSearchBar val={param} />
-                    <Link
-                        href='/admin/menuitems/add'
-                        className={cn(
-                            buttonVariants({ variant: 'default', size: 'default' }),
-                        )}
-                    >
-                        Add new menu item
-                    </Link>
+                    <MenuItemAddButton />
                 </div>
             </div>
             <AdminMenuItemsMain itemData={param} />

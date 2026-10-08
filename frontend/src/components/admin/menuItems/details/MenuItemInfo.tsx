@@ -72,16 +72,16 @@ export default function MenuItemInfo({ itemId }: { itemId: string }){
                             </CardDescription>
                         </div>
 
-                        <CardAction>
+                        {isAdmin && <CardAction>
                             <Link
                                 href={`/admin/menuitems/${itemId}/update`}
                                 className={cn(
-                                    buttonVariants({ variant: 'default', size: 'default' }),
+                                    buttonVariants({variant: 'default', size: 'default'}),
                                 )}
                             >
                                 Modify menu item
                             </Link>
-                        </CardAction>
+                        </CardAction>}
                     </CardHeader>
                 </Card>
             ) : null}
