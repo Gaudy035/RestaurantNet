@@ -7,10 +7,11 @@ import {adminApiFetch} from "@/lib/api";
 import {getErrorMessage} from "@/lib/api-error";
 import {Spinner} from "@/components/ui/spinner";
 import {Card, CardAction, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
-import ConfirmDialog from "@/components/admin/AdminConfirmDialog";
-import {Button} from "@/components/ui/button";
+import {buttonVariants} from "@/components/ui/button";
 import {useEmployee} from "@/lib/employee-context";
 import {Badge} from "@/components/ui/badge";
+import {cn} from "@/lib/utils";
+import Link from "next/link";
 
 export default function MenuItemInfo({ itemId }: { itemId: string }){
     const [itemData, setItemData] = useState<MenuItem | null>(null);
@@ -71,23 +72,16 @@ export default function MenuItemInfo({ itemId }: { itemId: string }){
                             </CardDescription>
                         </div>
 
-                        {/*<CardAction>*/}
-                        {/*    <ConfirmDialog*/}
-                        {/*        trigger={*/}
-                        {/*            <Button*/}
-                        {/*                variant='destructive'*/}
-                        {/*                className='text-lg p-4'*/}
-                        {/*                size={'lg'}*/}
-                        {/*            >*/}
-                        {/*                Delete*/}
-                        {/*            </Button>*/}
-                        {/*        }*/}
-                        {/*        variant='destructive'*/}
-                        {/*        title='Delete location'*/}
-                        {/*        description={`Delete location: ${locationInfo.city}, ${locationInfo.address} (ID: ${locationInfo.locationId})?`}*/}
-                        {/*        onConfirm={() => deleteLocation(locationInfo.locationId)}*/}
-                        {/*    />*/}
-                        {/*</CardAction>*/}
+                        <CardAction>
+                            <Link
+                                href={`/admin/menuitems/${itemId}/update`}
+                                className={cn(
+                                    buttonVariants({ variant: 'default', size: 'default' }),
+                                )}
+                            >
+                                Modify menu item
+                            </Link>
+                        </CardAction>
                     </CardHeader>
                 </Card>
             ) : null}
