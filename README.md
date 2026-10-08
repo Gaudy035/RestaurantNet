@@ -2,7 +2,7 @@
 
 Full-stack restaurant management system. A web application for managing a restaurant chain: locations, tables, bookings, menu, orders and deliveries — with a public storefront and an admin panel.
 
-Project is still work in progress. Authentication and parts of the admin panel including client, employee, and location management with staff assignment are functional but ordering, menu, and booking are still in development. The public storefront page is not built yet.
+Project is still work in progress. Authentication and parts of the admin panel including client, employee, and location management with staff assignment, plus the menu (categories and items), are functional but ordering, ingredients, tables/bookings, and delivery are still in development. The public storefront page is not built yet.
 
 ## Tech stack
 
@@ -21,6 +21,8 @@ Project is still work in progress. Authentication and parts of the admin panel i
 - Employee accounts created and managed by admins (admins are also employees)
 - Admin panel: manage clients, employees and locations (list, search, add, delete)
 - Assign/unassign employees to locations by position (Manager, Chef, Server, Cashier, Driver), with detail pages showing staff per location and locations per employee
+- Menu categories: browse categories and their items, add new categories, and delete empty ones (deletion blocked while the category still contains items)
+- Menu items: browse and search by name, view details, add, and edit (price, category, availability, pinned). Items cannot be deleted. Employees can view the menu and its items per category; only admins can create and edit. Unavailable items are only shown to admins
 - Initial admin seeded automatically when no admins exist in database
 - Background job for daily cleaning up expired/revoked refresh-token (Quartz)
 - Scalar UI API docs in dev at `/docs`
@@ -29,7 +31,7 @@ Project is still work in progress. Authentication and parts of the admin panel i
 
 The following are modeled in the database but not yet exposed in the UI or API:
 
-- Menu (categories, items, ingredients, allergens)
+- Menu ingredients and allergens
 - Orders (dine-in / pickup / delivery) and order status flow
 - Tables and bookings
 - Delivery management
