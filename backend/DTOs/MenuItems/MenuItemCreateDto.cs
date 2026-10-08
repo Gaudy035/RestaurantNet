@@ -12,8 +12,8 @@ public class MenuItemCreateDto
     public int CategoryId { get; init; }
     
     [Required]
-    [Range(0, double.MaxValue)]
-    public double Price { get; init; }
+    [Range(typeof(decimal), "0", "10000")]
+    public decimal Price { get; init; }
     
     [Required]
     public bool IsAvailable { get; init; }

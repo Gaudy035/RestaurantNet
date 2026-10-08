@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Data.Entities;
 
@@ -45,9 +46,10 @@ public class Order
     public DateTime OrderTime { get; init; }
 
     [Required]
-    [Range(0, double.MaxValue)]
+    [Range(typeof(decimal), "0", "100000")]
+    [Precision(8, 2)]
     [Column("price")]
-    public double Price { get; init; }
+    public decimal Price { get; init; }
 
     [MaxLength(20)]
     [Column("phone_number")]

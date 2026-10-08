@@ -28,7 +28,7 @@ public static class MenuSeeder
         string imageUrl = "TestUrl",
         bool isAvailable = true,
         bool isPinned = false,
-        double price = 25
+        decimal price = 25
     )
     {
         var newMenuItem = new MenuItem

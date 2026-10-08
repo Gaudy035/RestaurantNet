@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Data.Entities;
 
@@ -20,9 +21,10 @@ public class MenuItem
     public string Name { get; init; } = string.Empty;
 
     [Required]
-    [Range(0, double.MaxValue)]
+    [Range(typeof(decimal), "0", "10000")]
+    [Precision(7, 2)]
     [Column("price")]
-    public double Price { get; set; }
+    public decimal Price { get; set; }
 
     [MaxLength(2048)]
     [Column("image_url")]

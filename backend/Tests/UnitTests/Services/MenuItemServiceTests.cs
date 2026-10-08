@@ -218,7 +218,7 @@ public class MenuItemServiceTests: IDisposable
         var dto = new MenuItemUpdateDto
         {
             CategoryId = category2.CategoryId,
-            Price = 20.50,
+            Price = 20.50m,
             IsAvailable = false
         };
         
@@ -229,7 +229,7 @@ public class MenuItemServiceTests: IDisposable
         
         Assert.Equal(before.ItemId, result.Data.ItemId);
         Assert.Equal(category2.CategoryId, result.Data.CategoryId);
-        Assert.Equal(20.50, result.Data.Price);
+        Assert.Equal(20.50m, result.Data.Price);
         Assert.False(result.Data.IsAvailable);
         Assert.Equal(before.Name, result.Data.Name);
         Assert.Equal(before.ImageUrl, result.Data.ImageUrl);
@@ -240,7 +240,7 @@ public class MenuItemServiceTests: IDisposable
             .FirstOrDefaultAsync(mi => mi.ItemId == menuItem.ItemId);
         
         Assert.Equal(category2.CategoryId, refetch.CategoryId);
-        Assert.Equal(20.50, refetch.Price);
+        Assert.Equal(20.50m, refetch.Price);
         Assert.False(refetch.IsAvailable);
         Assert.Equal(before.Name, refetch.Name);
         Assert.Equal(before.ImageUrl, refetch.ImageUrl);
@@ -255,7 +255,7 @@ public class MenuItemServiceTests: IDisposable
         var dto = new MenuItemUpdateDto
         {
             CategoryId = category.CategoryId,
-            Price = 20.50,
+            Price = 20.50m,
             IsAvailable = false
         };
         

@@ -8,7 +8,7 @@ public class MenuItemResponseDto
     
     public string Name { get; init; } = string.Empty;
     
-    public double Price { get; init; }
+    public decimal Price { get; init; }
     
     public string? ImageUrl { get; init; }
     
