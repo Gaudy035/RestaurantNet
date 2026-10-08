@@ -60,6 +60,7 @@ export default function CategoryItems({ categoryId }: { categoryId: string }) {
                                                 >
                                                     {mi.name}
                                                 </Button>
+                                                <p>Price: {mi.price}</p>
                                                 {isAdmin && <Badge>{mi.isAvailable ? 'Available' : 'Unavailable'}</Badge>}
                                             </div>
                                         </div>
