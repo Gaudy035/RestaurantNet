@@ -59,7 +59,7 @@ export default function MenuItemUpdateForm({ itemId }: { itemId: string }) {
         if(typeof rawPrice === 'string' && rawPrice.trim() !== '') {
             const newPrice = Number(rawPrice);
 
-            if (Number.isFinite(newPrice) && newPrice >= 0 && newPrice !== itemData?.price) {
+            if (Number.isFinite(newPrice) && newPrice >= 0 && newPrice <= 10000 && newPrice !== itemData?.price) {
                 payload.price = newPrice;
             }
         }
@@ -113,6 +113,7 @@ export default function MenuItemUpdateForm({ itemId }: { itemId: string }) {
                                 type='number'
                                 step='0.01'
                                 min='0.00'
+                                max='10000'
                                 inputMode='decimal'
                                 name='price'
                                 placeholder='0.00'

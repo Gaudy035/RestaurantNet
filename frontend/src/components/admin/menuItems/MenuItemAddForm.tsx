@@ -77,6 +77,7 @@ export default function AdminMenuItemAddForm() {
                                 type='number'
                                 step='0.01'
                                 min='0.00'
+                                max='10000'
                                 inputMode='decimal'
                                 name='price'
                                 placeholder='0.00'
