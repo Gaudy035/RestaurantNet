@@ -20,7 +20,7 @@ export default function AdminCategoriesMain() {
             })
             .catch((e) => setError(getErrorMessage(e)))
             .finally(() => setLoading(false));
-    }, [categories]);
+    }, []);
 
     return (
         <div className='flex justify-center flex-col items-center'>
