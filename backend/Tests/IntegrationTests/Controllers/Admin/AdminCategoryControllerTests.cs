@@ -1,454 +1,505 @@
 using System.Net;
- using System.Net.Http.Json;
- using backend.DTOs.Auth;
- using backend.DTOs.Categories;
- using IntegrationTests.Helpers;
- using Microsoft.AspNetCore.Mvc.Testing;
- 
- namespace IntegrationTests.Controllers.Admin;
- 
- public class AdminCategoryControllerTests: IClassFixture<TestWebApplicationFactory>, IAsyncLifetime
- {
-     private readonly TestWebApplicationFactory _factory;
- 
-     public AdminCategoryControllerTests(TestWebApplicationFactory factory)
-     {
-         _factory = factory;
-     }
- 
-     public Task InitializeAsync() => _factory.ResetDatabaseAsync();
-     public Task DisposeAsync() => Task.CompletedTask;
- 
-     private HttpClient CreateClient()
-     {
-         return _factory.CreateClient(
-             new WebApplicationFactoryClientOptions
-             {
-                 AllowAutoRedirect = false,
-                 HandleCookies = true
-             }
-         );
-     }
-     
-     private async Task EmployeeLogin(HttpClient client, bool isAdmin = false)
-     {
-         await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => UserSeeder.SeedEmployeeUser(context, isAdmin: isAdmin)
-         );
- 
-         var dto = new LoginDto()
-         {
-             Email = "jane@example.com",
-             Password = "password1234"
-         };
-         
-         await client.PostAsJsonAsync("/admin/auth/login", dto);
-     }
-     
-     private async Task ClientLogin(HttpClient client)
-     {
-         await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => UserSeeder.SeedClientUser(context)
-         );
- 
-         var dto = new LoginDto
-         {
-             Email = "john@example.com",
-             Password = "password1234"
-         };
-         
-         await client.PostAsJsonAsync("auth/login", dto);
-     }
-     
-     [Fact]
-     public async Task CreateCategory_WithAdminEmployeeUserLoggedIn_ReturnsOk()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client, true);
- 
-         var dto = new CategoryCreateDto
-         {
-             CategoryName = "TestCategory"
-         };
-         
-         var result = await client.PostAsJsonAsync("/admin/categories", dto);
-         
-         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task CreateCategory_WithAdminEmployeeUserLoggedInAndDuplicateName_ReturnsConflict()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client, true);
+using System.Net.Http.Json;
+using backend.DTOs.Auth;
+using backend.DTOs.Categories;
+using backend.DTOs.MenuItems;
+using IntegrationTests.Helpers;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 
-         await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var dto = new CategoryCreateDto
-         {
-             CategoryName = "TestCategory"
-         };
-         
-         var result = await client.PostAsJsonAsync("/admin/categories", dto);
-         
-         Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
-     }
- 
-     [Fact]
-     public async Task CreateCategory_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client);
- 
-         var dto = new CategoryCreateDto
-         {
-             CategoryName = "TestCategory"
-         };
-         
-         var result = await client.PostAsJsonAsync("/admin/categories", dto);
-         
-         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
-     }
- 
-     [Fact]
-     public async Task CreateCategory_WithClientUserLoggedIn_ReturnsForbidden()
-     {
-         var client = CreateClient();
-         
-         await ClientLogin(client);
- 
-         var dto = new CategoryCreateDto
-         {
-             CategoryName = "TestCategory"
-         };
-         
-         var result = await client.PostAsJsonAsync("/admin/categories", dto);
-         
-         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
-     }
- 
-     [Fact]
-     public async Task CreateCategory_WithNoUserLoggedIn_ReturnsUnauthorized()
-     {
-         var client = CreateClient();
- 
-         var dto = new CategoryCreateDto
-         {
-             CategoryName = "TestCategory"
-         };
- 
-         var result = await client.PostAsJsonAsync("/admin/categories", dto);
-         
-         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task GetCategories_WithAdminEmployeeUserLoggedIn_ReturnsOk()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client, true);
-         
-         var result = await client.GetAsync("/admin/categories");
-         
-         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task GetCategories_WithNonAdminEmployeeUserLoggedIn_ReturnsOk()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client);
-         
-         var result = await client.GetAsync("/admin/categories");
-         
-         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task GetCategories_WithClientUserLoggedIn_ReturnsForbidden()
-     {
-         var client = CreateClient();
-         
-         await ClientLogin(client);
-         
-         var result = await client.GetAsync("/admin/categories");
-         
-         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task GetCategories_WithNoUserLoggedIn_ReturnsUnauthorized()
-     {
-         var client = CreateClient();
-         
-         var result = await client.GetAsync("/admin/categories");
-         
-         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task GetCategoryById_WithAdminEmployeeUserLoggedInAndValidId_ReturnsOk()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client, true);
+namespace IntegrationTests.Controllers.Admin;
 
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var result = await client.GetAsync($"/admin/categories/{category.CategoryId}");
-         
-         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task GetCategoryById_WithNonAdminEmployeeUserLoggedInAndValidId_ReturnsOk()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client);
+public class AdminCategoryControllerTests: IClassFixture<TestWebApplicationFactory>, IAsyncLifetime
+{
+    private readonly TestWebApplicationFactory _factory;
 
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var result = await client.GetAsync($"/admin/categories/{category.CategoryId}");
-         
-         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-     }
+    public AdminCategoryControllerTests(TestWebApplicationFactory factory)
+    {
+        _factory = factory;
+    }
 
-     [Fact]
-     public async Task GetCategoryById_WithValidUserLoggedInAndInvalidId_ReturnsNotFound()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client, true);
-         
-         var result = await client.GetAsync($"/admin/categories/{int.MaxValue}");
-         
-         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task GetCategoryById_WithClientUserLoggedIn_ReturnsForbidden()
-     {
-         var client = CreateClient();
-         
-         await ClientLogin(client);
+    public Task InitializeAsync() => _factory.ResetDatabaseAsync();
+    public Task DisposeAsync() => Task.CompletedTask;
 
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var result = await client.GetAsync($"/admin/categories/{category.CategoryId}");
-         
-         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task GetCategoryById_WithNoUserLoggedIn_ReturnsUnauthorized()
-     {
-         var client = CreateClient();
-         
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var result = await client.GetAsync($"/admin/categories/{category.CategoryId}");
-         
-         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
-     }
+    private HttpClient CreateClient()
+    {
+        return _factory.CreateClient(
+            new WebApplicationFactoryClientOptions
+            {
+                AllowAutoRedirect = false,
+                HandleCookies = true
+            }
+        );
+    }
 
-     [Fact]
-     public async Task GetCategoryItems_WithAdminEmployeeUserLoggedInAndValidId_ReturnsOk()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client, true);
+    private async Task EmployeeLogin(HttpClient client, bool isAdmin = false)
+    {
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context, isAdmin: isAdmin)
+        );
 
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var result = await client.GetAsync($"/admin/categories/{category.CategoryId}/items");
-         
-         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-     }
+        var dto = new LoginDto
+        {
+            Email = "jane@example.com",
+            Password = "password1234"
+        };
 
-     [Fact]
-     public async Task GetCategoryItems_WithNonAdminEmployeeUserLoggedInAndValidId_ReturnsOk()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client);
+        await client.PostAsJsonAsync("/admin/auth/login", dto);
+    }
 
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var result = await client.GetAsync($"/admin/categories/{category.CategoryId}/items");
-         
-         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-     }
+    private async Task ClientLogin(HttpClient client)
+    {
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedClientUser(context)
+        );
 
-     [Fact]
-     public async Task GetCategoryItems_WithValidUserLoggedInAndInvalidId_ReturnsNotFound()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client, true);
+        var dto = new LoginDto
+        {
+            Email = "john@example.com",
+            Password = "password1234"
+        };
 
-         var result = await client.GetAsync($"/admin/categories/{int.MaxValue}/items");
-         
-         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task GetCategoryItems_WithClientUserLoggedIn_ReturnsForbidden()
-     {
-         var client = CreateClient();
-         
-         await ClientLogin(client);
+        await client.PostAsJsonAsync("auth/login", dto);
+    }
 
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var result = await client.GetAsync($"/admin/categories/{category.CategoryId}/items");
-         
-         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task GetCategoryItems_WithNoUserLoggedIn_ReturnsUnauthorized()
-     {
-         var client = CreateClient();
+    [Fact]
+    public async Task CreateCategory_WithAdminEmployeeUserLoggedIn_CreatesCategoryAndReturnsIt()
+    {
+        var client = CreateClient();
 
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var result = await client.GetAsync($"/admin/categories/{category.CategoryId}/items");
-         
-         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task DeleteCategory_WithAdminEmployeeUserLoggedInAndValidIdAndNoItems_ReturnsNoContent()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client, true);
+        await EmployeeLogin(client, true);
 
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
-         
-         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task DeleteCategory_WithAdminEmployeeUserLoggedInAndInvalidId_ReturnsNotFound()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client, true);
-         
-         var result = await client.DeleteAsync($"/admin/categories/{int.MaxValue}");
-         
-         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task DeleteCategory_WithAdminEmployeeUserLoggedInAndValidIdAndAssignedItems_ReturnsConflict()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client, true);
-         
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
+        var dto = new CategoryCreateDto { CategoryName = "TestCategory" };
 
-         await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
-         );
-         
-         var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
-         
-         Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task DeleteCategory_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
-     {
-         var client = CreateClient();
-         
-         await EmployeeLogin(client);
+        var result = await client.PostAsJsonAsync("/admin/categories", dto);
 
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
-         
-         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task DeleteCategory_WithClientUserLoggedIn_ReturnsForbidden()
-     {
-         var client = CreateClient();
-         
-         await ClientLogin(client);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
 
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
-         
-         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
-     }
-     
-     [Fact]
-     public async Task DeleteCategory_WithNoUserLoggedIn_ReturnsUnauthorized()
-     {
-         var client = CreateClient();
-         
-         var category = await DatabaseHelper.ExecuteAsync(
-             _factory,
-             context => MenuSeeder.SeedCategory(context)
-         );
-         
-         var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
-         
-         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
-     }
- }
+        var category = await result.ReadJsonAsync<CategoryResponseDto>();
+        Assert.True(category.CategoryId > 0);
+        Assert.Equal("TestCategory", category.CategoryName);
+
+        var persisted = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => context.Categories.AsNoTracking()
+                .FirstOrDefaultAsync(c => c.CategoryName == "TestCategory")
+        );
+        Assert.NotNull(persisted);
+        Assert.Equal(category.CategoryId, persisted!.CategoryId);
+    }
+
+    [Fact]
+    public async Task CreateCategory_WithAdminEmployeeUserLoggedInAndDuplicateName_ReturnsConflict()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var dto = new CategoryCreateDto { CategoryName = "TestCategory" };
+
+        var result = await client.PostAsJsonAsync("/admin/categories", dto);
+
+        Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateCategory_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client);
+
+        var dto = new CategoryCreateDto { CategoryName = "TestCategory" };
+
+        var result = await client.PostAsJsonAsync("/admin/categories", dto);
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateCategory_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+
+        await ClientLogin(client);
+
+        var dto = new CategoryCreateDto { CategoryName = "TestCategory" };
+
+        var result = await client.PostAsJsonAsync("/admin/categories", dto);
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateCategory_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        var dto = new CategoryCreateDto { CategoryName = "TestCategory" };
+
+        var result = await client.PostAsJsonAsync("/admin/categories", dto);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCategories_WithAdminEmployeeUserLoggedIn_ReturnsAllCategories()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        await DatabaseHelper.ExecuteAsync(_factory, context => MenuSeeder.SeedCategory(context));
+        await DatabaseHelper.ExecuteAsync(_factory, context => MenuSeeder.SeedCategory(context, "Category2"));
+
+        var result = await client.GetAsync("/admin/categories");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var categories = await result.ReadJsonAsync<List<CategoryResponseDto>>();
+        Assert.Equal(2, categories.Count);
+        Assert.Contains(categories, c => c.CategoryName == "TestCategory");
+        Assert.Contains(categories, c => c.CategoryName == "Category2");
+    }
+
+    [Fact]
+    public async Task GetCategories_WithNonAdminEmployeeUserLoggedIn_ReturnsOk()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client);
+
+        var result = await client.GetAsync("/admin/categories");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCategories_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+
+        await ClientLogin(client);
+
+        var result = await client.GetAsync("/admin/categories");
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCategories_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        var result = await client.GetAsync("/admin/categories");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCategoryById_WithAdminEmployeeUserLoggedInAndValidId_ReturnsCategory()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var result = await client.GetAsync($"/admin/categories/{category.CategoryId}");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var body = await result.ReadJsonAsync<CategoryResponseDto>();
+        Assert.Equal(category.CategoryId, body.CategoryId);
+        Assert.Equal("TestCategory", body.CategoryName);
+    }
+
+    [Fact]
+    public async Task GetCategoryById_WithNonAdminEmployeeUserLoggedInAndValidId_ReturnsOk()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var result = await client.GetAsync($"/admin/categories/{category.CategoryId}");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCategoryById_WithValidUserLoggedInAndInvalidId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var result = await client.GetAsync($"/admin/categories/{int.MaxValue}");
+
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCategoryById_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+
+        await ClientLogin(client);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var result = await client.GetAsync($"/admin/categories/{category.CategoryId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCategoryById_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var result = await client.GetAsync($"/admin/categories/{category.CategoryId}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCategoryItems_WithAdminEmployeeUserLoggedIn_ReturnsAllItems()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId, name: "Available", isAvailable: true)
+        );
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId, name: "Unavailable", isAvailable: false)
+        );
+
+        var result = await client.GetAsync($"/admin/categories/{category.CategoryId}/items");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var items = await result.ReadJsonAsync<List<MenuItemResponseDto>>();
+        var normalized = items.ToDictionary(i => i.Name);
+        Assert.Equal(2, items.Count);
+
+        var available = (MenuItemResponseDto)normalized["Available"];
+        Assert.Equal(category.CategoryId, available.CategoryId);
+        Assert.True(available.IsAvailable);
+
+        var unavailable = (MenuItemResponseDto)normalized["Unavailable"];
+        Assert.Equal(category.CategoryId, unavailable.CategoryId);
+        Assert.False(unavailable.IsAvailable);
+    }
+
+    [Fact]
+    public async Task GetCategoryItems_WithNonAdminEmployeeUserLoggedIn_ReturnsAvailableItemsOnly()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId, name: "Available", isAvailable: true)
+        );
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId, name: "Unavailable", isAvailable: false)
+        );
+
+        var result = await client.GetAsync($"/admin/categories/{category.CategoryId}/items");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var items = await result.ReadJsonAsync<List<MenuItemResponseDto>>();
+        Assert.Single(items);
+        Assert.Equal("Available", items.Single().Name);
+    }
+
+    [Fact]
+    public async Task GetCategoryItems_WithValidUserLoggedInAndInvalidId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var result = await client.GetAsync($"/admin/categories/{int.MaxValue}/items");
+
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCategoryItems_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+
+        await ClientLogin(client);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var result = await client.GetAsync($"/admin/categories/{category.CategoryId}/items");
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCategoryItems_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var result = await client.GetAsync($"/admin/categories/{category.CategoryId}/items");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteCategory_WithAdminEmployeeUserLoggedInAndValidIdAndNoItems_RemovesCategory()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
+
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+
+        var stillExists = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => context.Categories.AsNoTracking().AnyAsync(c => c.CategoryId == category.CategoryId)
+        );
+        Assert.False(stillExists);
+    }
+
+    [Fact]
+    public async Task DeleteCategory_WithAdminEmployeeUserLoggedInAndInvalidId_ReturnsNotFound()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var result = await client.DeleteAsync($"/admin/categories/{int.MaxValue}");
+
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteCategory_WithAdminEmployeeUserLoggedInAndValidIdAndAssignedItems_ReturnsConflict()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId)
+        );
+
+        var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
+
+        Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteCategory_WithNonAdminEmployeeUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteCategory_WithClientUserLoggedIn_ReturnsForbidden()
+    {
+        var client = CreateClient();
+
+        await ClientLogin(client);
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteCategory_WithNoUserLoggedIn_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        var category = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCategory(context)
+        );
+
+        var result = await client.DeleteAsync($"/admin/categories/{category.CategoryId}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+}
