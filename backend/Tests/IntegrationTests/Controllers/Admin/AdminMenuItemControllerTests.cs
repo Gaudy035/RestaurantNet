@@ -473,6 +473,35 @@ public class AdminMenuItemControllerTests: IClassFixture<TestWebApplicationFacto
     }
 
     [Fact]
+    public async Task UpdateMenuItem_WithAdminEmployeeUserLoggedInAndBlankImageUrl_SetsImageUrlToNull()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var category = await SeedCategory("Category");
+        var menuItem = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedMenuItem(context, category.CategoryId, imageUrl: "TestUrl")
+        );
+
+        var result = await client.PatchAsJsonAsync(
+            $"/admin/menuitems/{menuItem.ItemId}",
+            new MenuItemUpdateDto { ImageUrl = "   " });
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var body = await result.ReadJsonAsync<MenuItemResponseDto>();
+        Assert.Null(body.ImageUrl);
+
+        var persisted = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => context.MenuItems.AsNoTracking().FirstAsync(mi => mi.ItemId == menuItem.ItemId)
+        );
+        Assert.Null(persisted.ImageUrl);
+    }
+
+    [Fact]
     public async Task UpdateMenuItem_WithAdminEmployeeUserLoggedInAndInvalidId_ReturnsNotFound()
     {
         var client = CreateClient();

@@ -148,6 +148,27 @@ public class AdminAuthControllerTests: IClassFixture<TestWebApplicationFactory>,
     }
 
     [Fact]
+    public async Task Login_WithClientCredentials_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedClientUser(context)
+        );
+
+        var dto = new LoginDto
+        {
+            Email = "john@example.com",
+            Password = "password1234"
+        };
+
+        var response = await client.PostAsJsonAsync("/admin/auth/login", dto);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Refresh_WithValidRefreshToken_ReturnsNoContentAndSetsNewCookies()
     {
         var client = CreateClient();

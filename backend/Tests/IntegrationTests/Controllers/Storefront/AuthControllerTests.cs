@@ -90,6 +90,13 @@ public class AuthControllerTests: IClassFixture<TestWebApplicationFactory>, IAsy
                 .SingleAsync()
         );
 
+    private static async Task<HttpResponseMessage> RefreshWithToken(HttpClient client, string tokenValue)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, "auth/refresh");
+        request.Headers.Add("Cookie", $"client_refresh_token={tokenValue}");
+        return await client.SendAsync(request);
+    }
+
     [Fact]
     public async Task Register_WithProperData_CreatesClientAccountAndSetsCookies()
     {
@@ -207,6 +214,27 @@ public class AuthControllerTests: IClassFixture<TestWebApplicationFactory>, IAsy
     }
 
     [Fact]
+    public async Task Login_WithEmployeeCredentials_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => UserSeeder.SeedEmployeeUser(context)
+        );
+
+        var dto = new LoginDto
+        {
+            Email = "jane@example.com",
+            Password = "password1234"
+        };
+
+        var response = await client.PostAsJsonAsync("auth/login", dto);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Logout_WithLoggedInUser_ReturnsNoContentAndClearsCookies()
     {
         var client = CreateClient();
@@ -277,6 +305,64 @@ public class AuthControllerTests: IClassFixture<TestWebApplicationFactory>, IAsy
         var client = CreateClient();
 
         var response = await client.PostAsync("auth/refresh", null);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Refresh_WithInactiveToken_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        await DatabaseHelper.ExecuteAsync(_factory, async context =>
+        {
+            var clientUser = await UserSeeder.SeedClientUser(context);
+            await TokenSeeder.SeedRefreshToken(context, clientUser.UserId, "inactive", isActive: false);
+            return true;
+        });
+
+        var response = await RefreshWithToken(client, "inactive");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Refresh_WithExpiredToken_ReturnsUnauthorizedAndRevokesToken()
+    {
+        var client = CreateClient();
+
+        await DatabaseHelper.ExecuteAsync(_factory, async context =>
+        {
+            var clientUser = await UserSeeder.SeedClientUser(context);
+            await TokenSeeder.SeedRefreshToken(
+                context,
+                clientUser.UserId,
+                "expired",
+                expiresAt: DateTimeOffset.UtcNow.AddDays(-1));
+            return true;
+        });
+
+        var response = await RefreshWithToken(client, "expired");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+        var state = await DatabaseHelper.ExecuteAsync(_factory, async context =>
+        {
+            var token = await context.RefreshTokens.AsNoTracking()
+                .SingleAsync(rt => rt.TokenValue == "expired");
+            return new { token.IsActive, token.RevokedAt };
+        });
+
+        Assert.False(state.IsActive);
+        Assert.NotNull(state.RevokedAt);
+    }
+
+    [Fact]
+    public async Task Refresh_WithUnknownToken_ReturnsUnauthorized()
+    {
+        var client = CreateClient();
+
+        var response = await RefreshWithToken(client, "unknown");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
