@@ -56,6 +56,27 @@ namespace backend.Migrations
                     b.ToTable("t_booking");
                 });
 
+            modelBuilder.Entity("backend.Data.Entities.CartItem", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("item_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.HasKey("UserId", "ItemId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("t_cart_item");
+                });
+
             modelBuilder.Entity("backend.Data.Entities.Category", b =>
                 {
                     b.Property<int>("CategoryId")
@@ -344,6 +365,11 @@ namespace backend.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("item_id");
 
+                    b.Property<decimal>("Price")
+                        .HasPrecision(7, 2)
+                        .HasColumnType("numeric(7,2)")
+                        .HasColumnName("price");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer")
                         .HasColumnName("quantity");
@@ -483,6 +509,25 @@ namespace backend.Migrations
                     b.Navigation("Client");
 
                     b.Navigation("Table");
+                });
+
+            modelBuilder.Entity("backend.Data.Entities.CartItem", b =>
+                {
+                    b.HasOne("backend.Data.Entities.MenuItem", "MenuItem")
+                        .WithMany("CartItems")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Data.Entities.User", "User")
+                        .WithMany("CartItems")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MenuItem");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("backend.Data.Entities.Client", b =>
@@ -659,6 +704,8 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Data.Entities.MenuItem", b =>
                 {
+                    b.Navigation("CartItems");
+
                     b.Navigation("ItemIngredients");
 
                     b.Navigation("OrderItems");
@@ -678,6 +725,8 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Data.Entities.User", b =>
                 {
+                    b.Navigation("CartItems");
+
                     b.Navigation("Client");
 
                     b.Navigation("Employee");

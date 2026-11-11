@@ -34,4 +34,6 @@ public class User
     public Client? Client { get; init; }
 
     public Employee? Employee { get; init; }
+
+    public ICollection<CartItem> CartItems { get; init; } = new List<CartItem>();
 }

@@ -41,4 +41,6 @@ public class MenuItem
     public ICollection<ItemIngredient> ItemIngredients { get; init; } = new List<ItemIngredient>();
 
     public ICollection<OrderItem> OrderItems { get; init; } = new List<OrderItem>();
+
+    public ICollection<CartItem> CartItems { get; init; } = new List<CartItem>();
 }
