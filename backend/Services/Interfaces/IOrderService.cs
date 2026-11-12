@@ -1,0 +1,9 @@
+﻿using backend.DTOs.Orders;
+using backend.Services.Errors;
+
+namespace backend.Services.Interfaces;
+
+public interface IOrderService
+{
+    Task<Result<CartItemResponseDto>> AddItemToCart(int userId, int itemId);
+};
