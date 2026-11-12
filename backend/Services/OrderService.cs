@@ -110,4 +110,25 @@ public class OrderService : IOrderService
             });
         }
     }
+
+    public async Task<Result<CartResponseDto>> GetCart(int userId)
+    {
+        var cartItems = await _context.CartItems
+            .AsNoTracking()
+            .Include(ci => ci.MenuItem)
+            .Where(ci => ci.UserId == userId)
+            .ToListAsync();
+
+        return Result<CartResponseDto>.Success(new CartResponseDto
+        {
+            Items = cartItems.Select(ci => new CartItemResponseDto
+            {
+                ItemId = ci.ItemId,
+                Name = ci.MenuItem.Name,
+                Price = ci.MenuItem.Price,
+                Quantity = ci.Quantity
+            }).ToList(),
+            TotalPrice = cartItems.Sum(ci => ci.MenuItem.Price * ci.Quantity)
+        });
+    }
 }

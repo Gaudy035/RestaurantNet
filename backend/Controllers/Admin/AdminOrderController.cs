@@ -44,4 +44,17 @@ public class AdminOrderController: ControllerBase
         var result = await _orderService.RemoveItemFromCart(userId, itemId);
         return result.ToActionResult(this);
     }
+
+    [Authorize(Roles = "Admin,Employee")]
+    [HttpGet("cart")]
+    public async Task<IActionResult> GetCart()
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdString == null || !int.TryParse(userIdString, out var userId))
+        {
+            return Unauthorized();
+        }
+        var result = await _orderService.GetCart(userId);
+        return result.ToActionResult(this);
+    }
 }
