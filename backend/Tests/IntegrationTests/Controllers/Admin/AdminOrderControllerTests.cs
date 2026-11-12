@@ -84,6 +84,15 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         return menuItem;
     }
 
+    private async Task<CartItem> SeedCartItem(HttpClient client, int userId, int itemId, int quantity)
+    {
+        var cartItem = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => MenuSeeder.SeedCartItem(context: context, userId: userId, itemId: itemId, quantity: quantity)
+        );
+        return cartItem;
+    }
+
     [Fact]
     public async Task AddItemToCart_WithCorrectIdsAndAdminUser_AddsItemToCartAndReturns200()
     {
@@ -188,5 +197,127 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         Assert.Equal(2, fetched.Quantity);
         Assert.Equal(menuItem.ItemId, fetched.ItemId);
         Assert.Equal(employeeUser.UserId, fetched.UserId);
+    }
+
+    [Fact]
+    public async Task RemoveItemFromCart_WithSingleItemAndAdminUser_RemovesItemAndReturns204()
+    {
+        var client = CreateClient();
+
+        var employeeUser = await EmployeeLogin(client, true);
+
+        var menuItem = await SeedItem(client);
+
+        var cartItem = await SeedCartItem(client, employeeUser.UserId, menuItem.ItemId, 1);
+
+        var result = await client.DeleteAsync($"admin/orders/cart/{menuItem.ItemId}");
+
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+
+        var removed = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.CartItems
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ci => ci.UserId == employeeUser.UserId && ci.ItemId == menuItem.ItemId)
+        );
+
+        Assert.Null(removed);
+    }
+
+    [Fact]
+    public async Task RemoveItemFromCart_WithSingleItemAndNotAdminEmployeeUser_RemovesItemAndReturns204()
+    {
+        var client = CreateClient();
+
+        var employeeUser = await EmployeeLogin(client, false);
+
+        var menuItem = await SeedItem(client);
+
+        var cartItem = await SeedCartItem(client, employeeUser.UserId, menuItem.ItemId, 1);
+
+        var result = await client.DeleteAsync($"admin/orders/cart/{menuItem.ItemId}");
+
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task RemoveItem_WithMultipleItemsAndAdminUser_DecreasesQuantityAndReturns200()
+    {
+        var client = CreateClient();
+
+        var employeeUser = await EmployeeLogin(client, true);
+
+        var menuItem = await SeedItem(client);
+
+        var cartItem = await SeedCartItem(client, employeeUser.UserId, menuItem.ItemId, 2);
+
+        var result = await client.DeleteAsync($"admin/orders/cart/{menuItem.ItemId}");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var resultCartItem = await result.ReadJsonAsync<CartItemResponseDto>();
+
+        Assert.NotNull(resultCartItem);
+
+        Assert.Equal(1, resultCartItem.Quantity);
+
+        var fetched = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.CartItems
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ci => ci.UserId == employeeUser.UserId && ci.ItemId == menuItem.ItemId)
+        );
+
+        Assert.NotNull(fetched);
+
+        Assert.Equal(1, fetched.Quantity);
+
+        Assert.Equal(menuItem.ItemId, fetched.ItemId);
+
+        Assert.Equal(employeeUser.UserId, fetched.UserId);
+    }
+
+    [Fact]
+    public async Task RemoveItem_WithMultipleItemsAndNonAdminEmployeeUser_DecreasesQuantityAndReturns200()
+    {
+        var client = CreateClient();
+
+        var employeeUser = await EmployeeLogin(client, false);
+
+        var menuItem = await SeedItem(client);
+
+        var cartItem = await SeedCartItem(client, employeeUser.UserId, menuItem.ItemId, 2);
+
+        var result = await client.DeleteAsync($"admin/orders/cart/{menuItem.ItemId}");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task RemoveItemFromCart_WithNonExistingItemId_Returns404()
+    {
+        var client = CreateClient();
+
+        var employeeUser = await EmployeeLogin(client, true);
+
+        var result = await client.DeleteAsync($"admin/orders/cart/{int.MaxValue}");
+
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task RemoveItemFromCart_ClientUser_Returns403()
+    {
+        var client = CreateClient();
+
+        var clientUser = await ClientLogin(client);
+
+        var menuItem = await SeedItem(client);
+
+        var cartItem = await SeedCartItem(client, clientUser.UserId, menuItem.ItemId, 1);
+
+        var result = await client.DeleteAsync($"admin/orders/cart/{menuItem.ItemId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
     }
 }
