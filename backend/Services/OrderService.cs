@@ -19,6 +19,7 @@ public class OrderService : IOrderService
     public async Task<Result<CartItemResponseDto>> AddItemToCart(int userId, int itemId)
     {
         var menuItem = await _context.MenuItems
+            .AsNoTracking()
             .FirstOrDefaultAsync(mi => mi.ItemId == itemId);
         
         if (menuItem == null)
@@ -60,5 +61,53 @@ public class OrderService : IOrderService
             Price = menuItem.Price,
             Quantity = cartItem.Quantity
         });
+    }
+
+    public async Task<Result<CartItemResponseDto?>> RemoveItemFromCart(int userId, int itemId)
+    {
+        var cartItem = await _context.CartItems
+            .Include(ci => ci.MenuItem)
+            .FirstOrDefaultAsync(ci => ci.UserId == userId && ci.ItemId == itemId);
+
+        if (cartItem == null)
+        {
+            return Result<CartItemResponseDto?>.Fail(ErrorCode.CartItemNotFound);
+        }
+
+        var deleted = cartItem.Quantity <= 1;
+
+        if (deleted)
+        {
+            _context.CartItems.Remove(cartItem);
+        }
+        else
+        {
+            cartItem.Quantity--;
+        }
+
+        try
+        {
+            await _context.SaveChangesAsync();
+
+        }
+        catch (DbUpdateException)
+        {
+            return Result<CartItemResponseDto?>.Fail(ErrorCode.DbOperationFailed);
+        }
+
+        if (deleted)
+        {
+            return Result<CartItemResponseDto?>.Success(null);
+        }
+        else
+        {
+            return Result<CartItemResponseDto?>.Success(new CartItemResponseDto
+            {
+                ItemId = cartItem.ItemId,
+                Name = cartItem.MenuItem.Name,
+                Price = cartItem.MenuItem.Price,
+                Quantity = cartItem.Quantity
+            });
+        }
     }
 }

@@ -46,4 +46,24 @@ public static class MenuSeeder
         
         return newMenuItem;
     }
+
+    public static async Task<CartItem> SeedCartItem(
+        AppDbContext context,
+        int userId,
+        int itemId,
+        int quantity
+    )
+    {
+        var newCartItem = new CartItem
+        {
+            UserId = userId,
+            ItemId = itemId,
+            Quantity = quantity
+        };
+
+        context.CartItems.Add(newCartItem);
+        await context.SaveChangesAsync();
+
+        return newCartItem;
+    }
 }

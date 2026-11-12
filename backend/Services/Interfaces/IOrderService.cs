@@ -6,4 +6,5 @@ namespace backend.Services.Interfaces;
 public interface IOrderService
 {
     Task<Result<CartItemResponseDto>> AddItemToCart(int userId, int itemId);
-};
+    Task<Result<CartItemResponseDto?>> RemoveItemFromCart(int userId, int itemId);
+}
