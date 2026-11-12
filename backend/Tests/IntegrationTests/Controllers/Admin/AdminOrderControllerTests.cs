@@ -69,16 +69,22 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         return clientUser;
     }
 
-    private async Task<MenuItem> SeedItem(HttpClient client, string itemName = "testItem")
-    {
+    private async Task<MenuItem> SeedItem(
+        HttpClient client,
+        string itemName = "testItem", 
+        decimal price = 10.00m,
+        string? categoryName = null
+    ){
         var category = await DatabaseHelper.ExecuteAsync(
             _factory,
-            context => MenuSeeder.SeedCategory(context)
+            context => categoryName == null
+                ? MenuSeeder.SeedCategory(context: context)
+                : MenuSeeder.SeedCategory(context: context, categoryName: categoryName)
         );
 
         var menuItem = await DatabaseHelper.ExecuteAsync(
             _factory,
-            context => MenuSeeder.SeedMenuItem(context:context, categoryId:category.CategoryId, name: itemName)
+            context => MenuSeeder.SeedMenuItem(context:context, categoryId:category.CategoryId, name: itemName, price: price)
         );
 
         return menuItem;
@@ -317,6 +323,76 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         var cartItem = await SeedCartItem(client, clientUser.UserId, menuItem.ItemId, 1);
 
         var result = await client.DeleteAsync($"admin/orders/cart/{menuItem.ItemId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCart_WithItemsInCartAndAdminUser_ReturnsAllItemsAndCorrectTotalPriceAnd200()
+    {
+        var client = CreateClient();
+
+        var employeeUser = await EmployeeLogin(client, true);
+
+        var menuItem1 = await SeedItem(client, "item1", 15.00m);
+        var menuItem2 = await SeedItem(client, "item2", 20.00m, "Category2");
+
+        var cartItem1 = await SeedCartItem(client, employeeUser.UserId, menuItem1.ItemId, 2);
+        var cartItem2 = await SeedCartItem(client, employeeUser.UserId, menuItem2.ItemId, 3);
+        
+        var result = await client.GetAsync($"admin/orders/cart");
+        
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        
+        var resultCart = await result.ReadJsonAsync<CartResponseDto>();
+        
+        Assert.NotNull(resultCart);
+        Assert.Equal(2, resultCart.Items.Count);
+        Assert.Equal(cartItem1.Quantity * menuItem1.Price + cartItem2.Quantity * menuItem2.Price, resultCart.TotalPrice);
+    }
+
+    [Fact]
+    public async Task GetCart_WithNoItemsAndAdminUser_ReturnsEmptyListAndTotalPriceZeroAnd200()
+    {
+        var client = CreateClient();
+
+        var employeeUser = await EmployeeLogin(client, true);
+
+        var result = await client.GetAsync($"admin/orders/cart");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var resultCart = await result.ReadJsonAsync<CartResponseDto>();
+
+        Assert.NotNull(resultCart);
+        Assert.Empty(resultCart.Items);
+        Assert.Equal(0, resultCart.TotalPrice);
+    }
+
+    [Fact]
+    public async Task GetCart_WithNonAdminEmployeeUser_ReturnsCartAnd200()
+    {
+        var client = CreateClient();
+
+        var employeeUser = await EmployeeLogin(client, false);
+
+        var menuItem1 = await SeedItem(client, "item1", 15.00m);
+
+        await SeedCartItem(client, employeeUser.UserId, menuItem1.ItemId, 2);
+
+        var result = await client.GetAsync($"admin/orders/cart");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCart_WithClientUser_Returns403()
+    {
+        var client = CreateClient();
+
+        var clientUser = await ClientLogin(client);
+
+        var result = await client.GetAsync($"admin/orders/cart");
 
         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
     }
