@@ -8,7 +8,7 @@ public class OrderCreateDto
     [Required]
     public int LocationId { get; init; }
 
-    public int? UserId { get; init; }
+    public int? ClientId { get; init; }
 
     public bool IsPaid { get; init; }
 
@@ -18,7 +18,7 @@ public class OrderCreateDto
     [Required]
     public OrderType OrderType { get; init; }
 
-    public string? PhoneNumber { get; init; }
+    public string PhoneNumber { get; init; } = string.Empty;
 
     public string? City { get; init; }
 

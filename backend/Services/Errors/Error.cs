@@ -33,6 +33,8 @@ public sealed class Error
             ErrorCode.MenuItemNotFound => new Error(code, "Menu item not found", StatusCodes.Status404NotFound),
             ErrorCode.UpdateBodyEmpty => new Error(code, "Update body empty", StatusCodes.Status400BadRequest),
             ErrorCode.CartItemNotFound => new Error(code, "Cart item not found", StatusCodes.Status404NotFound),
+            ErrorCode.CartEmpty => new Error(code, "Cannot finalize empty order", StatusCodes.Status400BadRequest),
+            ErrorCode.InvalidDeliveryData => new Error(code, "Missing or invalid delivery data", StatusCodes.Status400BadRequest),
             _ => new Error(code, "Unknown error", StatusCodes.Status500InternalServerError)
         };
 }

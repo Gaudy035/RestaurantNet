@@ -19,4 +19,6 @@ public enum ErrorCode
     MenuItemNotFound,
     UpdateBodyEmpty,
     CartItemNotFound,
+    CartEmpty,
+    InvalidDeliveryData
 }

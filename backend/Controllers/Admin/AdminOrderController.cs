@@ -3,6 +3,7 @@ using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using backend.Services.Errors;
+using backend.DTOs.Orders;
 
 namespace backend.Controllers.Admin;
 
@@ -55,6 +56,32 @@ public class AdminOrderController: ControllerBase
             return Unauthorized();
         }
         var result = await _orderService.GetCart(userId);
+        return result.ToActionResult(this);
+    }
+
+    [Authorize(Roles = "Admin,Employee")]
+    [HttpDelete("cart")]
+    public async Task<IActionResult> ClearCart()
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdString == null || !int.TryParse(userIdString, out int userId))
+        {
+            return Unauthorized();
+        }
+        var result = await _orderService.ClearCart(userId);
+        return result.ToActionResult(this);
+    }
+
+    [Authorize(Roles = "Admin,Employee")]
+    [HttpPost()]
+    public async Task<IActionResult> FinalizeOrder([FromBody] OrderCreateDto dto)
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdString == null || !int.TryParse(userIdString, out int userId))
+        {
+            return Unauthorized();
+        }
+        var result = await _orderService.FinalizeOrder(userId, dto);
         return result.ToActionResult(this);
     }
 }
