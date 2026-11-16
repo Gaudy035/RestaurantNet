@@ -396,4 +396,81 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
     }
+
+    [Fact]
+    public async Task ClearCart_WithAdminUser_ClearsCartAndReturns204()
+    {
+        var client = CreateClient();
+
+        var employeeUser = await EmployeeLogin(client, true);
+
+        var item1 = await SeedItem(client, "item1", 15.00m);
+        var item2 = await SeedItem(client, "item2", 10.00m, "category2");
+
+        await SeedCartItem(client, employeeUser.UserId, item1.ItemId, 1);
+        await SeedCartItem(client, employeeUser.UserId, item2.ItemId, 3);
+
+        var cartCountBefore = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.CartItems
+                .AsNoTracking()
+                .Where(ci => ci.UserId == employeeUser.UserId)
+                .CountAsync()
+        );
+
+        Assert.Equal(2, cartCountBefore);
+
+        var result = await client.DeleteAsync("/admin/orders/cart");
+
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+
+        var cartCountAfter = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.CartItems
+                .AsNoTracking()
+                .Where(ci => ci.UserId == employeeUser.UserId)
+                .CountAsync()
+        );
+
+        Assert.Equal(0, cartCountAfter);
+    }
+
+    [Fact]
+    public async Task ClearCart_WithNonAdminEmployeeUser_ClearsCartAndReturns204()
+    {
+        var client = CreateClient();
+
+        var employeeUser = await EmployeeLogin(client, false);
+
+        var item = await SeedItem(client);
+
+        await SeedCartItem(client, employeeUser.UserId, item.ItemId, 2);
+
+        var result = await client.DeleteAsync("/admin/orders/cart");
+
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+
+        var countAfter = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.CartItems
+                .AsNoTracking()
+                .Where(ci => ci.UserId == employeeUser.UserId)
+                .CountAsync()
+        );
+
+        Assert.Equal(0, countAfter);
+    }
+
+    [Fact]
+    public async Task ClearCart_WithClientUser_Returns403()
+    {
+        var client = CreateClient();
+
+        var clientUser = await ClientLogin(client);
+
+        var result = await client.DeleteAsync("/admin/orders/cart");
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
 }
