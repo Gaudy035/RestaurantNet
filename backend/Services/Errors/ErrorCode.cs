@@ -20,5 +20,6 @@ public enum ErrorCode
     UpdateBodyEmpty,
     CartItemNotFound,
     CartEmpty,
-    InvalidDeliveryData
+    InvalidDeliveryData,
+    OrderNotFound
 }
