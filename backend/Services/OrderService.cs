@@ -281,4 +281,83 @@ public class OrderService : IOrderService
 
         return Result<OrderResponseDto>.Success(responseDto);
     }
+
+    public async Task<Result<List<OrderResponseDto>>> GetAllOrders()
+    {
+        var allOrders = await _context.Orders
+            .AsNoTracking()
+            .Select(o => new OrderResponseDto
+            {
+                OrderId = o.OrderId,
+                ClientId = o.ClientId,
+                LocationId = o.LocationId,
+                Price = o.Price,
+                OrderTime = o.OrderTime,
+                Items = o.OrderItems.Select(oi => new CartItemResponseDto
+                {
+                    ItemId = oi.ItemId,
+                    Name = oi.MenuItem.Name,
+                    Price = oi.Price,
+                    Quantity = oi.Quantity
+                }).ToList(),
+                PaymentMethod = o.PaymentMethod,
+                IsPaid = o.IsPaid,
+                OrderStatus = o.Status,
+                OrderType = o.OrderType,
+                Delivery = o.OrderType == OrderType.Delivery
+                    ? new DeliveryResponseDto
+                    {
+                        PhoneNumber = o.PhoneNumber,
+                        City = o.Delivery!.City,
+                        Address = o.Delivery!.Address
+                    }
+                    : null
+            })
+            .OrderBy(o => o.OrderTime)
+            .ToListAsync();
+
+        return Result<List<OrderResponseDto>>.Success(allOrders);
+    }
+
+    public async Task<Result<OrderResponseDto?>> FindOrderById(int orderId)
+    {
+        var foundOrder = await _context.Orders
+            .AsNoTracking()
+            .Where(o => o.OrderId == orderId)
+            .Select(o => new OrderResponseDto
+            {
+                OrderId = o.OrderId,
+                ClientId = o.ClientId,
+                LocationId = o.LocationId,
+                Price = o.Price,
+                OrderTime = o.OrderTime,
+                Items = o.OrderItems.Select(oi => new CartItemResponseDto
+                {
+                    ItemId = oi.ItemId,
+                    Name = oi.MenuItem.Name,
+                    Price = oi.Price,
+                    Quantity = oi.Quantity
+                }).ToList(),
+                PaymentMethod = o.PaymentMethod,
+                IsPaid = o.IsPaid,
+                OrderStatus = o.Status,
+                OrderType = o.OrderType,
+                Delivery = o.OrderType == OrderType.Delivery
+                    ? new DeliveryResponseDto
+                    {
+                        PhoneNumber = o.PhoneNumber,
+                        City = o.Delivery!.City,
+                        Address = o.Delivery!.Address
+                    }
+                    : null
+            })
+            .SingleOrDefaultAsync();
+
+        if (foundOrder == null)
+        {
+            return Result<OrderResponseDto?>.Fail(ErrorCode.OrderNotFound);
+        }
+
+        return Result<OrderResponseDto?>.Success(foundOrder);
+    }
 }

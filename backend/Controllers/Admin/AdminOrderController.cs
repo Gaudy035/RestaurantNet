@@ -84,4 +84,23 @@ public class AdminOrderController: ControllerBase
         var result = await _orderService.FinalizeOrder(userId, dto);
         return result.ToActionResult(this);
     }
+
+    [Authorize(Roles = "Admin,Employee")]
+    [HttpGet()]
+    public async Task<IActionResult> GetAllOrders()
+    {
+        var result = await _orderService.GetAllOrders();
+
+        return result.ToActionResult(this);
+    }
+
+
+    [Authorize(Roles = "Admin,Employee")]
+    [HttpGet("{orderId:int}")]
+    public async Task<IActionResult> FindOrderById([FromRoute] int orderId)
+    {
+        var result = await _orderService.FindOrderById(orderId);
+
+        return result.ToActionResult(this);
+    }
 }
