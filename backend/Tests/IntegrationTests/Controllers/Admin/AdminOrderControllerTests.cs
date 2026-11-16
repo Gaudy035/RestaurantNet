@@ -473,4 +473,358 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
     }
 
+    [Fact]
+    public async Task FinalizeOrder_WithItemsInCartAndAdminUser_SavesOrderAndReturns200()
+    {
+        var client = CreateClient();
+
+        var employeeUser = await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var item1 = await SeedItem(client, "item1", 10.00m);
+        var item2 = await SeedItem(client, "item2", 15.50m, "category2");
+
+        await SeedCartItem(client, employeeUser.UserId, item1.ItemId, 3);
+        await SeedCartItem(client, employeeUser.UserId, item2.ItemId, 2);
+
+        var requestDto = new OrderCreateDto
+        {
+            LocationId = location.LocationId,
+            IsPaid = false,
+            PaymentMethod = PaymentMethod.Cash,
+            OrderType = OrderType.DineIn,
+        };
+
+        var timeBefore = DateTime.UtcNow;
+
+        var result = await client.PostAsJsonAsync("/admin/orders", requestDto);
+
+        var timeAfter = DateTime.UtcNow;
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var resultJson = await result.ReadJsonAsync<OrderResponseDto>();
+
+        Assert.NotNull(resultJson);
+        Assert.Equal(location.LocationId, resultJson.LocationId);
+        Assert.Equal(item1.Price * 3 + item2.Price * 2, resultJson.Price);
+        Assert.InRange(resultJson.OrderTime, timeBefore, timeAfter);
+        Assert.Equal(
+            new[] { item1.ItemId, item2.ItemId }.OrderBy(id => id),
+            resultJson.Items.Select(item => item.ItemId).OrderBy(id => id)
+        );
+        Assert.Equal(requestDto.PaymentMethod, resultJson.PaymentMethod);
+        Assert.Equal(requestDto.IsPaid, resultJson.IsPaid);
+        Assert.Equal(OrderStatus.Pending, resultJson.OrderStatus);
+        Assert.Equal(requestDto.OrderType, resultJson.OrderType);
+        Assert.Null(resultJson.Delivery);
+
+        var cartCount = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.CartItems
+                .AsNoTracking()
+                .Where(ci => ci.UserId == employeeUser.UserId)
+                .CountAsync()
+        );
+
+        Assert.Equal(0, cartCount);
+
+        var createdOrder = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.Orders
+                .AsNoTracking()
+                .Where(o => o.OrderId == resultJson.OrderId)
+                .SingleOrDefaultAsync()
+        );
+
+        Assert.NotNull(createdOrder);
+        Assert.Equal(location.LocationId, createdOrder.LocationId);
+        Assert.Equal(item1.Price * 3 + item2.Price * 2, createdOrder.Price);
+        Assert.InRange(createdOrder.OrderTime, timeBefore, timeAfter);
+        Assert.Equal(requestDto.PaymentMethod, createdOrder.PaymentMethod);
+        Assert.Equal(requestDto.IsPaid, createdOrder.IsPaid);
+        Assert.Equal(OrderStatus.Pending, createdOrder.Status);
+        Assert.Equal(requestDto.OrderType, createdOrder.OrderType);
+        Assert.Null(createdOrder.Delivery);
+
+        var createdOrderItems = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.OrderItems
+                .AsNoTracking()
+                .Where(oi => oi.OrderId == createdOrder.OrderId)
+                .Select(oi => oi.ItemId)
+                .OrderBy(id => id)
+                .ToListAsync()
+        );
+
+        Assert.Equal(2, createdOrderItems.Count);
+        Assert.Equal(
+            new[] { item1.ItemId, item2.ItemId }.OrderBy(id => id),
+            createdOrderItems
+        );
+    }
+
+    [Fact]
+    public async Task FinalizeOrder_WithItemsInCartAndNonAdminEmployeeUser_SavesOrderAndReturns200()
+    {
+        var client = CreateClient();
+
+        var employeeUser = await EmployeeLogin(client, false);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var item1 = await SeedItem(client, "item1", 10.00m);
+
+        await SeedCartItem(client, employeeUser.UserId, item1.ItemId, 3);
+
+        var requestDto = new OrderCreateDto
+        {
+            LocationId = location.LocationId,
+            IsPaid = false,
+            PaymentMethod = PaymentMethod.Cash,
+            OrderType = OrderType.DineIn,
+        };
+
+        var result = await client.PostAsJsonAsync("/admin/orders", requestDto);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var resultJson = await result.ReadJsonAsync<OrderResponseDto>();
+
+        Assert.NotNull(resultJson);
+
+        var createdOrder = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.Orders
+                .AsNoTracking()
+                .Where(o => o.OrderId == resultJson.OrderId)
+                .AnyAsync()
+        );
+
+        Assert.True(createdOrder);
+    }
+
+    [Fact]
+    public async Task FinalizeOrder_WithClient_Returns403()
+    {
+        var client = CreateClient();
+
+        var clientUser = await ClientLogin(client);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var item1 = await SeedItem(client, "item1", 10.00m);
+
+        await SeedCartItem(client, clientUser.UserId, item1.ItemId, 3);
+
+        var requestDto = new OrderCreateDto
+        {
+            LocationId = location.LocationId,
+            IsPaid = false,
+            PaymentMethod = PaymentMethod.Cash,
+            OrderType = OrderType.DineIn,
+        };
+
+        var result = await client.PostAsJsonAsync("/admin/orders", requestDto);
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task FinalizeOrder_WithNoCartItems_Returns400()
+    {
+        var client = CreateClient();
+
+        var user = await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var requestDto = new OrderCreateDto
+        {
+            LocationId = location.LocationId,
+            IsPaid = false,
+            PaymentMethod = PaymentMethod.Cash,
+            OrderType = OrderType.DineIn,
+        };
+
+        var result = await client.PostAsJsonAsync("/admin/orders", requestDto);
+
+        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task FinalizeOrder_WithInvalidLocationId_Returns404()
+    {
+        var client = CreateClient();
+
+        var user = await EmployeeLogin(client, true);
+
+        var item1 = await SeedItem(client, "item1", 10.00m);
+
+        await SeedCartItem(client, user.UserId, item1.ItemId, 3);
+
+        var requestDto = new OrderCreateDto
+        {
+            LocationId = int.MaxValue,
+            IsPaid = false,
+            PaymentMethod = PaymentMethod.Cash,
+            OrderType = OrderType.DineIn,
+        };
+
+        var result = await client.PostAsJsonAsync("/admin/orders", requestDto);
+
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task FinalizeOrder_WithInvalidClientId_Returns404()
+    {
+        var client = CreateClient();
+
+        var user = await EmployeeLogin(client, true);
+
+        var item1 = await SeedItem(client, "item1", 10.00m);
+
+        await SeedCartItem(client, user.UserId, item1.ItemId, 3);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var requestDto = new OrderCreateDto
+        {
+            ClientId = int.MinValue,
+            LocationId = location.LocationId,
+            IsPaid = false,
+            PaymentMethod = PaymentMethod.Cash,
+            OrderType = OrderType.DineIn,
+        };
+
+        var result = await client.PostAsJsonAsync("/admin/orders", requestDto);
+
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task FinalizeOrder_WithValidDeliveryData_CreatesDeliveryAndReturns200()
+    {
+        var client = CreateClient();
+
+        var user = await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var item1 = await SeedItem(client, "item1", 10.00m);
+
+        await SeedCartItem(client, user.UserId, item1.ItemId, 3);
+
+        var requestDto = new OrderCreateDto
+        {
+            LocationId = location.LocationId,
+            IsPaid = false,
+            PaymentMethod = PaymentMethod.Cash,
+            OrderType = OrderType.Delivery,
+            PhoneNumber = "123 123 123",
+            City = "City 1",
+            Address = "Address 1"
+        };
+
+        var result = await client.PostAsJsonAsync("/admin/orders", requestDto);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var resultJson = await result.ReadJsonAsync<OrderResponseDto>();
+        Assert.NotNull(resultJson.Delivery);
+        DeliveryResponseDto deliveryDto = resultJson.Delivery;
+
+        Assert.Equal(requestDto.PhoneNumber, deliveryDto.PhoneNumber);
+        Assert.Equal(requestDto.Address, deliveryDto.Address);
+        Assert.Equal(requestDto.City, deliveryDto.City);
+
+        var createdDelivery = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.Deliveries
+                .AsNoTracking()
+                .Where(d => d.OrderId == resultJson.OrderId)
+                .SingleOrDefaultAsync()
+        );
+
+        Assert.NotNull(createdDelivery);
+        Assert.Equal(resultJson.OrderId, createdDelivery.OrderId);
+        Assert.Equal(requestDto.Address, createdDelivery.Address);
+        Assert.Equal(requestDto.City, createdDelivery.City);
+    }
+
+    [Theory]
+    [InlineData("", "TestCity", "TestAddress")]
+    [InlineData("123 123 123", "", "TestAddress")]
+    [InlineData("123 123 123", "TestCity", "")]
+    public async Task FinalizeOrder_WithInvalidDeliveryData_Returns400(
+        string phoneNumber,
+        string city,
+        string address
+    )
+    {
+        var client = CreateClient();
+
+        var user = await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var item1 = await SeedItem(client, "item1", 10.00m);
+
+        var ordersBefore = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.Deliveries
+                .AsNoTracking()
+                .CountAsync()
+        );
+
+        await SeedCartItem(client, user.UserId, item1.ItemId, 3);
+
+        var requestDto = new OrderCreateDto
+        {
+            LocationId = location.LocationId,
+            IsPaid = false,
+            PaymentMethod = PaymentMethod.Cash,
+            OrderType = OrderType.Delivery,
+            PhoneNumber = phoneNumber,
+            City = city,
+            Address = address
+        };
+
+        var result = await client.PostAsJsonAsync("/admin/orders", requestDto);
+
+        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+
+
+        var ordersAfter = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.Deliveries
+                .AsNoTracking()
+                .CountAsync()
+        );
+
+        Assert.Equal(ordersBefore, ordersAfter);
+    }
 }
