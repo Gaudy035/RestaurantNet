@@ -255,6 +255,7 @@ public class OrderService : IOrderService
             ClientId = order.ClientId,
             LocationId = order.LocationId,
             Price = order.Price,
+            PhoneNumber = order.PhoneNumber,
             OrderTime = order.OrderTime,
             Items = cartItems.Select(ci => new CartItemResponseDto
             {
@@ -292,6 +293,7 @@ public class OrderService : IOrderService
                 ClientId = o.ClientId,
                 LocationId = o.LocationId,
                 Price = o.Price,
+                PhoneNumber = o.PhoneNumber,
                 OrderTime = o.OrderTime,
                 Items = o.OrderItems.Select(oi => new CartItemResponseDto
                 {
@@ -330,6 +332,7 @@ public class OrderService : IOrderService
                 ClientId = o.ClientId,
                 LocationId = o.LocationId,
                 Price = o.Price,
+                PhoneNumber = o.PhoneNumber,
                 OrderTime = o.OrderTime,
                 Items = o.OrderItems.Select(oi => new CartItemResponseDto
                 {
