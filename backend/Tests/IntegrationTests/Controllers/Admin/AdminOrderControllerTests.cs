@@ -70,7 +70,6 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
     }
 
     private async Task<MenuItem> SeedItem(
-        HttpClient client,
         string itemName = "testItem", 
         decimal price = 10.00m,
         string? categoryName = null
@@ -90,13 +89,59 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         return menuItem;
     }
 
-    private async Task<CartItem> SeedCartItem(HttpClient client, int userId, int itemId, int quantity)
+    private async Task<CartItem> SeedCartItem(int userId, int itemId, int quantity)
     {
         var cartItem = await DatabaseHelper.ExecuteAsync(
             _factory,
             context => MenuSeeder.SeedCartItem(context: context, userId: userId, itemId: itemId, quantity: quantity)
         );
         return cartItem;
+    }
+
+    private async Task<Order> SeedOrder(
+        List<MenuItem> items,
+        bool delivery = false
+    )
+    {
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            context => LocationSeeder.SeedLocation(context)
+        );
+
+        var newOrder = new Order
+        {
+            LocationId = location.LocationId,
+            OrderTime = DateTime.UtcNow,
+            Price = items.Sum(i => i.Price),
+            PhoneNumber = "123 123 123",
+            PaymentMethod = PaymentMethod.Cash,
+            IsPaid = false,
+            Status = OrderStatus.Preparing,
+            OrderItems = items.Select(i => new OrderItem
+            {
+                ItemId = i.ItemId,
+                Price = i.Price,
+                Quantity = 1
+            }).ToList(),
+            Delivery = delivery
+                ? new Delivery
+                {
+                    City = "Test City 1",
+                    Address = "Test Address 1"
+                }
+                : null
+        };
+
+        var createdOrder = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => {
+                context.Orders.Add(newOrder);
+                await context.SaveChangesAsync();
+                return newOrder;
+            }
+        );
+
+        return createdOrder;
     }
 
     [Fact]
@@ -106,7 +151,7 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var employeeUser = await EmployeeLogin(client, true);
 
-        var menuItem = await SeedItem(client);
+        var menuItem = await SeedItem();
 
         var result = await client.PostAsync($"admin/orders/cart/{menuItem.ItemId}", null);
 
@@ -138,7 +183,7 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var employeeUser = await EmployeeLogin(client, false);
 
-        var menuItem = await SeedItem(client);
+        var menuItem = await SeedItem();
 
         var result = await client.PostAsync($"admin/orders/cart/{menuItem.ItemId}", null);
 
@@ -152,7 +197,7 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var clientUser = await ClientLogin(client);
 
-        var menuItem = await SeedItem(client);
+        var menuItem = await SeedItem();
 
         var result = await client.PostAsync($"admin/orders/cart/{menuItem.ItemId}", null);
 
@@ -178,7 +223,7 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var employeeUser = await EmployeeLogin(client, true);
 
-        var menuItem = await SeedItem(client);
+        var menuItem = await SeedItem();
         
         var result1 = await client.PostAsync($"admin/orders/cart/{menuItem.ItemId}", null);
 
@@ -212,9 +257,9 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var employeeUser = await EmployeeLogin(client, true);
 
-        var menuItem = await SeedItem(client);
+        var menuItem = await SeedItem();
 
-        var cartItem = await SeedCartItem(client, employeeUser.UserId, menuItem.ItemId, 1);
+        var cartItem = await SeedCartItem(employeeUser.UserId, menuItem.ItemId, 1);
 
         var result = await client.DeleteAsync($"admin/orders/cart/{menuItem.ItemId}");
 
@@ -237,9 +282,9 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var employeeUser = await EmployeeLogin(client, false);
 
-        var menuItem = await SeedItem(client);
+        var menuItem = await SeedItem();
 
-        var cartItem = await SeedCartItem(client, employeeUser.UserId, menuItem.ItemId, 1);
+        var cartItem = await SeedCartItem(employeeUser.UserId, menuItem.ItemId, 1);
 
         var result = await client.DeleteAsync($"admin/orders/cart/{menuItem.ItemId}");
 
@@ -253,9 +298,9 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var employeeUser = await EmployeeLogin(client, true);
 
-        var menuItem = await SeedItem(client);
+        var menuItem = await SeedItem();
 
-        var cartItem = await SeedCartItem(client, employeeUser.UserId, menuItem.ItemId, 2);
+        var cartItem = await SeedCartItem(employeeUser.UserId, menuItem.ItemId, 2);
 
         var result = await client.DeleteAsync($"admin/orders/cart/{menuItem.ItemId}");
 
@@ -290,9 +335,9 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var employeeUser = await EmployeeLogin(client, false);
 
-        var menuItem = await SeedItem(client);
+        var menuItem = await SeedItem();
 
-        var cartItem = await SeedCartItem(client, employeeUser.UserId, menuItem.ItemId, 2);
+        var cartItem = await SeedCartItem(employeeUser.UserId, menuItem.ItemId, 2);
 
         var result = await client.DeleteAsync($"admin/orders/cart/{menuItem.ItemId}");
 
@@ -318,9 +363,9 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var clientUser = await ClientLogin(client);
 
-        var menuItem = await SeedItem(client);
+        var menuItem = await SeedItem();
 
-        var cartItem = await SeedCartItem(client, clientUser.UserId, menuItem.ItemId, 1);
+        var cartItem = await SeedCartItem(clientUser.UserId, menuItem.ItemId, 1);
 
         var result = await client.DeleteAsync($"admin/orders/cart/{menuItem.ItemId}");
 
@@ -334,11 +379,11 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var employeeUser = await EmployeeLogin(client, true);
 
-        var menuItem1 = await SeedItem(client, "item1", 15.00m);
-        var menuItem2 = await SeedItem(client, "item2", 20.00m, "Category2");
+        var menuItem1 = await SeedItem("item1", 15.00m);
+        var menuItem2 = await SeedItem("item2", 20.00m, "Category2");
 
-        var cartItem1 = await SeedCartItem(client, employeeUser.UserId, menuItem1.ItemId, 2);
-        var cartItem2 = await SeedCartItem(client, employeeUser.UserId, menuItem2.ItemId, 3);
+        var cartItem1 = await SeedCartItem(employeeUser.UserId, menuItem1.ItemId, 2);
+        var cartItem2 = await SeedCartItem(employeeUser.UserId, menuItem2.ItemId, 3);
         
         var result = await client.GetAsync($"admin/orders/cart");
         
@@ -376,9 +421,9 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var employeeUser = await EmployeeLogin(client, false);
 
-        var menuItem1 = await SeedItem(client, "item1", 15.00m);
+        var menuItem1 = await SeedItem("item1", 15.00m);
 
-        await SeedCartItem(client, employeeUser.UserId, menuItem1.ItemId, 2);
+        await SeedCartItem(employeeUser.UserId, menuItem1.ItemId, 2);
 
         var result = await client.GetAsync($"admin/orders/cart");
 
@@ -404,11 +449,11 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var employeeUser = await EmployeeLogin(client, true);
 
-        var item1 = await SeedItem(client, "item1", 15.00m);
-        var item2 = await SeedItem(client, "item2", 10.00m, "category2");
+        var item1 = await SeedItem("item1", 15.00m);
+        var item2 = await SeedItem("item2", 10.00m, "category2");
 
-        await SeedCartItem(client, employeeUser.UserId, item1.ItemId, 1);
-        await SeedCartItem(client, employeeUser.UserId, item2.ItemId, 3);
+        await SeedCartItem(employeeUser.UserId, item1.ItemId, 1);
+        await SeedCartItem(employeeUser.UserId, item2.ItemId, 3);
 
         var cartCountBefore = await DatabaseHelper.ExecuteAsync(
             _factory,
@@ -442,9 +487,9 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var employeeUser = await EmployeeLogin(client, false);
 
-        var item = await SeedItem(client);
+        var item = await SeedItem();
 
-        await SeedCartItem(client, employeeUser.UserId, item.ItemId, 2);
+        await SeedCartItem(employeeUser.UserId, item.ItemId, 2);
 
         var result = await client.DeleteAsync("/admin/orders/cart");
 
@@ -485,11 +530,11 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
             context => LocationSeeder.SeedLocation(context)
         );
 
-        var item1 = await SeedItem(client, "item1", 10.00m);
-        var item2 = await SeedItem(client, "item2", 15.50m, "category2");
+        var item1 = await SeedItem("item1", 10.00m);
+        var item2 = await SeedItem("item2", 15.50m, "category2");
 
-        await SeedCartItem(client, employeeUser.UserId, item1.ItemId, 3);
-        await SeedCartItem(client, employeeUser.UserId, item2.ItemId, 2);
+        await SeedCartItem(employeeUser.UserId, item1.ItemId, 3);
+        await SeedCartItem(employeeUser.UserId, item2.ItemId, 2);
 
         var requestDto = new OrderCreateDto
         {
@@ -580,9 +625,9 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
             context => LocationSeeder.SeedLocation(context)
         );
 
-        var item1 = await SeedItem(client, "item1", 10.00m);
+        var item1 = await SeedItem("item1", 10.00m);
 
-        await SeedCartItem(client, employeeUser.UserId, item1.ItemId, 3);
+        await SeedCartItem(employeeUser.UserId, item1.ItemId, 3);
 
         var requestDto = new OrderCreateDto
         {
@@ -623,9 +668,9 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
             context => LocationSeeder.SeedLocation(context)
         );
 
-        var item1 = await SeedItem(client, "item1", 10.00m);
+        var item1 = await SeedItem("item1", 10.00m);
 
-        await SeedCartItem(client, clientUser.UserId, item1.ItemId, 3);
+        await SeedCartItem(clientUser.UserId, item1.ItemId, 3);
 
         var requestDto = new OrderCreateDto
         {
@@ -672,9 +717,9 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var user = await EmployeeLogin(client, true);
 
-        var item1 = await SeedItem(client, "item1", 10.00m);
+        var item1 = await SeedItem("item1", 10.00m);
 
-        await SeedCartItem(client, user.UserId, item1.ItemId, 3);
+        await SeedCartItem(user.UserId, item1.ItemId, 3);
 
         var requestDto = new OrderCreateDto
         {
@@ -696,9 +741,9 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         var user = await EmployeeLogin(client, true);
 
-        var item1 = await SeedItem(client, "item1", 10.00m);
+        var item1 = await SeedItem("item1", 10.00m);
 
-        await SeedCartItem(client, user.UserId, item1.ItemId, 3);
+        await SeedCartItem(user.UserId, item1.ItemId, 3);
 
         var location = await DatabaseHelper.ExecuteAsync(
             _factory,
@@ -731,9 +776,9 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
             context => LocationSeeder.SeedLocation(context)
         );
 
-        var item1 = await SeedItem(client, "item1", 10.00m);
+        var item1 = await SeedItem("item1", 10.00m);
 
-        await SeedCartItem(client, user.UserId, item1.ItemId, 3);
+        await SeedCartItem(user.UserId, item1.ItemId, 3);
 
         var requestDto = new OrderCreateDto
         {
@@ -791,7 +836,7 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
             context => LocationSeeder.SeedLocation(context)
         );
 
-        var item1 = await SeedItem(client, "item1", 10.00m);
+        var item1 = await SeedItem("item1", 10.00m);
 
         var ordersBefore = await DatabaseHelper.ExecuteAsync(
             _factory,
@@ -800,7 +845,7 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
                 .CountAsync()
         );
 
-        await SeedCartItem(client, user.UserId, item1.ItemId, 3);
+        await SeedCartItem(user.UserId, item1.ItemId, 3);
 
         var requestDto = new OrderCreateDto
         {
