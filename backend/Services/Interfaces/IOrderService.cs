@@ -9,5 +9,5 @@ public interface IOrderService
     Task<Result<CartItemResponseDto?>> RemoveItemFromCart(int userId, int itemId);
     Task<Result<CartResponseDto>> GetCart(int userId);
     Task<Result> ClearCart(int userId);
-    Task<Result<OrderResposneDto>> FinalizeOrder(int userId, OrderCreateDto dto);
+    Task<Result<OrderResponseDto>> FinalizeOrder(int userId, OrderCreateDto dto);
 }

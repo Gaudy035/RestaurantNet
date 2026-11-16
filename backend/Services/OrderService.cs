@@ -157,7 +157,7 @@ public class OrderService : IOrderService
         return Result.Success();
     }
 
-    public async Task<Result<OrderResposneDto>> FinalizeOrder(int userId, OrderCreateDto dto)
+    public async Task<Result<OrderResponseDto>> FinalizeOrder(int userId, OrderCreateDto dto)
     {
         if (
             string.IsNullOrWhiteSpace(dto.Address)
@@ -165,7 +165,7 @@ public class OrderService : IOrderService
             || string.IsNullOrWhiteSpace(dto.PhoneNumber)
         )
         {
-            return Result<OrderResposneDto>.Fail(ErrorCode.InvalidDeliveryData);
+            return Result<OrderResponseDto>.Fail(ErrorCode.InvalidDeliveryData);
         }
 
         var cartItems = await _context.CartItems
@@ -176,7 +176,7 @@ public class OrderService : IOrderService
 
         if (cartItems.Count == 0)
         {
-            return Result<OrderResposneDto>.Fail(ErrorCode.CartEmpty);
+            return Result<OrderResponseDto>.Fail(ErrorCode.CartEmpty);
         }
 
         var order = new Order
@@ -222,10 +222,10 @@ public class OrderService : IOrderService
         }
         catch (DbUpdateException)
         {
-            return Result<OrderResposneDto>.Fail(ErrorCode.DbOperationFailed);
+            return Result<OrderResponseDto>.Fail(ErrorCode.DbOperationFailed);
         }
 
-        var responseDto = new OrderResposneDto
+        var responseDto = new OrderResponseDto
         {
             OrderId = order.OrderId,
             ClientId = order.ClientId,
@@ -255,6 +255,6 @@ public class OrderService : IOrderService
             };
         }
 
-        return Result<OrderResposneDto>.Success(responseDto);
+        return Result<OrderResponseDto>.Success(responseDto);
     }
 }
