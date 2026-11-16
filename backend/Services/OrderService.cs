@@ -160,12 +160,36 @@ public class OrderService : IOrderService
     public async Task<Result<OrderResponseDto>> FinalizeOrder(int userId, OrderCreateDto dto)
     {
         if (
-            string.IsNullOrWhiteSpace(dto.Address)
+            dto.OrderType == OrderType.Delivery &&
+            (string.IsNullOrWhiteSpace(dto.Address)
             || string.IsNullOrWhiteSpace(dto.City)
-            || string.IsNullOrWhiteSpace(dto.PhoneNumber)
+            || string.IsNullOrWhiteSpace(dto.PhoneNumber))
         )
         {
             return Result<OrderResponseDto>.Fail(ErrorCode.InvalidDeliveryData);
+        }
+
+        var locationExists = await _context.Locations
+            .AsNoTracking()
+            .Where(l => l.LocationId == dto.LocationId)
+            .AnyAsync();
+
+        if (!locationExists)
+        {
+            return Result<OrderResponseDto>.Fail(ErrorCode.LocationNotFound);
+        }
+
+        if (dto.ClientId != null)
+        {
+            var clientExists = await _context.Clients
+                .AsNoTracking()
+                .Where(c => c.UserId == dto.ClientId)
+                .AnyAsync();
+
+            if (!clientExists)
+            {
+                return Result<OrderResponseDto>.Fail(ErrorCode.ClientNotFound);
+            }
         }
 
         var cartItems = await _context.CartItems
@@ -199,8 +223,8 @@ public class OrderService : IOrderService
             var delivery = new Delivery
             {
                 Order = order,
-                Address = dto.Address,
-                City = dto.City,
+                Address = dto.Address!,
+                City = dto.City!,
             };
 
             await _context.Deliveries.AddAsync(delivery);
