@@ -2,7 +2,7 @@
 
 namespace backend.DTOs.Orders;
 
-public class OrderResposneDto
+public class OrderResponseDto
 {
     public int OrderId { get; init; }
 
