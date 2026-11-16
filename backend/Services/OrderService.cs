@@ -206,6 +206,14 @@ public class OrderService : IOrderService
             await _context.Deliveries.AddAsync(delivery);
         }
 
+        _context.OrderItems.AddRange(cartItems.Select(ci => new OrderItem
+        {
+            Order = order,
+            ItemId = ci.ItemId,
+            Quantity = ci.Quantity,
+            Price = ci.MenuItem.Price
+        }));
+
         await ClearCartItems(userId);
 
         try
