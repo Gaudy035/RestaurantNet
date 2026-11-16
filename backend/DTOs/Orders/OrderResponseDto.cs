@@ -12,6 +12,8 @@ public class OrderResponseDto
 
     public decimal Price { get; init; }
 
+    public string PhoneNumber { get; init; } = string.Empty;
+
     public DateTime OrderTime { get; init; }
 
     public List<CartItemResponseDto> Items { get; init; } = new List<CartItemResponseDto>();

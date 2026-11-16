@@ -539,6 +539,7 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
             IsPaid = false,
             PaymentMethod = PaymentMethod.Cash,
             OrderType = OrderType.DineIn,
+            PhoneNumber = "123 123 123"
         };
 
         var timeBefore = DateTime.UtcNow;
@@ -554,6 +555,7 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         Assert.NotNull(resultJson);
         Assert.Equal(location.LocationId, resultJson.LocationId);
         Assert.Equal(item1.Price * 3 + item2.Price * 2, resultJson.Price);
+        Assert.Equal(requestDto.PhoneNumber, resultJson.PhoneNumber);
         Assert.InRange(resultJson.OrderTime, timeBefore, timeAfter);
         Assert.Equal(
             new[] { item1.ItemId, item2.ItemId }.OrderBy(id => id),
@@ -586,6 +588,7 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         Assert.NotNull(createdOrder);
         Assert.Equal(location.LocationId, createdOrder.LocationId);
         Assert.Equal(item1.Price * 3 + item2.Price * 2, createdOrder.Price);
+        Assert.Equal(requestDto.PhoneNumber, createdOrder.PhoneNumber);
         Assert.InRange(createdOrder.OrderTime, timeBefore, timeAfter);
         Assert.Equal(requestDto.PaymentMethod, createdOrder.PaymentMethod);
         Assert.Equal(requestDto.IsPaid, createdOrder.IsPaid);
@@ -793,6 +796,7 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
 
         var resultJson = await result.ReadJsonAsync<OrderResponseDto>();
+        Assert.Equal(requestDto.PhoneNumber, resultJson.PhoneNumber);
         Assert.NotNull(resultJson.Delivery);
         DeliveryResponseDto deliveryDto = resultJson.Delivery;
 
@@ -905,6 +909,7 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         );
         Assert.Null(resultJson.Single(o => o.OrderId == order1.OrderId).Delivery);
         Assert.NotNull(resultJson.Single(o => o.OrderId == order2.OrderId).Delivery);
+        Assert.All(resultJson, o => Assert.Equal("123 123 123", o.PhoneNumber));
         Assert.All(resultJson, o => Assert.Equal(2, o.Items.Count));
     }
 
@@ -1013,6 +1018,7 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         Assert.Equal(OrderType.Delivery, resultJson.OrderType);
         Assert.False(resultJson.IsPaid);
         Assert.Equal(OrderStatus.Preparing, resultJson.OrderStatus);
+        Assert.Equal("123 123 123", resultJson.PhoneNumber);
         Assert.NotNull(resultJson.Delivery);
         Assert.Equal("123 123 123", resultJson.Delivery.PhoneNumber);
         Assert.Equal("Test City 1", resultJson.Delivery.City);
