@@ -13,12 +13,12 @@ public class Delivery
     [Required]
     [MaxLength(50)]
     [Column("city")]
-    public string City { get; init; } = string.Empty;
+    public string City { get; set; } = string.Empty;
 
     [Required]
     [MaxLength(255)]
     [Column("address")]
-    public string Address { get; init; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
 
     public Order Order { get; init; } = null!;
 }

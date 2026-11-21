@@ -363,4 +363,83 @@ public class OrderService : IOrderService
 
         return Result<OrderResponseDto?>.Success(foundOrder);
     }
+
+    public async Task<Result<OrderResponseDto>> OrderUpdate(int orderId, OrderUpdateDto dto)
+    {
+        if (dto.IsEmpty)
+        {
+            return Result<OrderResponseDto>.Fail(ErrorCode.UpdateBodyEmpty);
+        }
+
+        var order = await _context.Orders
+            .Include(o => o.Delivery)
+            .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.MenuItem)
+            .SingleOrDefaultAsync(o => o.OrderId == orderId);
+
+        if (order is null)
+        {
+            return Result<OrderResponseDto>.Fail(ErrorCode.OrderNotFound);
+        }
+
+        if (
+            order.Delivery is null 
+            && (dto.City is not null || dto.Address is not null)
+        )
+        {
+            return Result<OrderResponseDto>.Fail(ErrorCode.InvalidDeliveryData);
+        }
+
+        // Update logic
+
+        if (dto.PaymentMethod is not null) order.PaymentMethod = dto.PaymentMethod.Value;
+        if (dto.IsPaid is not null) order.IsPaid = dto.IsPaid.Value;
+        if (dto.Status is not null) order.Status = dto.Status.Value;
+        if (dto.PhoneNumber is not null) order.PhoneNumber = dto.PhoneNumber;
+        if (order.OrderType == OrderType.Delivery && order.Delivery is not null)
+        {
+            if (dto.City is not null) order.Delivery.City = dto.City;
+            if (dto.Address is not null) order.Delivery.Address = dto.Address;
+        }
+
+        //
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Result<OrderResponseDto>.Fail(ErrorCode.DbOperationFailed);
+        }
+
+        return Result<OrderResponseDto>.Success(new OrderResponseDto
+        {
+            OrderId = order.OrderId,
+            ClientId = order.ClientId,
+            LocationId = order.LocationId,
+            Price = order.Price,
+            PhoneNumber = order.PhoneNumber,
+            OrderTime = order.OrderTime,
+            Items = order.OrderItems.Select(oi => new CartItemResponseDto
+            {
+                ItemId = oi.ItemId,
+                Name = oi.MenuItem.Name,
+                Price = oi.Price,
+                Quantity = oi.Quantity
+            }).ToList(),
+            PaymentMethod = order.PaymentMethod,
+            IsPaid = order.IsPaid,
+            OrderStatus = order.Status,
+            OrderType = order.OrderType,
+            Delivery = order.OrderType == OrderType.Delivery
+                ? new DeliveryResponseDto
+                {
+                    PhoneNumber = order.PhoneNumber,
+                    City = order.Delivery!.City,
+                    Address = order.Delivery!.Address
+                }
+                : null
+        });
+    }
 }

@@ -103,4 +103,13 @@ public class AdminOrderController: ControllerBase
 
         return result.ToActionResult(this);
     }
+
+    [Authorize(Roles = "Admin,Employee")]
+    [HttpPatch("{orderId:int}")]
+    public async Task<IActionResult> UpdateOrder([FromRoute] int orderId, [FromBody] OrderUpdateDto dto)
+    {
+        var result = await _orderService.OrderUpdate(orderId, dto);
+
+        return result.ToActionResult(this);
+    }
 }
