@@ -33,6 +33,10 @@ const data = {
           url: '/admin/menuitems',
         },
         {
+          title: 'Orders',
+          url: '/admin/orders',
+        },
+        {
           title: 'Clients',
           url: '/admin/clients',
         },
