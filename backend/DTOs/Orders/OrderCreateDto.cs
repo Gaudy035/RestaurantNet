@@ -18,10 +18,13 @@ public class OrderCreateDto
     [Required]
     public OrderType OrderType { get; init; }
 
+    [MaxLength(20)]
     public string PhoneNumber { get; init; } = string.Empty;
 
+    [MaxLength(50)]
     public string? City { get; init; }
 
+    [MaxLength(255)]
     public string? Address { get; init; }
 
     public OrderStatus OrderStatus { get; init; } = OrderStatus.Pending;

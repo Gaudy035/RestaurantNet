@@ -1,4 +1,5 @@
 ﻿using backend.Data.Entities;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace backend.DTOs.Orders;
@@ -11,10 +12,13 @@ public class OrderUpdateDto
 
     public OrderStatus? Status { get; init; }
 
+    [MaxLength(20)]
     public string? PhoneNumber { get; init; }
 
+    [MaxLength(50)]
     public string? City { get; init; }
     
+    [MaxLength(255)]
     public string? Address { get; init; }
 
     [JsonIgnore]
