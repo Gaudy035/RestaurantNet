@@ -22,6 +22,9 @@ public class ErrorTests
     [InlineData(ErrorCode.MenuItemNotFound, 404)]
     [InlineData(ErrorCode.UpdateBodyEmpty, 400)]
     [InlineData(ErrorCode.CartItemNotFound, 404)]
+    [InlineData(ErrorCode.CartEmpty, 400)]
+    [InlineData(ErrorCode.InvalidDeliveryData, 400)]
+    [InlineData(ErrorCode.OrderNotFound, 404)]
     public void From_MapsErrorCodeToExpectedStatusCode(ErrorCode code, int expectedStatusCode)
     {
         var error = Error.From(code);
