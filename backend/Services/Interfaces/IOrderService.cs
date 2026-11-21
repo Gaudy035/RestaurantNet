@@ -12,4 +12,5 @@ public interface IOrderService
     Task<Result<OrderResponseDto>> FinalizeOrder(int userId, OrderCreateDto dto);
     Task<Result<List<OrderResponseDto>>> GetAllOrders();
     Task<Result<OrderResponseDto?>> FindOrderById(int orderId);
+    Task<Result<OrderResponseDto>> OrderUpdate(int orderId, OrderUpdateDto dto);
 }

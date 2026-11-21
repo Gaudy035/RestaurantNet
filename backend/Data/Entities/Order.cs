@@ -53,11 +53,11 @@ public class Order
 
     [MaxLength(20)]
     [Column("phone_number")]
-    public string PhoneNumber { get; init; } = string.Empty;
+    public string PhoneNumber { get; set; } = string.Empty;
 
     [Required]
     [Column("payment_method")]
-    public PaymentMethod PaymentMethod { get; init; }
+    public PaymentMethod PaymentMethod { get; set; }
 
     [Column("is_paid")]
     public bool IsPaid { get; set; }
