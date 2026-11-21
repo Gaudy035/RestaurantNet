@@ -1096,4 +1096,320 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
 
         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
     }
+
+    [Fact]
+    public async Task UpdateOrder_WithAdminUserAndValidData_UpdatesOnlyProvidedFields()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        var order = await SeedOrder(new List<MenuItem>() { item }, location.LocationId, true);
+
+        var dto = new OrderUpdateDto
+        {
+            PaymentMethod = PaymentMethod.Card,
+            IsPaid = true,
+            Status = OrderStatus.Ready,
+            PhoneNumber = "999 999 999"
+        };
+
+        var result = await client.PatchAsJsonAsync($"/admin/orders/{order.OrderId}", dto);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var body = await result.ReadJsonAsync<OrderResponseDto>();
+
+        Assert.NotNull(body);
+        Assert.Equal(order.OrderId, body.OrderId);
+        Assert.Equal(OrderStatus.Ready, body.OrderStatus);
+        Assert.Equal("999 999 999", body.PhoneNumber);
+        Assert.Equal(PaymentMethod.Card, body.PaymentMethod);
+        Assert.True(body.IsPaid);
+        Assert.Equal(OrderType.Delivery, body.OrderType);
+        Assert.Equal(item.Price, body.Price);
+        Assert.Single(body.Items);
+        Assert.NotNull(body.Delivery);
+        Assert.Equal("Test City 1", body.Delivery.City);
+        Assert.Equal("Test Address 1", body.Delivery.Address);
+
+        var persisted = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.Orders
+                .AsNoTracking()
+                .Include(o => o.Delivery)
+                .SingleAsync(o => o.OrderId == order.OrderId)
+        );
+
+        Assert.Equal(OrderStatus.Ready, persisted.Status);
+        Assert.Equal("999 999 999", persisted.PhoneNumber);
+        Assert.Equal(PaymentMethod.Card, persisted.PaymentMethod);
+        Assert.True(persisted.IsPaid);
+        Assert.Equal("Test City 1", persisted.Delivery!.City);
+        Assert.Equal("Test Address 1", persisted.Delivery!.Address);
+    }
+
+    [Fact]
+    public async Task UpdateOrder_WithAdminUserAndDeliveryData_UpdatesDelivery()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        var order = await SeedOrder(new List<MenuItem>() { item }, location.LocationId, true);
+
+        var dto = new OrderUpdateDto
+        {
+            City = "New City",
+            Address = "New Address"
+        };
+
+        var result = await client.PatchAsJsonAsync($"/admin/orders/{order.OrderId}", dto);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var body = await result.ReadJsonAsync<OrderResponseDto>();
+
+        Assert.NotNull(body);
+        Assert.NotNull(body.Delivery);
+        Assert.Equal("New City", body.Delivery.City);
+        Assert.Equal("New Address", body.Delivery.Address);
+        Assert.Equal("123 123 123", body.Delivery.PhoneNumber);
+        Assert.Equal("123 123 123", body.PhoneNumber);
+
+        var persistedDelivery = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.Deliveries
+                .AsNoTracking()
+                .SingleAsync(d => d.OrderId == order.OrderId)
+        );
+
+        Assert.Equal("New City", persistedDelivery.City);
+        Assert.Equal("New Address", persistedDelivery.Address);
+    }
+
+    [Fact]
+    public async Task UpdateOrder_WithNonAdminEmployeeUser_Returns200()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, false);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        var order = await SeedOrder(new List<MenuItem>() { item }, location.LocationId, true);
+
+        var dto = new OrderUpdateDto { Status = OrderStatus.Ready };
+
+        var result = await client.PatchAsJsonAsync($"/admin/orders/{order.OrderId}", dto);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var body = await result.ReadJsonAsync<OrderResponseDto>();
+
+        Assert.NotNull(body);
+        Assert.Equal(OrderStatus.Ready, body.OrderStatus);
+    }
+
+    [Fact]
+    public async Task UpdateOrder_WithClientUser_Returns403()
+    {
+        var client = CreateClient();
+
+        await ClientLogin(client);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        var order = await SeedOrder(new List<MenuItem>() { item }, location.LocationId);
+
+        var result = await client.PatchAsJsonAsync(
+            $"/admin/orders/{order.OrderId}",
+            new OrderUpdateDto { Status = OrderStatus.Ready });
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateOrder_WithInvalidId_Returns404()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var result = await client.PatchAsJsonAsync(
+            $"/admin/orders/{int.MaxValue}",
+            new OrderUpdateDto { Status = OrderStatus.Ready });
+
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateOrder_WithEmptyDto_Returns400()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        var order = await SeedOrder(new List<MenuItem>() { item }, location.LocationId, true);
+
+        var result = await client.PatchAsJsonAsync(
+            $"/admin/orders/{order.OrderId}",
+            new OrderUpdateDto());
+
+        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateOrder_WithWhitespaceOnlyStrings_Returns400()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        var order = await SeedOrder(new List<MenuItem>() { item }, location.LocationId, true);
+
+        var dto = new OrderUpdateDto
+        {
+            PhoneNumber = "   ",
+            City = "   ",
+            Address = "   "
+        };
+
+        var result = await client.PatchAsJsonAsync($"/admin/orders/{order.OrderId}", dto);
+
+        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateOrder_WithWhitespaceFieldsAndValidField_IgnoresWhitespaceAndReturns200()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        var order = await SeedOrder(new List<MenuItem>() { item }, location.LocationId, true);
+
+        var dto = new OrderUpdateDto
+        {
+            Status = OrderStatus.Ready,
+            PhoneNumber = "   ",
+            City = "   ",
+            Address = "   "
+        };
+
+        var result = await client.PatchAsJsonAsync($"/admin/orders/{order.OrderId}", dto);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var body = await result.ReadJsonAsync<OrderResponseDto>();
+
+        Assert.NotNull(body);
+        Assert.Equal(OrderStatus.Ready, body.OrderStatus);
+        Assert.Equal("123 123 123", body.PhoneNumber);
+        Assert.NotNull(body.Delivery);
+        Assert.Equal("Test City 1", body.Delivery.City);
+        Assert.Equal("Test Address 1", body.Delivery.Address);
+    }
+
+    [Fact]
+    public async Task UpdateOrder_WithDeliveryDataOnNonDeliveryOrder_Returns400()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        var order = await SeedOrder(new List<MenuItem>() { item }, location.LocationId);
+
+        var result = await client.PatchAsJsonAsync(
+            $"/admin/orders/{order.OrderId}",
+            new OrderUpdateDto { City = "Some City", Address = "Some Address" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+
+        var persisted = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            async context => await context.Orders
+                .AsNoTracking()
+                .SingleAsync(o => o.OrderId == order.OrderId)
+        );
+
+        Assert.Equal("123 123 123", persisted.PhoneNumber);
+    }
+
+    [Fact]
+    public async Task UpdateOrder_WithWhitespaceDeliveryDataOnNonDeliveryOrder_IgnoresWhitespaceAndReturns200()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        var order = await SeedOrder(new List<MenuItem>() { item }, location.LocationId);
+
+        var dto = new OrderUpdateDto
+        {
+            Status = OrderStatus.Ready,
+            City = "   ",
+            Address = "   "
+        };
+
+        var result = await client.PatchAsJsonAsync($"/admin/orders/{order.OrderId}", dto);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var body = await result.ReadJsonAsync<OrderResponseDto>();
+
+        Assert.NotNull(body);
+        Assert.Equal(OrderStatus.Ready, body.OrderStatus);
+        Assert.Null(body.Delivery);
+    }
 }
