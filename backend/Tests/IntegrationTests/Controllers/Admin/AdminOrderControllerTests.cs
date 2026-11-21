@@ -101,13 +101,14 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
     private async Task<Order> SeedOrder(
         List<MenuItem> items,
         int locationId,
-        bool delivery = false
+        bool delivery = false,
+        DateTime? orderTime = null
     )
     {
         var newOrder = new Order
         {
             LocationId = locationId,
-            OrderTime = DateTime.UtcNow,
+            OrderTime = orderTime ?? DateTime.UtcNow,
             Price = items.Sum(i => i.Price),
             PhoneNumber = "123 123 123",
             PaymentMethod = PaymentMethod.Cash,
@@ -139,6 +140,14 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         );
 
         return createdOrder;
+    }
+
+    private static DateTime WarsawLocalToUtc(DateOnly date, int hour, int minute = 0, int second = 0)
+    {
+        var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
+        var localTime = date.ToDateTime(new TimeOnly(hour, minute, second));
+
+        return TimeZoneInfo.ConvertTimeToUtc(localTime, timeZone);
     }
 
     [Fact]
@@ -979,6 +988,208 @@ public class AdminOrderControllerTests : IClassFixture<TestWebApplicationFactory
         var resultJson = await result.ReadJsonAsync<List<OrderResponseDto>>();
 
         Assert.Empty(resultJson);
+    }
+
+    [Fact]
+    public async Task GetAllOrders_WithLocationIdFilter_ReturnsOnlyOrdersFromThatLocation()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var location1 = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+        var location2 = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx, city: "OtherCity", address: "Other Address 1")
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+
+        var order1 = await SeedOrder(new List<MenuItem>() { item }, location1.LocationId);
+        var order2 = await SeedOrder(new List<MenuItem>() { item }, location2.LocationId);
+
+        var result = await client.GetAsync($"/admin/orders?locationId={location1.LocationId}");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var resultJson = await result.ReadJsonAsync<List<OrderResponseDto>>();
+
+        Assert.NotNull(resultJson);
+        var filteredOrder = Assert.Single(resultJson);
+        Assert.Equal(order1.OrderId, filteredOrder.OrderId);
+        Assert.Equal(location1.LocationId, filteredOrder.LocationId);
+    }
+
+    [Fact]
+    public async Task GetAllOrders_WithLocationIdFilterAndNoMatchingOrders_ReturnsEmptyListAnd200()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        await SeedOrder(new List<MenuItem>() { item }, location.LocationId);
+
+        var result = await client.GetAsync($"/admin/orders?locationId={int.MaxValue}");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var resultJson = await result.ReadJsonAsync<List<OrderResponseDto>>();
+
+        Assert.NotNull(resultJson);
+        Assert.Empty(resultJson);
+    }
+
+    [Theory]
+    [InlineData(2026, 1, 15)]
+    [InlineData(2026, 7, 15)]
+    public async Task GetAllOrders_WithDateFilter_ReturnsOnlyOrdersFromThatDay(int year, int month, int day)
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        var date = new DateOnly(year, month, day);
+
+        var includedStart = await SeedOrder(
+            new List<MenuItem>() { item },
+            location.LocationId,
+            orderTime: WarsawLocalToUtc(date, 0, 0, 0)
+        );
+        var includedEnd = await SeedOrder(
+            new List<MenuItem>() { item },
+            location.LocationId,
+            orderTime: WarsawLocalToUtc(date, 23, 59, 59)
+        );
+        var excludedPreviousDay = await SeedOrder(
+            new List<MenuItem>() { item },
+            location.LocationId,
+            orderTime: WarsawLocalToUtc(date.AddDays(-1), 23, 59, 59)
+        );
+        var excludedNextDay = await SeedOrder(
+            new List<MenuItem>() { item },
+            location.LocationId,
+            orderTime: WarsawLocalToUtc(date.AddDays(1), 0, 0, 0)
+        );
+
+        var result = await client.GetAsync($"/admin/orders?date={date:yyyy-MM-dd}");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var resultJson = await result.ReadJsonAsync<List<OrderResponseDto>>();
+
+        Assert.NotNull(resultJson);
+        Assert.Equal(
+            new[] { includedStart.OrderId, includedEnd.OrderId }.OrderBy(id => id),
+            resultJson.Select(o => o.OrderId).OrderBy(id => id)
+        );
+    }
+
+    [Fact]
+    public async Task GetAllOrders_WithDateFilterAndNoOrdersOnThatDay_ReturnsEmptyListAnd200()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var location = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        var date = new DateOnly(2026, 1, 15);
+
+        await SeedOrder(
+            new List<MenuItem>() { item },
+            location.LocationId,
+            orderTime: WarsawLocalToUtc(date, 12, 0, 0)
+        );
+
+        var result = await client.GetAsync($"/admin/orders?date={date.AddDays(1):yyyy-MM-dd}");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var resultJson = await result.ReadJsonAsync<List<OrderResponseDto>>();
+
+        Assert.NotNull(resultJson);
+        Assert.Empty(resultJson);
+    }
+
+    [Fact]
+    public async Task GetAllOrders_WithLocationIdAndDateFilters_ReturnsMatchingOrders()
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var location1 = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx)
+        );
+        var location2 = await DatabaseHelper.ExecuteAsync(
+            _factory,
+            ctx => LocationSeeder.SeedLocation(ctx, city: "OtherCity", address: "Other Address 1")
+        );
+
+        var item = await SeedItem("Item 1", 10.00m);
+        var date = new DateOnly(2026, 1, 15);
+
+        var matchingOrder = await SeedOrder(
+            new List<MenuItem>() { item },
+            location1.LocationId,
+            orderTime: WarsawLocalToUtc(date, 12, 0, 0)
+        );
+        await SeedOrder(
+            new List<MenuItem>() { item },
+            location1.LocationId,
+            orderTime: WarsawLocalToUtc(date.AddDays(-1), 12, 0, 0)
+        );
+        await SeedOrder(
+            new List<MenuItem>() { item },
+            location2.LocationId,
+            orderTime: WarsawLocalToUtc(date, 12, 0, 0)
+        );
+
+        var result = await client.GetAsync(
+            $"/admin/orders?locationId={location1.LocationId}&date={date:yyyy-MM-dd}");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var resultJson = await result.ReadJsonAsync<List<OrderResponseDto>>();
+
+        Assert.NotNull(resultJson);
+        var filteredOrder = Assert.Single(resultJson);
+        Assert.Equal(matchingOrder.OrderId, filteredOrder.OrderId);
+        Assert.Equal(location1.LocationId, filteredOrder.LocationId);
+    }
+
+    [Theory]
+    [InlineData("date=not-a-date")]
+    [InlineData("locationId=abc")]
+    public async Task GetAllOrders_WithInvalidQueryParameters_Returns400(string query)
+    {
+        var client = CreateClient();
+
+        await EmployeeLogin(client, true);
+
+        var result = await client.GetAsync($"/admin/orders?{query}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
     }
 
     [Fact]

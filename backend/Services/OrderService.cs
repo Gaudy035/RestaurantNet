@@ -294,7 +294,9 @@ public class OrderService : IOrderService
 
         if (filters.Date is not null)
         {
+            // TimeZone hardcoded for now, move to configuration later
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
+            //
             var startLocal = filters.Date.Value.ToDateTime(TimeOnly.MinValue);
             var startUtc = TimeZoneInfo.ConvertTimeToUtc(startLocal, timeZone);
             var endUtc = TimeZoneInfo.ConvertTimeToUtc(startLocal.AddDays(1), timeZone);
