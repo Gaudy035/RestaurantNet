@@ -384,7 +384,7 @@ public class OrderService : IOrderService
 
         if (
             order.Delivery is null 
-            && (dto.City is not null || dto.Address is not null)
+            && (!string.IsNullOrWhiteSpace(dto.City) || !string.IsNullOrWhiteSpace(dto.Address))
         )
         {
             return Result<OrderResponseDto>.Fail(ErrorCode.InvalidDeliveryData);
@@ -395,11 +395,11 @@ public class OrderService : IOrderService
         if (dto.PaymentMethod is not null) order.PaymentMethod = dto.PaymentMethod.Value;
         if (dto.IsPaid is not null) order.IsPaid = dto.IsPaid.Value;
         if (dto.Status is not null) order.Status = dto.Status.Value;
-        if (dto.PhoneNumber is not null) order.PhoneNumber = dto.PhoneNumber;
+        if (!string.IsNullOrWhiteSpace(dto.PhoneNumber)) order.PhoneNumber = dto.PhoneNumber;
         if (order.OrderType == OrderType.Delivery && order.Delivery is not null)
         {
-            if (dto.City is not null) order.Delivery.City = dto.City;
-            if (dto.Address is not null) order.Delivery.Address = dto.Address;
+            if (!string.IsNullOrWhiteSpace(dto.City)) order.Delivery.City = dto.City;
+            if (!string.IsNullOrWhiteSpace(dto.Address)) order.Delivery.Address = dto.Address;
         }
 
         //
