@@ -2,7 +2,7 @@
 
 Full-stack restaurant management system. A web application for managing a restaurant chain: locations, tables, bookings, menu, orders and deliveries — with a public storefront and an admin panel.
 
-Project is still work in progress. Authentication and parts of the admin panel including client, employee, and location management with staff assignment, plus the menu (categories and items), are functional but ordering, ingredients, tables/bookings, and delivery are still in development. The public storefront page is not built yet.
+Project is still work in progress. Authentication and parts of the admin panel including client, employee, and location management with staff assignment, plus the menu (categories and items), are functional. The backend also exposes cart and order management (finalizing orders, listing and filtering, details and updates, including delivery details), but the ordering UI, ingredients, tables/bookings, and delivery management are still in development. The public storefront page is not built yet.
 
 ## Tech stack
 
@@ -23,18 +23,19 @@ Project is still work in progress. Authentication and parts of the admin panel i
 - Assign/unassign employees to locations by position (Manager, Chef, Server, Cashier, Driver), with detail pages showing staff per location and locations per employee
 - Menu categories: browse categories and their items, add new categories, and delete empty ones (deletion blocked while the category still contains items)
 - Menu items: browse and search by name, view details, add, and edit (price, category, availability, pinned). Items cannot be deleted. Employees can view the menu and its items per category; only admins can create and edit. Unavailable items are only shown to admins
+- Cart and order management API for employees: add and remove cart items, finalize orders (dine-in, pickup, delivery), list and filter orders by location and date, and view or update orders
 - Initial admin seeded automatically when no admins exist in database
 - Background job for daily cleaning up expired/revoked refresh-token (Quartz)
 - Scalar UI API docs in dev at `/docs`
 
 ### Planned / work in progress
 
-The following are modeled in the database but not yet exposed in the UI or API:
+The following are not yet exposed in the UI or API:
 
+- Ordering UI (cart, checkout and order management screens)
 - Menu ingredients and allergens
-- Orders (dine-in / pickup / delivery) and order status flow
 - Tables and bookings
-- Delivery management
+- Delivery management UI and driver workflows
 
 ## Prerequisites
 
