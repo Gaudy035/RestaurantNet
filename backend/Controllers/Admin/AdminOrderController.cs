@@ -87,9 +87,9 @@ public class AdminOrderController: ControllerBase
 
     [Authorize(Roles = "Admin,Employee")]
     [HttpGet()]
-    public async Task<IActionResult> GetAllOrders()
+    public async Task<IActionResult> GetAllOrders([FromQuery] OrderFilterDto filters)
     {
-        var result = await _orderService.GetAllOrders();
+        var result = await _orderService.GetAllOrders(filters);
 
         return result.ToActionResult(this);
     }

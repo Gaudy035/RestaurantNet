@@ -283,11 +283,28 @@ public class OrderService : IOrderService
         return Result<OrderResponseDto>.Success(responseDto);
     }
 
-    public async Task<Result<List<OrderResponseDto>>> GetAllOrders()
+    public async Task<Result<List<OrderResponseDto>>> GetAllOrders(OrderFilterDto filters)
     {
-        var allOrders = await _context.Orders
-            .AsNoTracking()
-            .Select(o => new OrderResponseDto
+        var query = _context.Orders.AsNoTracking();
+
+        if (filters.LocationId is not null)
+        {
+            query = query.Where(o => o.LocationId == filters.LocationId);
+        }
+
+        if (filters.Date is not null)
+        {
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
+            var startLocal = filters.Date.Value.ToDateTime(TimeOnly.MinValue);
+            var startUtc = TimeZoneInfo.ConvertTimeToUtc(startLocal, timeZone);
+            var endUtc = TimeZoneInfo.ConvertTimeToUtc(startLocal.AddDays(1), timeZone);
+
+            query = query.Where(o =>
+                o.OrderTime >= startUtc && o.OrderTime < endUtc
+            );
+        }
+
+        var allOrders = await query.Select(o => new OrderResponseDto
             {
                 OrderId = o.OrderId,
                 ClientId = o.ClientId,

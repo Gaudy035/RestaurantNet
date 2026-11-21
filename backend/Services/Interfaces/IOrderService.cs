@@ -10,7 +10,7 @@ public interface IOrderService
     Task<Result<CartResponseDto>> GetCart(int userId);
     Task<Result> ClearCart(int userId);
     Task<Result<OrderResponseDto>> FinalizeOrder(int userId, OrderCreateDto dto);
-    Task<Result<List<OrderResponseDto>>> GetAllOrders();
+    Task<Result<List<OrderResponseDto>>> GetAllOrders(OrderFilterDto filters);
     Task<Result<OrderResponseDto?>> FindOrderById(int orderId);
     Task<Result<OrderResponseDto>> OrderUpdate(int orderId, OrderUpdateDto dto);
 }
