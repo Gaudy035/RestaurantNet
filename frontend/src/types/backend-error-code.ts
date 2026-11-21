@@ -14,5 +14,9 @@ type BackendErrorCode =
     | 'CategoryContainsItems'
     | 'MenuItemNotFound'
     | 'UpdateBodyEmpty'
+    | 'CartItemNotFound'
+    | 'CartEmpty'
+    | 'InvalidDeliveryData'
+    | 'OrderNotFound'
 
 export default BackendErrorCode;
