@@ -334,7 +334,7 @@ public class OrderService : IOrderService
                     }
                     : null
             })
-            .OrderBy(o => o.OrderTime)
+            .OrderByDescending(o => o.OrderTime)
             .ToListAsync();
 
         return Result<List<OrderResponseDto>>.Success(allOrders);
