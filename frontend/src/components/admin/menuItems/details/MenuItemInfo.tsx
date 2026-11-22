@@ -7,11 +7,13 @@ import {adminApiFetch} from "@/lib/api";
 import {getErrorMessage} from "@/lib/api-error";
 import {Spinner} from "@/components/ui/spinner";
 import {Card, CardAction, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
-import {buttonVariants} from "@/components/ui/button";
+import {Button, buttonVariants} from "@/components/ui/button";
 import {useEmployee} from "@/lib/employee-context";
 import {Badge} from "@/components/ui/badge";
 import {cn} from "@/lib/utils";
 import Link from "next/link";
+import {toast} from "sonner";
+import {Loader2, ShoppingCart} from "lucide-react";
 
 export default function MenuItemInfo({ itemId }: { itemId: string }){
     const [itemData, setItemData] = useState<MenuItem | null>(null);
@@ -20,9 +22,29 @@ export default function MenuItemInfo({ itemId }: { itemId: string }){
     const [categoryLoading, setCategoryLoading] = useState<boolean>(true);
     const [itemError, setItemError] = useState<string | null>(null);
     const [categoryError, setCategoryError] = useState<string | null>(null);
+    const [adding, setAdding] = useState<boolean>(false);
 
     const employee = useEmployee()
     const isAdmin = employee.employeeData?.isAdmin;
+
+    const addToCart = async () => {
+        if (!itemData) {
+            return;
+        }
+
+        setAdding(true);
+
+        try {
+            await adminApiFetch(`/admin/orders/cart/${itemData.itemId}`, {
+                method: 'POST',
+            });
+            toast.success(`${itemData.name} added to cart`);
+        } catch (error) {
+            toast.error(getErrorMessage(error));
+        } finally {
+            setAdding(false);
+        }
+    };
 
     useEffect(() => {
         adminApiFetch<MenuItem>(`/admin/menuitems/${itemId}`, {
@@ -72,16 +94,25 @@ export default function MenuItemInfo({ itemId }: { itemId: string }){
                             </CardDescription>
                         </div>
 
-                        {isAdmin && <CardAction>
-                            <Link
+                        <CardAction className='flex flex-row justify-center items-center gap-2'>
+                            <Button
+                                variant='outline'
+                                size='icon'
+                                aria-label={`Add ${itemData.name} to cart`}
+                                disabled={adding || !itemData.isAvailable}
+                                onClick={addToCart}
+                            >
+                                {adding ? <Loader2 className='animate-spin' /> : <ShoppingCart />}
+                            </Button>
+                            {isAdmin && <Link
                                 href={`/admin/menuitems/${itemId}/update`}
                                 className={cn(
                                     buttonVariants({variant: 'default', size: 'default'}),
                                 )}
                             >
                                 Modify menu item
-                            </Link>
-                        </CardAction>}
+                            </Link>}
+                        </CardAction>
                     </CardHeader>
                 </Card>
             ) : null}
