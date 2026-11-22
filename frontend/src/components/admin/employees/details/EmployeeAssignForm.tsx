@@ -17,6 +17,14 @@ import EmployeeData from '@/interfaces/EmployeeData';
 import LocationData from '@/interfaces/LocationData';
 import Assignment from '@/interfaces/Assignment';
 import Position from '@/types/position';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { getErrorMessage } from '@/lib/api-error';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
@@ -83,8 +91,8 @@ export function AdminEmployeeAssignForm({
     }
 
     const payload: Assignment = {
-      userId: employeeId,
-      locationId: locationId!,
+      userId: Number(employeeId),
+      locationId: Number(locationId),
       position: position!,
     };
 
@@ -131,47 +139,53 @@ export function AdminEmployeeAssignForm({
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor='locationId'>Location</FieldLabel>
-              <select
-                onChange={(e) => setLocationId(e.target.value)}
-                className={
-                  locationId ? 'text-foreground' : 'text-muted-foreground'
-                }
-                name='locationId'
-                id='locationId'
-                defaultValue=''
-                required
+              <Select
+                items={locations.map((l) => ({
+                  value: String(l.locationId),
+                  label: `${l.city}, ${l.address}`,
+                }))}
+                value={locationId}
+                onValueChange={(value) => setLocationId(value)}
               >
-                <option value='' disabled>
-                  Select location
-                </option>
-                {locations.map((l) => (
-                  <option key={l.locationId} value={l.locationId}>
-                    {l.city}, {l.address}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id='locationId' className='w-full'>
+                  <SelectValue placeholder='Select location' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {locations.map((l) => (
+                      <SelectItem
+                        key={l.locationId}
+                        value={String(l.locationId)}
+                      >
+                        {l.city}, {l.address}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </Field>
             <Field>
               <FieldLabel htmlFor='position'>Position</FieldLabel>
-              <select
-                onChange={(e) => setPosition(e.target.value as Position)}
-                className={
-                  position ? 'text-foreground' : 'text-muted-foreground'
+              <Select
+                items={positions.map((p) => ({ value: p, label: p }))}
+                value={position}
+                onValueChange={(value) =>
+                  value && setPosition(value as Position)
                 }
-                id='position'
-                name='position'
-                defaultValue=''
-                required
               >
-                <option value='' disabled>
-                  Select a position
-                </option>
-                {positions.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id='position' className='w-full'>
+                  <SelectValue placeholder='Select a position' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {positions.map((p) => (
+                      <SelectItem key={p} value={p}>
+                        {p}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </Field>
             {formError ? <p className='text-destructive'>{formError}</p> : null}
             <FieldGroup>

@@ -8,6 +8,14 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Field, FieldGroup, FieldLabel} from "@/components/ui/field";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {useRouter} from "next/navigation";
 import Category from "@/interfaces/Category";
 
@@ -30,9 +38,15 @@ export default function AdminMenuItemAddForm() {
         e.preventDefault();
         setError(null);
 
+        if (!categoryId) {
+            setError('Select category');
+            return;
+        }
+
         const formData = new FormData(e.currentTarget);
         const payload = {
             ...Object.fromEntries(formData.entries()),
+            categoryId: Number(categoryId),
             isAvailable: formData.get('isAvailable') === 'on',
             isPinned: formData.get('isPinned') === 'on',
         };
@@ -85,26 +99,31 @@ export default function AdminMenuItemAddForm() {
                             />
                         </Field>
                         <Field>
-                            <FieldLabel htmlFor='lastName'>Category</FieldLabel>
-                            <select
-                                onChange={(e) => setCategoryId(e.target.value)}
-                                className={
-                                    categoryId ? 'text-foreground' : 'text-muted-foreground'
-                                }
-                                name='categoryId'
-                                id='categoryId'
-                                defaultValue=''
-                                required
+                            <FieldLabel htmlFor='categoryId'>Category</FieldLabel>
+                            <Select
+                                items={categories.map((c) => ({
+                                    value: String(c.categoryId),
+                                    label: c.categoryName,
+                                }))}
+                                value={categoryId}
+                                onValueChange={(value) => setCategoryId(value)}
                             >
-                                <option value='' disabled>
-                                    Select category
-                                </option>
-                                {categories.map((c) => (
-                                    <option key={c.categoryId} value={c.categoryId}>
-                                        {c.categoryName}
-                                    </option>
-                                ))}
-                            </select>
+                                <SelectTrigger id='categoryId' className='w-full'>
+                                    <SelectValue placeholder='Select category' />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {categories.map((c) => (
+                                            <SelectItem
+                                                key={c.categoryId}
+                                                value={String(c.categoryId)}
+                                            >
+                                                {c.categoryName}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
                         </Field>
                         <Field>
                             <div className='flex flex-row justify-start items-center gap-2'>

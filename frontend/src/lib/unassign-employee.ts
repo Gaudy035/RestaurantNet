@@ -8,8 +8,8 @@ export default function unassignEmployee(
   position: Position,
 ) {
   const payload: Assignment = {
-    userId: employeeId,
-    locationId: locationId,
+    userId: Number(employeeId),
+    locationId: Number(locationId),
     position: position,
   };
 
