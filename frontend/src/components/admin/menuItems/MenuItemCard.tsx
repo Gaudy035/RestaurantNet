@@ -6,11 +6,33 @@ import {Card, CardAction, CardDescription, CardHeader, CardTitle} from "@/compon
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {useEmployee} from "@/lib/employee-context";
+import {adminApiFetch} from "@/lib/api";
+import {getErrorMessage} from "@/lib/api-error";
+import {toast} from "sonner";
+import {Loader2, ShoppingCart} from "lucide-react";
+import React, {useState} from "react";
 
 export default function MenuItemCard({ itemData }: { itemData: MenuItem }) {
     const router = useRouter();
     const employee = useEmployee();
     const isAdmin = employee.employeeData?.isAdmin;
+    const [adding, setAdding] = useState<boolean>(false);
+
+    const addToCart = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        setAdding(true);
+
+        try {
+            await adminApiFetch(`/admin/orders/cart/${itemData.itemId}`, {
+                method: 'POST',
+            });
+            toast.success(`${itemData.name} added to cart`);
+        } catch (error) {
+            toast.error(getErrorMessage(error));
+        } finally {
+            setAdding(false);
+        }
+    };
 
     return (
         <Card
@@ -28,7 +50,16 @@ export default function MenuItemCard({ itemData }: { itemData: MenuItem }) {
                     </CardDescription>
                 </div>
 
-                <CardAction>
+                <CardAction className='flex flex-row justify-center items-center gap-2'>
+                    <Button
+                        variant='outline'
+                        size='icon'
+                        aria-label={`Add ${itemData.name} to cart`}
+                        disabled={adding || !itemData.isAvailable}
+                        onClick={addToCart}
+                    >
+                        {adding ? <Loader2 className='animate-spin' /> : <ShoppingCart />}
+                    </Button>
                     <Button
                         variant='link'
                         size={'lg'}
