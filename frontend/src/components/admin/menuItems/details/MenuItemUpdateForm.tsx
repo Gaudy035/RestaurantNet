@@ -5,6 +5,14 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Field, FieldGroup, FieldLabel} from "@/components/ui/field";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
 import Category from "@/interfaces/Category";
@@ -27,7 +35,10 @@ export default function MenuItemUpdateForm({ itemId }: { itemId: string }) {
             method: "GET",
             cache: "no-store"
         })
-            .then((data) => setItemData(data))
+            .then((data) => {
+                setItemData(data);
+                setCategoryId(String(data.categoryId));
+            })
             .catch((error) => setError(getErrorMessage(error)))
             .finally(() => setLoading(false));
     }, [itemId])
@@ -49,7 +60,7 @@ export default function MenuItemUpdateForm({ itemId }: { itemId: string }) {
 
         const payload: {
             price?: number;
-            categoryId?: string;
+            categoryId?: number;
             isAvailable?: boolean;
             isPinned?: boolean;
         } = {};
@@ -64,9 +75,8 @@ export default function MenuItemUpdateForm({ itemId }: { itemId: string }) {
             }
         }
 
-        const newCategory = formData.get('category');
-        if(typeof newCategory === 'string' && newCategory.trim() !== '' && newCategory !== itemData?.categoryId) {
-            payload.categoryId = newCategory;
+        if (categoryId && categoryId !== String(itemData?.categoryId)) {
+            payload.categoryId = Number(categoryId);
         }
 
         const isAvailable = formData.get('isAvailable') === 'on';
@@ -122,26 +132,31 @@ export default function MenuItemUpdateForm({ itemId }: { itemId: string }) {
                             />
                         </Field>
                         <Field>
-                            <FieldLabel htmlFor='lastName'>Category</FieldLabel>
-                            <select
-                                onChange={(e) => setCategoryId(e.target.value)}
-                                className={
-                                    categoryId ? 'text-foreground' : 'text-muted-foreground'
-                                }
-                                name='categoryId'
-                                id='categoryId'
-                                defaultValue={itemData?.categoryId}
-                                required
+                            <FieldLabel htmlFor='categoryId'>Category</FieldLabel>
+                            <Select
+                                items={categories.map((c) => ({
+                                    value: String(c.categoryId),
+                                    label: c.categoryName,
+                                }))}
+                                value={categoryId}
+                                onValueChange={(value) => setCategoryId(value)}
                             >
-                                <option value='' disabled>
-                                    Select category
-                                </option>
-                                {categories.map((c) => (
-                                    <option key={c.categoryId} value={c.categoryId}>
-                                        {c.categoryName}
-                                    </option>
-                                ))}
-                            </select>
+                                <SelectTrigger id='categoryId' className='w-full'>
+                                    <SelectValue placeholder='Select category' />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {categories.map((c) => (
+                                            <SelectItem
+                                                key={c.categoryId}
+                                                value={String(c.categoryId)}
+                                            >
+                                                {c.categoryName}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
                         </Field>
                         <Field>
                             <div className='flex flex-row justify-start items-center gap-2'>

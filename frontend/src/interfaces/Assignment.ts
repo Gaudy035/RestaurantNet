@@ -1,8 +1,8 @@
 import Position from '@/types/position';
 
 interface Assignment {
-  userId: string;
-  locationId: string;
+  userId: number;
+  locationId: number;
   position: Position;
 }
 
